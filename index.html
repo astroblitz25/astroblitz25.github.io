@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Prosperous Universe</title>
+  <style>
+    @font-face {
+      font-family: 'Starbim';
+      src: url('starbim.ttf') format('truetype');
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffeef2;
+      font-family: 'CandySeason', sans-serif;
+      cursor: none;
+      scroll-behavior: smooth;
+    }
+
+    #custom-cursor {
+      position: fixed;
+      width: 81px;
+      height: 81px;
+      pointer-events: none;
+      background: url('cursor-cat.gif') no-repeat center center;
+      background-size: contain;
+      z-index: 9999;
+    }
+
+    .cursor-cat-inner {
+      width: 100%;
+      height: 100%;
+      animation: gentle-bounce 1.8s ease-in-out infinite;
+    }
+
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .title {
+      font-family: 'Starbim', sans-serif;
+      font-size: 58px;
+      color: #ff66b2;
+      margin: 4px 0 10px 0;
+      text-align: center;
+    }
+
+    .container {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 60px;
+      transform: translateX(-0.5cm);
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      transform: translateY(1.5cm);
+    }
+
+    .neon-frame, .empty-box {
+      position: relative;
+      background: #ffeef2;
+      border-radius: 16px;
+    }
+
+    .neon-frame {
+      padding: 12px;
+      width: fit-content;
+    }
+
+    .neon-frame::before,
+    .empty-box::before,
+    .neon-frame::after,
+    .empty-box::after {
+      content: "";
+      position: absolute;
+      border: 2px solid #ff66cc;
+      border-radius: 16px;
+      pointer-events: none;
+    }
+
+    .neon-frame::before,
+    .empty-box::before {
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .neon-frame::after,
+    .empty-box::after {
+      top: 4px;
+      left: 4px;
+      right: 4px;
+      bottom: 4px;
+    }
+
+    .neon-frame img {
+      height: 500px;
+      max-width: 100%;
+      display: block;
+      border-radius: 8px;
+    }
+
+    .empty-box {
+      width: 8cm;
+      height: 5cm;
+    }
+
+    .right-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .sections {
+      display: flex;
+      flex-direction: column;
+      gap: 35px;
+      font-size: 46px;
+      transform: translateY(1.5cm);
+    }
+
+    .section-link {
+      color: #e75480;
+      text-decoration: none;
+      font-weight: bold;
+      transition: transform 0.2s;
+      position: relative;
+      display: inline-block;
+      cursor: none;
+    }
+
+    .section-link::before {
+      content: attr(data-jp);
+      position: absolute;
+      top: -34px;
+      left: 6px;
+      transform: rotate(-2.5deg);
+      font-size: 69px;
+      color: #caa0ff;
+      opacity: 1;
+      z-index: -1;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .section-link:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="custom-cursor">
+    <div class="cursor-cat-inner"></div>
+  </div>
+
+  <div class="title">
+    🎀 Your Prosperous Universe 🎀
+  </div>
+
+  <div class="container">
+    <div class="left-column">
+      <div class="neon-frame">
+        <img src="cute-box.png" alt="Cute Character" />
+      </div>
+      <div class="empty-box"></div>
+    </div>
+    <div class="right-content">
+      <div class="sections">
+        <a href="#" class="section-link" data-jp="ホーム">Home</a>
+        <a href="#" class="section-link" data-jp="ギャラリー">Gallery</a>
+        <a href="#" class="section-link" data-jp="もの">Stuff</a>
+        <a href="#" class="section-link" data-jp="について">About</a>
+        <a href="#" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
+        <a href="#" class="section-link" data-jp="安心スペース">Safe Space</a>
+        <a href="#" class="section-link" data-jp="かわいいゾーン">Cute Zones</a>
+        <a href="#" class="section-link" data-jp="楽しい">Fun</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cursor = document.getElementById('custom-cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+    });
+  </script>
+</body>
+</html>
