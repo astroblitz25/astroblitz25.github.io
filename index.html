@@ -17,7 +17,8 @@
     html, body {
       margin: 0;
       padding: 0;
-      background-color: #ffeef2;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
       font-family: 'CandySeason', sans-serif;
       cursor: none;
       scroll-behavior: smooth;
@@ -52,6 +53,35 @@
       text-align: center;
     }
 
+    .gif-belt-wrapper {
+      overflow: hidden;
+      width: 100%;
+      margin-top: 0.7cm;
+    }
+
+    .gif-belt {
+      display: flex;
+      width: max-content;
+      animation: gifScroll 101s linear infinite;
+    }
+
+    .gif-belt img {
+      height: 0.7cm;
+      width: auto;
+      margin: 0;
+      padding: 0;
+      display: inline-block;
+    }
+
+    @keyframes gifScroll {
+      0% {
+        transform: translateX(0%);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
     .container {
       display: flex;
       align-items: flex-start;
@@ -69,20 +99,29 @@
       transform: translateY(1.5cm);
     }
 
-    .neon-frame, .empty-box {
-      position: relative;
+    .png-frame {
+      display: inline-block;
+      filter:
+        drop-shadow(8px 6px 0px black)               /* black shadow - stronger, rightward */
+        drop-shadow(0 0 8px #ff99cc)                /* pink glow */
+        drop-shadow(0 0 16px #ffb6d5);              /* pink glow */
+    }
+
+    .png-frame img {
+      height: 500px;
+      max-width: 100%;
+      display: block;
+    }
+
+    .empty-box {
+      width: 8cm;
+      height: 5cm;
       background: #ffeef2;
       border-radius: 16px;
+      position: relative;
     }
 
-    .neon-frame {
-      padding: 12px;
-      width: fit-content;
-    }
-
-    .neon-frame::before,
     .empty-box::before,
-    .neon-frame::after,
     .empty-box::after {
       content: "";
       position: absolute;
@@ -91,7 +130,6 @@
       pointer-events: none;
     }
 
-    .neon-frame::before,
     .empty-box::before {
       top: 0;
       left: 0;
@@ -99,24 +137,11 @@
       bottom: 0;
     }
 
-    .neon-frame::after,
     .empty-box::after {
       top: 4px;
       left: 4px;
       right: 4px;
       bottom: 4px;
-    }
-
-    .neon-frame img {
-      height: 500px;
-      max-width: 100%;
-      display: block;
-      border-radius: 8px;
-    }
-
-    .empty-box {
-      width: 8cm;
-      height: 5cm;
     }
 
     .right-content {
@@ -142,6 +167,14 @@
       position: relative;
       display: inline-block;
       cursor: none;
+      text-shadow:
+        6px 4px 0 black,                           /* bolder rightward black shadow */
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000,
+         0 0 8px #ffffff,
+         0 0 16px #ffffff;
     }
 
     .section-link::before {
@@ -156,6 +189,14 @@
       z-index: -1;
       pointer-events: none;
       white-space: nowrap;
+      text-shadow:
+        6px 4px 0 black,                           /* bolder rightward black shadow */
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000,
+         0 0 6px #ffffff,
+         0 0 12px #ffffff;
     }
 
     .section-link:hover {
@@ -172,9 +213,21 @@
     🎀 Your Prosperous Universe 🎀
   </div>
 
+  <!-- GIF Conveyor Belt -->
+  <div class="gif-belt-wrapper">
+    <div class="gif-belt">
+      <!-- Loop gif1.gif to gif48.gif twice for infinite scroll -->
+      <!-- First round -->
+      <!-- prettier-ignore -->
+      ${Array.from({ length: 48 }, (_, i) => `<img src="gif${i+1}.gif" alt="gif${i+1}" />`).join('')}
+      <!-- Second round -->
+      ${Array.from({ length: 48 }, (_, i) => `<img src="gif${i+1}.gif" alt="gif${i+1}" />`).join('')}
+    </div>
+  </div>
+
   <div class="container">
     <div class="left-column">
-      <div class="neon-frame">
+      <div class="png-frame">
         <img src="cute-box.png" alt="Cute Character" />
       </div>
       <div class="empty-box"></div>
@@ -199,6 +252,12 @@
       cursor.style.left = e.clientX + 'px';
       cursor.style.top = e.clientY + 'px';
     });
+
+    // Insert GIFs dynamically so you don't have to manually write 96 lines
+    document.querySelector(".gif-belt").innerHTML =
+      [...Array(2)].map(() =>
+        [...Array(48)].map((_, i) => `<img src="gif${i + 1}.gif" alt="gif${i + 1}" />`).join("")
+      ).join("");
   </script>
 </body>
 </html>
