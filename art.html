@@ -204,7 +204,7 @@ h1 { display: none; }
 
       const jfifList = [44,46,45,10,2,38,43,5,1,40,11,42,4,13,9,8,20,3,7];
       const jpegList = [26,25,24,23,22,21,27];
-      const totalImages = 46;
+      const totalImages = 65; // Changed from 46 to 65
 
       let imageNumbers = Array.from({length: totalImages}, (_, i) => i + 1);
       imageNumbers = shuffleArray(imageNumbers);
@@ -223,6 +223,7 @@ h1 { display: none; }
         let extension = 'jpg';
         if (jfifList.includes(num)) extension = 'jfif';
         else if (jpegList.includes(num)) extension = 'jpeg';
+        else if (num === 65) extension = 'png'; // Added check for a65.png
 
         const img = document.createElement('img');
         img.src = `art/a${num}.${extension}`;
@@ -242,4 +243,4 @@ h1 { display: none; }
     });
   </script>
 </body>
-</html> 
+</html>
