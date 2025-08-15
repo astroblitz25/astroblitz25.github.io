@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Art 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+<style>
+h1 { display: none; }
+    /* fonts (copied from original code) */
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* page layout + background */
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: url('bggallery.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'PixelFont', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      margin: 0 0 20px 0;
+    }
+
+    a.btn {
+      text-decoration: none;
+      font-family: 'CandySeason', sans-serif;
+      background: rgba(255,255,255,0.92);
+      color: #222;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      margin-top: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
+
+    a.btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.45);
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      width: 100%;
+      padding-bottom: 20px;
+    }
+
+    .gallery-item {
+      flex: 1 1 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: rgba(255,255,255,0.1);
+      min-height: 200px;
+      max-height: 400px;
+    }
+
+    .gallery-item.tall {
+      min-height: 300px;
+      max-height: 500px;
+    }
+
+    .gallery-item.wide {
+      flex-grow: 2;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .gallery-item img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: pink;
+      border-radius: 50%;
+      animation: sparkle 2s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.95;
+    }
+
+    @keyframes sparkle {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+    }
+
+    @media (max-width: 1024px) {
+      .gallery-item {
+        flex-basis: 250px;
+      }
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      a.btn { font-size: 16px; padding: 10px 16px; }
+      .gallery-item {
+        flex-basis: 200px;
+        min-height: 180px;
+      }
+      .gallery-item.tall {
+        min-height: 250px;
+      }
+    }
+    @media (max-width: 480px) {
+      .gallery-item {
+        flex-basis: 150px;
+        min-height: 150px;
+      }
+      .gallery-item.tall {
+        min-height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Art 1</h1>
+    <div class="gallery" id="gallery"></div>
+    <a class="btn" href="gallery.html">← Go back</a>
+  </div>
+
+  <script>
+    function getDocumentHeight() {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight
+      );
+    }
+
+    const count = 100;
+    const docHeight = getDocumentHeight();
+    for (let i = 0; i < count; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = Math.random() * 100 + 'vw';
+      sparkle.style.top = (Math.random() * docHeight) + 'px';
+      sparkle.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(sparkle);
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('gallery');
+
+      const jfifList = [44,46,45,10,2,38,43,5,1,40,11,42,4,13,9,8,20,3,7];
+      const jpegList = [26,25,24,23,22,21,27];
+      const totalImages = 46;
+
+      let imageNumbers = Array.from({length: totalImages}, (_, i) => i + 1);
+      imageNumbers = shuffleArray(imageNumbers);
+
+      imageNumbers.forEach(num => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+
+        if (Math.random() > 0.7) {
+          item.classList.add('tall');
+        }
+        if (Math.random() > 0.8) {
+          item.classList.add('wide');
+        }
+
+        let extension = 'jpg';
+        if (jfifList.includes(num)) extension = 'jfif';
+        else if (jpegList.includes(num)) extension = 'jpeg';
+
+        const img = document.createElement('img');
+        img.src = `art/a${num}.${extension}`;
+        img.alt = `Art ${num}`;
+        img.loading = 'lazy';
+
+        item.appendChild(img);
+        gallery.appendChild(item);
+      });
+
+      setTimeout(() => {
+        const newDocHeight = getDocumentHeight();
+        document.querySelectorAll('.sparkle').forEach(sparkle => {
+          sparkle.style.top = (Math.random() * newDocHeight) + 'px';
+        });
+      }, 100);
+    });
+  </script>
+</body>
+</html> 
