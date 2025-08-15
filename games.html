@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video Games</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'PixelFont', sans-serif;
+      background: transparent;
+      overflow-x: hidden;
+    }
+
+    /* Video background styling */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Container wrapping all images so line can be positioned relative */
+    .images-wrapper {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding-bottom: 20px; /* Reduced the bottom padding here */
+    }
+
+    /* Common styles for static repeated lines */
+    .static-line-left, .static-line-right {
+      position: absolute;
+      white-space: nowrap;
+      width: 180vh; /* Sets the vertical length of the text lines */
+      user-select: none;
+      pointer-events: none;
+      font-weight: bold;
+      font-size: 104px;
+      font-family: 'PixelFont', sans-serif;
+      display: flex;
+      gap: 24px;
+      z-index: 5;
+      color: white;
+    }
+
+    /* Left line specific styles */
+    .static-line-left {
+      top: 27.8cm; /* Dragged up by 0.7cm */
+      left: -20px;
+      transform: rotate(-90deg) translateX(-100%);
+      transform-origin: top left;
+    }
+
+    /* Right line specific styles */
+    .static-line-right {
+      top: -13.3cm; /* Dragged up by 0.7cm */
+      right: -20px;
+      transform: rotate(90deg) translateX(-100%);
+      transform-origin: top right;
+    }
+
+    .static-line-left span.pink, .static-line-right span.pink {
+      color: #ff69b4;
+      text-shadow: 5px 5px 0 #8b008b;
+    }
+
+    .static-line-left span.white, .static-line-right span.white {
+      color: white;
+      text-shadow: 5px 5px 0 #333; /* Even darker grey shadow */
+    }
+
+    /* Each image row */
+    .image-row {
+      width: 100%;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Special styling for the first image row (assassin) */
+    .image-row.assassin-row {
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    /* Frame for all images */
+    .frame {
+      position: relative;
+      border-radius: 12px;
+      overflow: visible;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    /* Special frame size for assassin image */
+    .frame.assassin-frame {
+      width: 570px; /* Further increased size */
+    }
+
+    /* Frame size for other images */
+    .frame:not(.assassin-frame):not(.smaller-frame) {
+      width: 585px;
+    }
+
+    /* Special frame size for smaller image */
+    .frame.smaller-frame {
+      width: 570px; /* Further increased size */
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: -16px;
+      z-index: 0;
+      border-radius: 18px;
+      background-image: var(--img);
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) saturate(1.05);
+      opacity: 0.7;
+      transform: scale(1.02);
+      transition: filter 0.3s ease;
+    }
+
+    .frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+      object-fit: cover;
+      background: #111;
+      transition: transform 0.3s ease;
+    }
+
+    /* Hover effect: zoom in frame and image only */
+    .frame:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    .frame:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Info box styling */
+    .info-box {
+      position: absolute;
+      top: 50%;
+      left: 100%; /* right next to the frame */
+      transform: translate(20px, -50%);
+      width: 380px;
+      max-width: 80vw;
+      background: #000; /* solid black, no transparency */
+      color: white;
+      padding: 20px 20px 40px; /* Adjusted bottom padding */
+      border-radius: 12px;
+      font-size: 18px; /* increased font size */
+      font-weight: normal;
+      line-height: 1.4;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s linear; /* quick appear/disappear */
+      z-index: 15;
+    }
+
+    /* Show info box instantly on hover, no bounce or animation */
+    .frame:hover .info-box,
+    .info-box:hover {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: -75px;
+      bottom: -75px;
+      left: -85px;
+      right: -75px;
+      z-index: -1;
+    }
+
+    .prev-btn, .next-btn {
+      position: absolute;
+      bottom: 10px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 32px; /* Increased arrow size */
+      cursor: pointer;
+      user-select: none;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s ease;
+    }
+
+    .prev-btn {
+      left: 10px;
+    }
+
+    .next-btn {
+      right: 10px;
+    }
+
+    .prev-btn:hover, .next-btn:hover {
+      color: #ff69b4;
+    }
+
+    .pics-box {
+      position: relative; /* Required for the pseudo-element */
+      top: 0.5cm;
+      max-width: 650px;
+      margin: 0 auto;
+      border-radius: 20px;
+      border: 2px solid #fff;
+      box-shadow:
+        0 0 5px #fff,
+        0 0 10px #ff69b4,
+        0 0 20px #ff69b4,
+        0 0 40px #ff69b4;
+    }
+
+    /* Apply background and blur to a pseudo-element to avoid creating a stacking context on the parent */
+    .pics-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: rgba(211, 211, 211, 0.02);
+      backdrop-filter: blur(2px);
+      /* Adjust radius to fit inside the parent's border */
+      border-radius: 16px; 
+      z-index: -1; /* Place it behind the content of .pics-box */
+    }
+    .go-back-container {
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+      padding-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="images-wrapper">
+    <div class="static-line-left" aria-hidden="true" role="presentation" aria-label="Static video games text">
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+    </div>
+
+    <div class="static-line-right" aria-hidden="true" role="presentation">
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+      <span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span><span class="pink">VIDEO GAMES</span><span class="white">VIDEO GAMES</span>
+    </div>
+
+    <div class="pics-box">
+      <div class="image-row">
+        <div class="frame" style="--img: url('lol.jpg');">
+          <img src="lol.jpg" alt="League of Legends">
+          <div class="info-box">
+            <p>
+              Leage of Legends: Launched in 2009 by Riot Games, is a free-to-play multiplayer online battle arena (MOBA) game where two teams of 5 players compete to destroy the enemy's Nexus.
+            </p>
+            <p>
+              Each player selects a champion from over 160 unique characters, each with distinct abilities, roles like mage or tank, and strategic synergies. Matches unfold on Summoner's Rift, focusing on lane pushing, objective control, and team fights, with progression through ranked ladders and seasonal updates.
+            </p>
+            <p>
+              Renowned for its depth, esports scene, and constant meta evolution, it hooks players with rewarding mastery, though toxicity in the community and steep skill curves are common critiques. It's a cornerstone of competitive gaming.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('littlenightmares.jpg');">
+          <img src="littlenightmares.jpg" alt="Little Nightmares">
+          <div class="info-box">
+            <p>
+              A 2017 puzzle-platformer horror game by Tarsier Studios, immerses players in a dark, grotesque world as Six - a small, vulnerable child in a yellow raincoat, creeping through the grotesque underbelly of The Maw - a massive ship where dim lights flicker over dripping walls and elongated shadows hide monstrous chefs.
+            </p>
+            <p>
+              Praised for its eerie immersion and creativity, it's short but impactful, though frustrating trial-and-error deaths and controls occasionally mar the journey. A sequel expands the lore effectively.
+            </p>
+            <p>
+              Gameplay revolves around stealth, environmental puzzles solving, and light platforming, evading horrors like the long-armed Janitor or gluttonous Guests in a nightmarish atmosphere inspired by childhood fears, heart pounding as you evade grasping hands in nightmarish kitchens filled with the scent of decay.
+            </p>
+            <p>
+              Feel the tension built in this atmospheric horror platformer, minimalist narrative, stunning art direction, and tense sound design create an unsettling experience, with subtle storytelling through visuals, where every quiet step and narrow escape heightens the sense of fragility and dread.
+            </p>
+            <p>
+              It's a hauntingly beautiful tale that's perfect for thrilling solo sessions under a blanket on stormy nights.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame smaller-frame" style="--img: url('aoe.jpeg');">
+          <img src="aoe.jpeg" alt="Age of Empires II">
+          <div class="info-box">
+            <p>
+              Age of Empires II: The Age of Kings, originally released in 1999 by Ensemble Studios, is a real-time strategy game set in the Middle Ages.
+            </p>
+            <p>
+              Think of yourself as this epic leader in a medieval world, chilling on a hill watching your little village grow into a massive kingdom with farms popping up and knights charging around. You're collecting wood and gold from green forests, then smashing enemies with catapults in huge battles that feel so satisfying.
+            </p>
+            <p>
+              Players choose from various civilizations to gather resources, build settlements, advance through ages, and wage war against opponents in campaigns based on historical figures like Joan of Arc or Genghis Khan.
+            </p>
+            <p>
+              It's like playing god with history, deciding who wins and building cool castles along the way. Perfect for kicking back with snacks on a lazy night—let's play and see who builds the best empire!
+            </p>
+            <p>
+              Gameplay emphasizes micromanagement, unit formations, and economic balance, with multiplayer modes adding replayability.
+            </p>
+            <p>
+              The Definitive Edition, remastered in 2019, boasts enhanced graphics, new content, and quality-of-life improvements, earning praise for preserving the classic feel while modernizing it. It's hailed as a strategy masterpiece, though steep learning curves may deter newcomers.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('harrypotter.png');">
+          <img src="harrypotter.png" alt="Harry Potter and the Chamber of Secrets">
+          <div class="info-box">
+            <p>
+              Harry Potter and the Chamber of Secrets: A 2002 action-adventure game by EA based on J.K. Rowling's novel and film, lets players step into the wizarding world as young Harry Potter during his second year at Hogwarts.
+            </p>
+            <p>
+              The story follows Harry uncovering a hidden chamber releasing a basilisk, involving spell-casting, potion-making, and Quidditch matches while exploring the castle and grounds.
+            </p>
+            <p>
+              Gameplay includes third-person platforming, combat with spells like Flipendo, and collecting items like Bertie Bott's Beans. Nostalgic for fans with faithful adaptations of iconic scenes, it's charming and accessible, though dated graphics, repetitive tasks, and clunky controls show its age.
+            </p>
+            <p>
+              This is a fun, immersive tie-in for Potter enthusiasts, letting you jump back into Hogwarts as Harry, sneaking around misty halls with your wand ready, hunting for that mysterious Chamber with snakes whispering and friends turning to stone. You're flying cars through the night sky, fighting giant spiders in foggy forests, and dueling in secret underground rooms full of echoes.
+            </p>
+            <p>
+              It's all about bravery and buddy vibes in a magical mess. Feels just like the story, perfect for a fun morning adventure.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('sso.jpg');">
+          <img src="sso.jpg" alt="Soul Saver Online">
+          <div class="info-box">
+            <p>
+              Soul Saver Online, originally known as Ghost Online, is a charming 2D side-scrolling MMORPG that blends lighthearted visuals with supernatural themes. Released in the mid-2000s and still loved by a loyal fanbase, it captures the nostalgic magic of classic pixel art games while delivering an online RPG experience.
+            </p>
+            <p>
+              Players begin by selecting from several class paths, such as Warrior, Mage, or Assassin, each with unique skills and combat styles. The gameplay is fast, fluid, and combo-based, with plenty of monsters, ghosts, and bosses to battle. Quests guide your progression, while guilds and party systems encourage social interaction and cooperative play.
+            </p>
+            <p>
+              The game’s standout quality is its whimsical yet eerie tone—cute characters exploring haunted forests, misty mountains, and ghost-filled dungeons. Leveling is rewarding, and equipment upgrades keep you striving for stronger builds.
+            </p>
+            <p>
+              While its visuals and mechanics may not match modern MMORPGs, Soul Saver Online thrives on nostalgia, community spirit, and pick-up-and-play accessibility. For fans of side-scrolling adventures and retro-inspired online worlds, it’s a delightful escape worth revisiting.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row assassin-row">
+        <div class="frame assassin-frame" style="--img: url('assassin.jpeg');">
+          <img src="assassin.jpeg" alt="Assassin's Creed II">
+          <div class="info-box">
+            <p>
+              Developed by Ubisoft and released in 2009, this action-adventure game set during the Italian Renaissance lets players control Ezio Auditore da Firenze, a young nobleman turned assassin seeking revenge against those who betrayed his family, amid the ancient conflict between Assassins and Templars.
+            </p>
+            <p>
+              The game expands on its predecessor with a vast open world, including cities like Florence and Venice, where players engage in parkour, stealth assassinations, and combat. It features improved mechanics, such as weapon variety and economic systems, alongside a compelling narrative blending history and fiction.
+            </p>
+            <p>
+              Critically acclaimed for its storytelling and exploration, it transformed the series into a beloved franchise, though some note repetitive missions. You’re jumping from rooftop to rooftop with the sun warming your back and the city buzzing below like a giant playground. You're sneaking through crowds at fancy parties, then bam—taking out bad guys with your secret blade while uncovering family secrets.
+            </p>
+            <p>
+              Let’s picture gliding over Venice's canals at night, feeling that rush of adventure and a bit of romance in the air.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="go-back-container">
+    <a href="stuff.html" class="btn">← Go Back</a>
+  </div>
+
+  <script>
+    document.querySelectorAll('.info-box').forEach(box => {
+      const paras = box.querySelectorAll('p');
+      const prevBtn = box.querySelector('.prev-btn');
+      const nextBtn = box.querySelector('.next-btn');
+
+      let current = 0;
+
+      const updateArrowVisibility = () => {
+        const total = paras.length;
+        // Hide arrows if there's only one paragraph
+        if (total < 2) {
+          prevBtn.style.display = 'none';
+          nextBtn.style.display = 'none';
+          return;
+        }
+        // Show/hide prev arrow
+        prevBtn.style.display = (current > 0) ? 'block' : 'none';
+        // Show/hide next arrow
+        nextBtn.style.display = (current < total - 1) ? 'block' : 'none';
+      };
+
+      // Set initial state
+      paras.forEach((p, i) => {
+        p.style.display = i === 0 ? 'block' : 'none';
+      });
+      updateArrowVisibility();
+
+      prevBtn.addEventListener('click', () => {
+        paras[current].style.display = 'none';
+        current = (current - 1 + paras.length) % paras.length;
+        paras[current].style.display = 'block';
+        updateArrowVisibility();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        paras[current].style.display = 'none';
+        current = (current + 1) % paras.length;
+        paras[current].style.display = 'block';
+        updateArrowVisibility();
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gallery</title>
+
+  <style>
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'PixelFont', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: url('bggallery.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 980px;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      text-align: center;
+    }
+
+    .title {
+      font-size: clamp(36px, 7.5vw, 96px);
+      line-height: 0.95;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      user-select: none;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+    }
+
+    .btn,
+    .btn:link,
+    .btn:visited {
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      border: 0;
+      padding: 14px 22px;
+      min-width: 120px;
+      text-align: center;
+      font-size: 16px;
+      font-family: 'CandySeason', sans-serif;
+      cursor: pointer;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.92);
+      color: #222;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      transition: transform 140ms ease, box-shadow 140ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover,
+    .btn:focus {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.45);
+      outline: none;
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn:focus-visible {
+      outline: 3px solid rgba(255,255,255,0.7);
+      outline-offset: 4px;
+    }
+
+    @media (max-width: 520px) {
+      .buttons { flex-direction: column; gap: 12px; width: 100%; padding: 0 24px; }
+      .btn { width: 100%; min-width: 0; font-size: 18px; padding: 16px; border-radius: 12px; }
+    }
+
+    /* Sparkles */
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: pink;
+      border-radius: 50%;
+      animation: sparkle 2s infinite ease-in-out;
+      pointer-events: none;
+    }
+    @keyframes sparkle {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+    }
+
+    /* Mind map group fix */
+    .mindmap-group {
+      position: relative;
+      display: inline-block; /* keep button size fixed */
+    }
+
+    /* Dropdown absolute so it doesn't push others */
+    .sub-buttons {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+      animation: drop 0.3s ease forwards;
+      z-index: 100;
+    }
+    .sub-btn {
+      font-size: 14px;
+      padding: 10px 16px;
+      min-width: 100px;
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    @keyframes drop {
+      0% { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
+      100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-labelledby="page-title">
+    <h1 id="page-title" class="title">Gallery</h1>
+
+    <nav class="buttons" role="navigation" aria-label="Gallery sections">
+      <div class="mindmap-group">
+        <a class="btn main-btn" href="#" role="button" id="nature-btn">Nature</a>
+        <div class="sub-buttons">
+          <a class="btn sub-btn" href="nature1.html" role="button">Nature 1</a>
+          <a class="btn sub-btn" href="nature2.html" role="button">Nature 2</a>
+          <a class="btn sub-btn" href="nature3.html" role="button">Nature 3</a>
+        </div>
+      </div>
+
+      <a class="btn" href="fashion.html" role="button">Fashion</a>
+      <a class="btn" href="art.html" role="button">Art</a>
+      <a class="btn" href="videos.html" role="button">Videos</a>
+      <a class="btn" href="random.html" role="button">Random</a>
+    </nav>
+  </main>
+
+  <script>
+    for (let i = 0; i < 30; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = Math.random() * 100 + 'vw';
+      sparkle.style.top = Math.random() * 100 + 'vh';
+      sparkle.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(sparkle);
+    }
+
+    // Toggle Nature dropdown
+    document.getElementById('nature-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      const subs = this.parentElement.querySelector('.sub-buttons');
+      subs.style.display = subs.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    // Keyboard accessibility
+    document.querySelectorAll('a[role="button"]').forEach(a => {
+      a.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          a.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
