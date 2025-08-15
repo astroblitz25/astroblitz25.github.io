@@ -59,19 +59,13 @@
     /* New container for the sliding panels */
     #panels-container {
       display: flex;
-      width: 200%;
+      width: 400%;
       height: 100%;
       transition: transform 0.8s ease-in-out;
     }
 
-    #panels-container.slide-active {
-      transform: translateX(-50%);
-    }
-
-    /* Each panel takes up the full screen and centers its content.
-       This replaces the old body styling. */
     .panel {
-      width: 50%;
+      width: 25%;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -83,8 +77,8 @@
     }
 
     /* Move the entire second panel up */
-    #panel-2 {
-      transform: translateY(-1.2cm);
+    #panel-2, #panel-3, #panel-4 {
+      margin-top: -1.2cm;
     }
 
     /* Video background styling */
@@ -138,6 +132,20 @@
       transform: translate(calc(-0.5cm + 2mm), calc(4.5cm - 3mm)); /* Moved 3mm up */
     }
 
+    /* Style for GIFs on panels 2, 3, and 4 */
+    .panel-specific-gif {
+      position: absolute;
+      top: 120px;
+      left: 50%;
+      transform: translateX(calc(-50% - 4.7cm)) translateY(2.0cm); /* Moved 4mm left */
+      width: 250px;
+      z-index: 5;
+    }
+
+    #panel-4 .panel-specific-gif {
+      transform: translateX(calc(-50% - 4.7cm)) translateY(2.5cm); /* Moved 4mm left */
+    }
+
     /* --- Enter Text Styles --- */
     .enter-text-wrapper {
       position: absolute;
@@ -188,7 +196,7 @@
       position: absolute;
       bottom: 230px; /* Position it above the "Enter" text */
       left: 50%;
-      transform: translate(calc(-50% - 3.0cm), 1.5cm); /* Moved 0.5cm to the left */
+      transform: translate(calc(-50% - 3.0cm), 0.8cm); /* Moved 7mm higher */
       z-index: 3;
     }
 
@@ -214,7 +222,7 @@
       align-items: center;   /* Align them vertically */
       gap: 15px; /* Moved stamps closer */
       z-index: 4;
-      transform: translate(-3.0cm, -2.0cm); /* Moved up another 3mm */
+      transform: translate(-3.0cm, -2.7cm); /* Moved 7mm higher */
     }
 
     /* Individual stamp styling */
@@ -223,14 +231,14 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    /* Style for the new rose GIF */
-    .rose-gif {
+    /* Style for the rose GIF on panel 1 */
+    .bottom-left-gif {
       position: absolute;
       bottom: 20px;
-      left: calc(20px + 0.5cm + 3mm); /* Moved 1mm to the right */
-      width: 380px; /* Made the rose even huger */
-      transform: rotate(0); /* Made parallel to horizontal */
-      z-index: 4;
+      left: calc(20px + 0.5cm + 8.5mm); /* Moved 2mm to the right */
+      width: 310px;
+      transform: rotate(0) scaleX(1.15); /* Made fatter by stretching horizontally */
+      z-index: 6; /* Brought to the front layer */
       /* Moved shadow 1mm lower */
       filter: drop-shadow(calc(8px - 0.5mm) calc(8px - 1mm) 0 black);
     }
@@ -261,7 +269,7 @@
     }
 
     /* Reverted "NO" text to its original position */
-    #panel-2 .move-right {
+    #panel-2 .move-right, #panel-3 .move-right, #panel-4 .move-right {
       transform: translateX(calc(15px - 3mm));
     }
 
@@ -309,10 +317,10 @@
 
     /* Position override for the text in the second panel to align it
        with the text from the first panel. */
-    #panel-2 .font-1 {
+    #panel-2 .font-1, #panel-3 .font-1, #panel-4 .font-1 {
       transform: translate(calc(-0.5cm + 1mm), -3.9cm); /* Moved down 1.5cm */
     }
-    #panel-2 .font-2 {
+    #panel-2 .font-2, #panel-3 .font-2, #panel-4 .font-2 {
       transform: translate(-0.5cm, -4.067cm); /* Moved right 1.5cm and down 1.5cm */
     }
 
@@ -374,6 +382,8 @@
       color: #333;
       z-index: 5;
       position: relative; /* To ensure z-index works */
+      left: 3.8cm;
+      top: -3.7cm; /* Moved 7mm up */
     }
 
     .site-chooser h3 {
@@ -395,6 +405,8 @@
       cursor: pointer;
       outline: none; /* Remove default browser outline on focus */
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      /* The line below is a common fix for a browser rendering bug where elements inside a transformed container (like our sliding panels) are not drawn correctly. */
+      transform: translateZ(0);
     }
 
     .site-chooser select:focus {
@@ -415,7 +427,7 @@
         <!-- This div creates the visible box -->
         <div class="box-visual-background"></div>
         <img src="fly.gif" alt="Flying animation" class="flying-gif" />
-        <img src="rose.gif" alt="Rose animation" class="rose-gif" />
+        <img src="rose1.gif" alt="Rose animation" class="bottom-left-gif" />
 
         <div class="stamps-container">
           <img src="stamp1.png" alt="Stamp 1" class="stamp1" />
@@ -449,11 +461,12 @@
     <!-- Panel 2: New Content -->
     <div id="panel-2" class="panel">
       <!-- New back arrow GIF, now a direct child of the panel -->
-      <img src="arrow2.gif" alt="Go Back" id="go-back-arrow" class="back-arrow-gif" />
+      <img src="arrow2.gif" alt="Go Back" class="back-arrow-gif" />
       <!-- Duplicated and flipped arrow -->
       <img src="arrow2.gif" alt="Forward" class="forward-arrow-gif" />
       <div class="content-box">
         <div class="box-visual-background"></div>
+        <img src="site1.gif" alt="Site 1 animation" class="panel-specific-gif" />
         <!-- New text with same styling as original -->
         <div class="title-text font-1">
           <span class="move-right" data-text="NO">NO</span><span data-text="NCHALANT">NCHALANT</span>
@@ -463,10 +476,57 @@
         </div>
 
         <div class="site-chooser">
-          <select name="sites" id="site-select">
+          <select name="sites" class="site-select">
             <option value="" selected>Choose ur option</option>
             <option value="useless">useless</option>
             <option value="silly-cat">silly cat</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Added -->
+    <div id="panel-3" class="panel">
+      <img src="arrow2.gif" alt="Go Back" class="back-arrow-gif" />
+      <img src="arrow2.gif" alt="Forward" class="forward-arrow-gif" />
+      <div class="content-box">
+        <div class="box-visual-background"></div>
+        <img src="site2.gif" alt="Site 2 animation" class="panel-specific-gif" />
+        <div class="title-text font-1">
+          <span class="move-right" data-text="KNOWLEDGE">KNOWLEDGE</span><span data-text=" TIME"> TIME</span>
+        </div>
+        <div class="title-text font-2">
+          <span class="move-right" data-text="KNOWLEDGE">KNOWLEDGE</span><span data-text=" TIME"> TIME</span>
+        </div>
+
+        <div class="site-chooser">
+          <select name="sites" class="site-select">
+            <option value="" selected>Choose ur option</option>
+            <option value="fact">fact</option>
+            <option value="factos">factos</option>
+            <option value="factosos">factosos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: Added -->
+    <div id="panel-4" class="panel">
+      <img src="arrow2.gif" alt="Go Back" class="back-arrow-gif" />
+      <div class="content-box">
+        <div class="box-visual-background"></div>
+        <img src="site3.gif" alt="Site 3 animation" class="panel-specific-gif" />
+        <div class="title-text font-1">
+          <span class="move-right" data-text="DRAW DRAW">DRAW DRAW</span><span data-text=" DRAW"> DRAW</span>
+        </div>
+        <div class="title-text font-2">
+          <span class="move-right" data-text="DRAW DRAW">DRAW DRAW</span><span data-text=" DRAW"> DRAW</span>
+        </div>
+
+        <div class="site-chooser">
+          <select name="sites" class="site-select">
+            <option value="" selected>Choose ur option</option>
+            <option value="pisukeru">pisukeru</option>
           </select>
         </div>
       </div>
@@ -476,17 +536,47 @@
   <script>
     const panelsContainer = document.getElementById('panels-container');
     const enterButton = document.getElementById('enter-btn');
-    const goBackButton = document.getElementById('go-back-arrow');
-    const siteSelect = document.getElementById('site-select');
+    const backArrows = document.querySelectorAll('.back-arrow-gif');
+    const forwardArrows = document.querySelectorAll('.forward-arrow-gif');
+    const siteSelects = document.querySelectorAll('.site-select');
 
+    let currentPanelIndex = 0;
+    const totalPanels = 4;
+
+    function goToPanel(index) {
+      if (index < 0 || index >= totalPanels) {
+        return; // Stay on the current panel if out of bounds
+      }
+      currentPanelIndex = index;
+      const percentage = -1 * currentPanelIndex * (100 / totalPanels);
+      panelsContainer.style.transform = `translateX(${percentage}%)`;
+
+      // Reset all dropdowns if we navigate back to the first panel
+      if (currentPanelIndex === 0) {
+        siteSelects.forEach(select => {
+          select.selectedIndex = 0;
+        });
+      }
+    }
+
+    // Initial "Enter" button on Panel 1
     enterButton.addEventListener('click', () => {
-      panelsContainer.classList.add('slide-active');
+      goToPanel(1);
     });
 
-    goBackButton.addEventListener('click', (e) => {
-      e.preventDefault(); // Prevent default anchor behavior
-      panelsContainer.classList.remove('slide-active');
-      siteSelect.selectedIndex = 0; // Reset the dropdown to the first option
+    // Back arrows on panels 2, 3, 4
+    backArrows.forEach(arrow => {
+      arrow.addEventListener('click', (e) => {
+        e.preventDefault();
+        goToPanel(currentPanelIndex - 1);
+      });
+    });
+
+    // Forward arrows on panels 2, 3
+    forwardArrows.forEach(arrow => {
+      arrow.addEventListener('click', () => {
+        goToPanel(currentPanelIndex + 1);
+      });
     });
   </script>
 </body>
