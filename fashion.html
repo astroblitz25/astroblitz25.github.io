@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fashion 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+<style>
+h1 { display: none; }
+    /* fonts (copied from original code) */
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* page layout + background (matches original code) */
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: url('bggallery.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'PixelFont', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    /* ensure content sits above sparkles */
+    .content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      margin: 0 0 20px 0;
+    }
+
+    a.btn {
+      text-decoration: none;
+      font-family: 'CandySeason', sans-serif;
+      background: rgba(255,255,255,0.92);
+      color: #222;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      margin-top: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
+
+    a.btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.45);
+    }
+
+    /* Organic masonry layout */
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      width: 100%;
+      padding-bottom: 20px;
+    }
+
+    .gallery-item {
+      flex: 1 1 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: rgba(255,255,255,0.1);
+      min-height: 200px;
+      max-height: 400px;
+    }
+
+    .gallery-item.tall {
+      min-height: 300px;
+      max-height: 500px;
+    }
+
+    .gallery-item.wide {
+      flex-grow: 2;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .gallery-item img,
+    .gallery-item video {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* Sparkle dots (copied from Code B, adjusted for full height) */
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: pink;
+      border-radius: 50%;
+      animation: sparkle 2s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.95;
+    }
+
+    @keyframes sparkle {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .gallery-item {
+        flex-basis: 250px;
+      }
+    }
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      a.btn { font-size: 16px; padding: 10px 16px; }
+      .gallery-item {
+        flex-basis: 200px;
+        min-height: 180px;
+      }
+      .gallery-item.tall {
+        min-height: 250px;
+      }
+    }
+    @media (max-width: 480px) {
+      .gallery-item {
+        flex-basis: 150px;
+        min-height: 150px;
+      }
+      .gallery-item.tall {
+        min-height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Fashion 1</h1>
+    <div class="gallery" id="gallery">
+      <!-- Images will be added dynamically via script -->
+    </div>
+    <a class="btn" href="gallery.html">← Go back</a>
+  </div>
+
+  <script>
+    // Function to get document height
+    function getDocumentHeight() {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight
+      );
+    }
+
+    // Add flying sparkle dots across the full height
+    const count = 100; // Increased count for better coverage
+    const docHeight = getDocumentHeight();
+    for (let i = 0; i < count; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = Math.random() * 100 + 'vw';
+      sparkle.style.top = (Math.random() * docHeight) + 'px';
+      sparkle.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(sparkle);
+    }
+
+    // Function to shuffle array
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Dynamically add images with random order
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('gallery');
+      const imageCount = 116;
+      const jpgList = [88,87,79,76,77,75,74,72,71,66,65,38,49,57,62,78,64,80,69,68,67,58,85,73,63,82,83,84,86,61,60,54,59,56,55];
+      const jpegList = [45,46,47];
+      const mp4List = [81,70];
+      
+      let imageNumbers = Array.from({length: imageCount}, (_, i) => i + 1);
+      imageNumbers = shuffleArray(imageNumbers);
+      
+      imageNumbers.forEach(num => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        
+        if (Math.random() > 0.7) {
+          item.classList.add('tall');
+        }
+        if (Math.random() > 0.8) {
+          item.classList.add('wide');
+        }
+        
+        let extension;
+        if (mp4List.includes(num)) {
+          extension = 'mp4';
+        } else if (jpegList.includes(num)) {
+          extension = 'JPEG';
+        } else if (jpgList.includes(num)) {
+          extension = 'jpg';
+        } else {
+          extension = 'jfif';
+        }
+        const media = document.createElement(extension === 'mp4' ? 'video' : 'img');
+        media.src = `fashion/f${num}.${extension}`;
+        
+        if (extension === 'mp4') {
+          media.controls = true;
+          media.loop = true;
+          media.playsInline = true;
+          media.volume = 0.4;
+        } else {
+          media.alt = `Fashion ${num}`;
+          media.loading = 'lazy';
+        }
+        
+        item.appendChild(media);
+        gallery.appendChild(item);
+      });
+
+      setTimeout(() => {
+        const newDocHeight = getDocumentHeight();
+        document.querySelectorAll('.sparkle').forEach(sparkle => {
+          sparkle.style.top = (Math.random() * newDocHeight) + 'px';
+        });
+      }, 100);
+    });
+  </script>
+</body>
+</html>

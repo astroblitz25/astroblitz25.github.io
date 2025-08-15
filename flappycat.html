@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flappy Bird — icon22.gif</title>
+  <style>
+    :root{
+      --bg:#70c5ce;
+      --ground:#d7b36a;
+      --pipe:#2ea044;
+      --panel: rgba(255,255,255,0.9);
+      --accent:#ff6b6b;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{height:100%;margin:0}
+    .wrap{display:flex;align-items:center;justify-content:center;height:100%;padding:12px;background:linear-gradient(180deg,var(--bg) 0%, #a9e0e9 100%)}
+    #game{border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.25);background:#8fd7df}
+
+    /* HUD overlay */
+    .hud{position:absolute;left:50%;transform:translateX(-50%);top:18px;display:flex;gap:10px;align-items:center}
+    .score{background:var(--panel);padding:8px 12px;border-radius:999px;font-weight:700;font-size:18px}
+    .buttons{display:flex;gap:8px}
+    .btn{background:rgba(255,255,255,0.95);border-radius:10px;padding:8px 10px;font-weight:600;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,0.12)}
+    .controls{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,0.9);padding:8px;border-radius:10px;font-size:13px}
+
+    /* center menu */
+    .menu{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.95);padding:18px;border-radius:14px;min-width:260px;text-align:center}
+    .menu h1{margin:0 0 8px;font-size:20px}
+    .menu p{margin:0 0 12px;color:#444}
+    .big-btn{display:inline-block;background:var(--accent);color:white;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+
+    /* responsive */
+    @media (min-width:900px){#game{width:420px;height:640px}} 
+    @media (max-width:899px){#game{width:360px;height:640px}} 
+    @media (max-width:420px){#game{width:320px;height:560px}} 
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="position:relative;">
+      <canvas id="game" width="420" height="640"></canvas>
+
+      <div class="hud" id="hud">
+        <div class="score" id="score">Score: 0</div>
+        <div class="buttons">
+          <div class="btn" id="btn-pause">Pause</div>
+          <div class="btn" id="btn-mute">Mute</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div>Controls: <strong>Click / Tap / Space</strong> to flap. Hold to keep tapping (mobile).</div>
+      </div>
+
+      <div class="menu" id="menu">
+        <h1>Flappy Bird — icon22.gif</h1>
+        <p>Use your mouse, tap, or press <strong>Space</strong> to flap the little bird.
+        Avoid pipes and score points for each pair passed.</p>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <div class="big-btn" id="start">Start</div>
+          <div class="btn" id="tutorial">How to play</div>
+        </div>
+        <p style="margin-top:10px;color:#666;font-size:13px">Best: <span id="best">0</span></p>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+  Single-file Flappy clone.
+  IMPORTANT: put your icon file named `icon22.gif` in the same folder as this HTML.
+*/
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+const menu = document.getElementById('menu');
+const startBtn = document.getElementById('start');
+const pauseBtn = document.getElementById('btn-pause');
+const muteBtn = document.getElementById('btn-mute');
+const tutorialBtn = document.getElementById('tutorial');
+
+let W = canvas.width, H = canvas.height;
+let running = false, paused = false, muted = false;
+let gravity = 0.6, flapPower = -9, maxFall = 12;
+let frame = 0;
+
+// scale canvas on device pixel ratio for crispness
+function resizeForDPR(){
+  const ratio = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || canvas.width;
+  const cssH = canvas.clientHeight || canvas.height;
+  canvas.width = Math.round(cssW * ratio);
+  canvas.height = Math.round(cssH * ratio);
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  W = cssW; H = cssH;
+}
+resizeForDPR();
+window.addEventListener('resize',resizeForDPR);
+
+// assets
+const birdImg = new Image();
+birdImg.src = 'icon22.gif'; // user-provided image
+
+// audio small optional (generated via tiny base64 beep) - graceful degrade if blocked
+const soundFlap = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=');
+const soundScore = soundFlap; // reuse simple beep
+const soundHit = soundFlap;
+
+// game objects
+const bird = {
+  x: 90, y: H/2, w:34, h:24, dy:0, rot:0
+};
+
+let pipes = []; // each pipe has x, gapY, passed
+let gap = 140; let pipeW = 56; let pipeSpeed = 2.2;
+let score = 0, best = Number(localStorage.getItem('flappy_best')||0);
+bestEl.textContent = best;
+
+function reset(){
+  bird.x = 90; bird.y = H/2; bird.dy = 0; bird.rot = 0;
+  pipes = [];
+  score = 0; frame = 0;
+}
+
+function spawnPipe(){
+  const margin = 80;
+  const minY = margin;
+  const maxY = H - margin - gap;
+  const gapY = Math.floor(Math.random()*(maxY-minY+1))+minY;
+  pipes.push({x: W+20, gapY, passed:false});
+}
+
+function update(){
+  if(!running || paused) return;
+  frame++;
+
+  // bird physics
+  bird.dy += gravity;
+  if(bird.dy > maxFall) bird.dy = maxFall;
+  bird.y += bird.dy;
+  bird.rot = Math.max(-0.5, Math.min(1.2, bird.dy/10));
+
+  // spawn pipes steadily
+  if(frame % 100 === 0){ spawnPipe(); }
+
+  // move pipes
+  for(let p of pipes){
+    p.x -= pipeSpeed;
+    // scoring
+    if(!p.passed && p.x + pipeW < bird.x){ p.passed = true; score++; if(!muted) soundScore.play(); }
+  }
+  // remove offscreen
+  pipes = pipes.filter(p=>p.x > -pipeW-40);
+
+  // collision check
+  if(bird.y + bird.h/2 >= H - 40){ // hit ground
+    endGame();
+  }
+
+  for(let p of pipes){
+    const topPipe = {x:p.x, y:0, w:pipeW, h:p.gapY};
+    const botPipe = {x:p.x, y:p.gapY+gap, w:pipeW, h:H - (p.gapY+gap) - 40};
+
+    if(rectCircleCollide(bird.x, bird.y, bird.w*0.45, topPipe) || rectCircleCollide(bird.x, bird.y, bird.w*0.45, botPipe)){
+      endGame();
+    }
+  }
+
+  scoreEl.textContent = 'Score: ' + score;
+}
+
+function rectCircleCollide(cx, cy, r, rect){
+  // rect: x,y,w,h ; cx,cy circle center; r radius
+  const rx = rect.x, ry = rect.y, rw = rect.w, rh = rect.h;
+  const closestX = clamp(cx, rx, rx+rw);
+  const closestY = clamp(cy, ry, ry+rh);
+  const dx = cx - closestX; const dy = cy - closestY;
+  return (dx*dx + dy*dy) < (r*r);
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+function endGame(){
+  running = false;
+  if(!muted) soundHit.play();
+  if(score > best){ best = score; localStorage.setItem('flappy_best', best); bestEl.textContent = best; }
+  menu.querySelector('h1').textContent = 'Game Over';
+  menu.querySelector('p').textContent = 'Your score: ' + score;
+  menu.style.display = 'block';
+}
+
+function draw(){
+  // background
+  ctx.clearRect(0,0,W,H);
+  // sky gradient
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#8fd7df'); g.addColorStop(1,'#a9e0e9');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+  // pipes
+  for(let p of pipes){
+    // top
+    ctx.fillStyle = '#2ea044';
+    ctx.fillRect(p.x,0,pipeW,p.gapY);
+    // pipe cap (rounded)
+    ctx.fillStyle = '#237033';
+    ctx.fillRect(p.x,p.gapY-8,pipeW,8);
+    // bottom
+    ctx.fillStyle = '#2ea044';
+    ctx.fillRect(p.x,p.gapY+gap,pipeW,H - (p.gapY+gap) - 40);
+    ctx.fillStyle = '#237033';
+    ctx.fillRect(p.x,p.gapY+gap,pipeW,8);
+  }
+
+  // ground strip
+  ctx.fillStyle = '#d7b36a';
+  ctx.fillRect(0,H-40,W,40);
+
+  // bird (draw image centered)
+  const bw = 44, bh = 34;
+  const bx = bird.x - bw/2, by = bird.y - bh/2;
+  ctx.save();
+  ctx.translate(bird.x,bird.y);
+  ctx.rotate(bird.rot);
+  ctx.drawImage(birdImg, -bw/2, -bh/2, bw, bh);
+  ctx.restore();
+
+  // small shadow
+  ctx.beginPath(); ctx.ellipse(bird.x+6, H-50, 20, 6, 0,0,Math.PI*2); ctx.fillStyle='rgba(0,0,0,0.08)'; ctx.fill();
+
+  // HUD score (big centered when running)
+  if(running){
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '700 40px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(score, W/2, 72);
+  }
+}
+
+function loop(){
+  update(); draw();
+  requestAnimationFrame(loop);
+}
+
+// controls
+function flap(){
+  if(!running){ startGame(); return; }
+  bird.dy = flapPower; if(!muted) soundFlap.play();
+}
+
+function startGame(){
+  reset(); running = true; paused = false; menu.style.display='none';
+}
+
+startBtn.addEventListener('click', ()=>{ startGame(); });
+
+pauseBtn.addEventListener('click', ()=>{
+  if(!running) return;
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+});
+
+muteBtn.addEventListener('click', ()=>{ muted = !muted; muteBtn.textContent = muted? 'Unmute' : 'Mute'; });
+
+tutorialBtn.addEventListener('click', ()=>{
+  alert('Tap / Click / Press Space to flap. Pass between pipe gaps. Best score is stored locally.');
+});
+
+// input handlers
+window.addEventListener('keydown',(e)=>{ if(e.code === 'Space'){ e.preventDefault(); flap(); } });
+canvas.addEventListener('mousedown',(e)=>{ flap(); });
+canvas.addEventListener('touchstart',(e)=>{ e.preventDefault(); flap(); });
+
+// simple pause if tab hidden
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) paused = true; else paused = paused; });
+
+// start animation loop
+requestAnimationFrame(loop);
+
+// friendly tips: if the bird image hasn't loaded yet, draw a placeholder
+birdImg.addEventListener('error', ()=>{
+  console.warn('icon22.gif not found or failed to load. Make sure it sits next to the HTML file and is named icon22.gif');
+});
+
+birdImg.addEventListener('load', ()=>{
+  // adjust bird size based on actual image if desired
+});
+
+</script>
+</body>
+</html>

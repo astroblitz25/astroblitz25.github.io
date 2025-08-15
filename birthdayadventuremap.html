@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magical Birthday Quest</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #f4e1d2;
+            font-family: 'Comic Sans MS', cursive;
+            overflow: hidden;
+        }
+        .map-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: url('map-background.png') no-repeat center;
+            background-size: contain;
+            border: 5px solid #8b4513;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .location {
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .location:hover {
+            transform: scale(1.1);
+        }
+        #birthday-village { top: 10%; left: 10%; }
+        #cake-castle { top: 30%; left: 25%; }
+        #balloon-forest { top: 50%; left: 10%; }
+        #present-mountain { top: 70%; left: 30%; }
+        #birthday-party { top: 85%; left: 70%; display: none; }
+        .choice-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 245, 230, 0.9);
+            padding: 20px;
+            border: 2px solid #ff69b4;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 10;
+        }
+        .choice-btn {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .choice-btn:hover {
+            background: #ff1493;
+        }
+        .message-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 245, 230, 0.9);
+            padding: 20px;
+            border: 2px solid #ff69b4;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 10;
+        }
+        .collectible {
+            display: none;
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-size: contain;
+        }
+        #party-note {
+            font-size: 18px;
+            color: #ff4500;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container" id="map">
+        <div class="location" id="birthday-village" onclick="showChoices('village')">
+            <img src="village-icon.png" alt="Birthday Village" width="50">
+        </div>
+        <div class="location" id="cake-castle" onclick="showChoices('cake')">
+            <img src="cake-castle-icon.png" alt="Cake Castle" width="50">
+        </div>
+        <div class="location" id="balloon-forest" onclick="showChoices('balloon')">
+            <img src="balloon-forest-icon.png" alt="Balloon Forest" width="50">
+        </div>
+        <div class="location" id="present-mountain" onclick="showChoices('present')">
+            <img src="present-mountain-icon.png" alt="Present Mountain" width="50">
+        </div>
+        <div class="location" id="birthday-party" onclick="showParty()">
+            <img src="party-icon.png" alt="Birthday Party" width="50">
+        </div>
+        <div class="collectible" id="birthday-crown"></div>
+    </div>
+    <div class="choice-box" id="choiceBox"></div>
+    <div class="message-box" id="messageBox"></div>
+
+    <script>
+        let currentLocation = 'village';
+        let collectibles = [];
+
+        const locations = {
+            village: {
+                text: "Welcome to Birthday Village! Choose your first destination:",
+                choices: {
+                    cake: "Head to Cake Castle",
+                    balloon: "Explore Balloon Forest",
+                    present: "Climb Present Mountain"
+                }
+            },
+            cake: {
+                text: "You’re at Cake Castle! A towering fortress of frosting!",
+                choices: {
+                    eat: "Eat the cake (Sugar Rush!)",
+                    decorate: "Decorate the cake (Unlock Candle Cove)",
+                    share: "Share the cake (Get a hint)"
+                },
+                outcomes: {
+                    eat: { next: 'balloon', message: "Sugar rush! You skip to Balloon Forest!" },
+                    decorate: { next: 'candle', message: "Creative vibes! Unlocked Candle Cove!" },
+                    share: { next: 'cake', message: "Friends appear! They hint: 'Present Mountain is key!'" }
+                }
+            },
+            candle: {
+                text: "You’re at Candle Cove! A glowing bonus stop!",
+                choices: {
+                    light: "Light a candle (Move to Present Mountain)",
+                    back: "Return to Cake Castle"
+                },
+                outcomes: {
+                    light: { next: 'present', message: "Candle lit! On to Present Mountain!" },
+                    back: { next: 'cake', message: "Back to Cake Castle you go!" }
+                }
+            },
+            balloon: {
+                text: "You’re in Balloon Forest! Balloons grow on trees!",
+                choices: {
+                    pop: "Pop the balloons (Find a gift)",
+                    float: "Float away (Skip ahead)",
+                    animal: "Make a balloon animal (Get a buddy)"
+                },
+                outcomes: {
+                    pop: { next: 'village', message: "Found a goofy pic of you two! Back to Village!" },
+                    float: { next: 'present', message: "Balloon ride! Missed something, but you’re at Present Mountain!" },
+                    animal: { next: 'balloon', message: "Balloon dog buddy! Helps later!" }
+                }
+            },
+            present: {
+                text: "You’re at Present Mountain! Gifts everywhere!",
+                choices: {
+                    open: "Open the gifts now",
+                    save: "Save them for later",
+                    share: "Share the gifts (Shortcut)"
+                },
+                outcomes: {
+                    open: { next: 'present', message: "A sweet message: 'I love your smile!'" },
+                    save: { next: 'present', message: "Patience bonus saved for the end!" },
+                    share: { next: 'party', message: "Shortcut unlocked! Straight to the party!" }
+                }
+            },
+            party: {
+                text: "You’ve reached the Birthday Party! Surprise time!",
+                choices: {}
+            }
+        };
+
+        function showChoices(location) {
+            currentLocation = location;
+            const box = document.getElementById('choiceBox');
+            box.innerHTML = `<h2>${locations[location].text}</h2>`;
+            for (let choice in locations[location].choices) {
+                box.innerHTML += `<button class="choice-btn" onclick="makeChoice('${choice}')">${locations[location].choices[choice]}</button>`;
+            }
+            box.style.display = 'block';
+        }
+
+        function makeChoice(choice) {
+            const box = document.getElementById('choiceBox');
+            const messageBox = document.getElementById('messageBox');
+            const outcome = locations[currentLocation].outcomes[choice];
+            messageBox.innerHTML = `<p>${outcome.message}</p><button class="choice-btn" onclick="nextStep('${choice}')">Continue</button>`;
+            messageBox.style.display = 'block';
+            box.style.display = 'none';
+
+            if (choice === 'pop') {
+                document.getElementById('birthday-crown').style.display = 'block';
+                document.getElementById('birthday-crown').style.backgroundImage = "url('crown-icon.png')";
+                document.getElementById('birthday-crown').style.top = '20%';
+                document.getElementById('birthday-crown').style.left = '50%';
+                collectibles.push('crown');
+            }
+        }
+
+        function nextStep(choice) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.style.display = 'none';
+            const nextLocation = locations[currentLocation].outcomes[choice].next;
+            if (nextLocation === 'party') {
+                showParty();
+            } else {
+                document.getElementById(currentLocation).style.display = 'none';
+                document.getElementById(nextLocation).style.display = 'block';
+                currentLocation = nextLocation;
+            }
+        }
+
+        function showParty() {
+            const map = document.getElementById('map');
+            map.style.display = 'none';
+            const party = document.getElementById('birthday-party');
+            party.style.display = 'block';
+            const messageBox = document.getElementById('messageBox');
+            messageBox.innerHTML = `
+                <h2>${locations['party'].text}</h2>
+                <div id="party-note">
+                    Happy Birthday, [Her Name]! You’re the best girlfriend ever. I love your laugh, your kindness, and how you make every day brighter. Here’s to an epic year ahead! - [Your Name]
+                </div>
+                <button class="choice-btn" onclick="restart()">Play Again</button>
+            `;
+            messageBox.style.display = 'block';
+        }
+
+        function restart() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
