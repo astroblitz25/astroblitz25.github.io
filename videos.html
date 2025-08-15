@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fashion 1</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+<style>
+h1 { display: none; }
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: url('bggallery.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'PixelFont', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      flex-direction: column;
+      text-align: center;
+      position: relative;
+      padding: 20px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      margin: 0 0 20px 0;
+    }
+
+    a.btn {
+      text-decoration: none;
+      font-family: 'CandySeason', sans-serif;
+      background: rgba(255,255,255,0.92);
+      color: #222;
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      margin-top: 20px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-block;
+    }
+
+    a.btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.45);
+    }
+
+    .gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+      padding-bottom: 20px;
+    }
+
+    .gallery-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.1);
+      padding: 14px; /* increased from 12px */
+      max-width: 720px; /* increased from 680px */
+      margin: 0 auto;
+      flex-direction: column;
+    }
+
+    .gallery-item:hover {
+      transform: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .gallery-item video {
+      width: 110%; /* increased from 105% */
+      height: auto;
+      max-height: 420px; /* increased from 400px */
+      object-fit: contain;
+    }
+
+    .sparkle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: pink;
+      border-radius: 50%;
+      animation: sparkle 2s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.95;
+    }
+
+    @keyframes sparkle {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      .gallery-item {
+        max-width: 100%;
+      }
+      .gallery-item video {
+        width: 100%;
+      }
+    }
+
+    .caption {
+      width: 100%;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 1.3rem;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>Fashion 1</h1>
+    <div class="gallery" id="gallery">
+      <!-- Videos will be added dynamically -->
+    </div>
+    <a class="btn" href="gallery.html">← Go back</a>
+  </div>
+
+  <script>
+    function getDocumentHeight() {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.offsetHeight,
+        document.body.clientHeight,
+        document.documentElement.clientHeight
+      );
+    }
+
+    const count = 100;
+    const docHeight = getDocumentHeight();
+    for (let i = 0; i < count; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = Math.random() * 100 + 'vw';
+      sparkle.style.top = (Math.random() * docHeight) + 'px';
+      sparkle.style.animationDelay = (Math.random() * 2) + 's';
+      document.body.appendChild(sparkle);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.getElementById('gallery');
+      const videoCount = 11;
+
+      // Create array of video indexes
+      let videos = [];
+      for (let i = 1; i <= videoCount; i++) {
+        videos.push(i);
+      }
+
+      // Shuffle array
+      videos.sort(() => Math.random() - 0.5);
+
+      const captionTexts = {
+        1: "Boomers fight for Jerusalem",
+        2: "Happy Child",
+        3: "Breaking Bad in Squid Game",
+        4: "PopCorners",
+        5: "Galileo Scene | Bohemian Rhapsody (2018)",
+        6: "Game of Thrones - Prince Joffrey gets Mauled",
+        7: "How To Cook The PERFECT Steak",
+        8: "President Jokowi reacts to Rich Brian's song \"KIDS\"",
+        9: "The Marías - Baby One More Time",
+        10: "simple K-food: How to make cheese rice",
+        11: "Invitation to Tea Scene | The Great Gatsby (2013)"
+      };
+
+      // Add videos in shuffled order
+      videos.forEach(i => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+
+        const video = document.createElement('video');
+        video.src = `videos/v${i}.mp4`;
+        video.controls = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.volume = 0.7;
+
+        item.appendChild(video);
+
+        const caption = document.createElement('div');
+        caption.className = 'caption';
+        caption.textContent = captionTexts[i];
+        item.appendChild(caption);
+
+        gallery.appendChild(item);
+      });
+
+      setTimeout(() => {
+        const newDocHeight = getDocumentHeight();
+        document.querySelectorAll('.sparkle').forEach(sparkle => {
+          sparkle.style.top = (Math.random() * newDocHeight) + 'px';
+        });
+      }, 100);
+    });
+  </script>
+</body>
+</html>

@@ -4,260 +4,1309 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Prosperous Universe</title>
-  <style>
-    @font-face {
-      font-family: 'Starbim';
-      src: url('starbim.ttf') format('truetype');
-    }
-    @font-face {
-      font-family: 'CandySeason';
-      src: url('candyseason.otf') format('opentype');
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: url('background.jpg') no-repeat center center fixed;
-      background-size: cover;
-      font-family: 'CandySeason', sans-serif;
-      cursor: none;
-      scroll-behavior: smooth;
-    }
-
-    #custom-cursor {
-      position: fixed;
-      width: 81px;
-      height: 81px;
-      pointer-events: none;
-      background: url('cursor-cat.gif') no-repeat center center;
-      background-size: contain;
-      z-index: 9999;
-    }
-
-    .cursor-cat-inner {
-      width: 100%;
-      height: 100%;
-      animation: gentle-bounce 1.8s ease-in-out infinite;
-    }
-
-    @keyframes gentle-bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
-    }
-
-    .title {
-      font-family: 'Starbim', sans-serif;
-      font-size: 58px;
-      color: #ff66b2;
-      margin: 4px 0 10px 0;
-      text-align: center;
-    }
-
-    .gif-belt-wrapper {
-      overflow: hidden;
-      width: 100%;
-      margin-top: 0.7cm;
-    }
-
-    .gif-belt {
-      display: flex;
-      width: max-content;
-      animation: gifScroll 101s linear infinite;
-    }
-
-    .gif-belt img {
-      height: 0.7cm;
-      width: auto;
-      margin: 0;
-      padding: 0;
-      display: inline-block;
-    }
-
-    @keyframes gifScroll {
-      0% {
-        transform: translateX(0%);
-      }
-      100% {
-        transform: translateX(-50%);
-      }
-    }
-
-    .container {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 30px;
-      margin-bottom: 60px;
-      transform: translateX(-0.5cm);
-    }
-
-    .left-column {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      transform: translateY(1.5cm);
-    }
-
-    .png-frame {
-      display: inline-block;
-      filter:
-        drop-shadow(8px 6px 0px black)               /* black shadow - stronger, rightward */
-        drop-shadow(0 0 8px #ff99cc)                /* pink glow */
-        drop-shadow(0 0 16px #ffb6d5);              /* pink glow */
-    }
-
-    .png-frame img {
-      height: 500px;
-      max-width: 100%;
-      display: block;
-    }
-
-    .empty-box {
-      width: 8cm;
-      height: 5cm;
-      background: #ffeef2;
-      border-radius: 16px;
-      position: relative;
-    }
-
-    .empty-box::before,
-    .empty-box::after {
-      content: "";
-      position: absolute;
-      border: 2px solid #ff66cc;
-      border-radius: 16px;
-      pointer-events: none;
-    }
-
-    .empty-box::before {
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-    }
-
-    .empty-box::after {
-      top: 4px;
-      left: 4px;
-      right: 4px;
-      bottom: 4px;
-    }
-
-    .right-content {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-    }
-
-    .sections {
-      display: flex;
-      flex-direction: column;
-      gap: 35px;
-      font-size: 46px;
-      transform: translateY(1.5cm);
-    }
-
-    .section-link {
-      color: #e75480;
-      text-decoration: none;
-      font-weight: bold;
-      transition: transform 0.2s;
-      position: relative;
-      display: inline-block;
-      cursor: none;
-      text-shadow:
-        6px 4px 0 black,                           /* bolder rightward black shadow */
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-         0 0 8px #ffffff,
-         0 0 16px #ffffff;
-    }
-
-    .section-link::before {
-      content: attr(data-jp);
-      position: absolute;
-      top: -34px;
-      left: 6px;
-      transform: rotate(-2.5deg);
-      font-size: 69px;
-      color: #caa0ff;
-      opacity: 1;
-      z-index: -1;
-      pointer-events: none;
-      white-space: nowrap;
-      text-shadow:
-        6px 4px 0 black,                           /* bolder rightward black shadow */
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000,
-         0 0 6px #ffffff,
-         0 0 12px #ffffff;
-    }
-
-    .section-link:hover {
-      transform: scale(1.1);
-    }
-  </style>
+<style>
+.section-link {
+  transform: translateX(60px);
+}
+@font-face {
+  font-family: 'Starbim';
+  src: url('starbim.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'CandySeason';
+  src: url('candyseason.otf') format('opentype');
+}
+@font-face {
+  font-family: 'PixelFont';
+  src: url('fontpixel.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'PixelFont2';
+  src: url('fontpixel2.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'PollFont';
+  src: url('fontpoll.ttf') format('truetype');
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  background: url('background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'CandySeason', sans-serif;
+  cursor: none;
+  scroll-behavior: smooth;
+}
+.poll-top-left-deco {
+  position: absolute;
+  top: 978px;
+  left: 600px;
+  width: 80px;
+  z-index: 9999;
+  pointer-events: none;
+}
+.floating-right-gif {
+  position: fixed;
+  top: 50%;
+  right: -60px;
+  width: 416px;
+  z-index: 100;
+  pointer-events: none;
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(-50%) translateY(0); }
+  50% { transform: translateY(-50%) translateY(-10px); }
+}
+.floating-right-gif {
+  animation: floatY 3s ease-in-out infinite;
+}
+.button-text {
+  font-weight: 500;
+}
+#custom-cursor {
+  position: fixed;
+  width: 81px;
+  height: 81px;
+  pointer-events: none;
+  background: url('cursor-cat.gif') no-repeat center center;
+  background-size: contain;
+  z-index: 9999;
+}
+.cursor-cat-inner {
+  width: 100%;
+  height: 100%;
+  animation: gentle-bounce 1.8s ease-in-out infinite;
+}
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.title-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  position: relative;
+}
+.title-wrapper {
+  position: relative;
+  text-align: center;
+}
+.title-shadow,
+.title-main {
+  font-family: 'PixelFont2', sans-serif;
+  font-size: 96px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: transparent;
+  -webkit-text-stroke: 2px currentColor;
+  text-shadow:
+    2px 0 0 currentColor,
+    -2px 0 0 currentColor,
+    0 2px 0 currentColor,
+    0 -2px 0 currentColor,
+    2px 2px 0 currentColor,
+    -2px -2px 0 currentColor,
+    2px -2px 0 currentColor,
+    -2px 2px 0 currentColor,
+    0 0 10px white,
+    0 0 20px white,
+    0 0 30px white;
+  position: relative;
+  image-rendering: pixelated;
+}
+.view-text {
+  font-weight: 500;
+}
+button .sparkle {
+  color: #ff66cc;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+.title-main {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  -webkit-text-stroke: 2px currentColor;
+  text-shadow:
+    2px 0 0 currentColor,
+    -2px 0 0 currentColor,
+    0 2px 0 currentColor,
+    0 -2px 0 currentColor,
+    2px 2px 0 currentColor,
+    -2px -2px 0 currentColor,
+    2px -2px 0 currentColor,
+    -2px 2px 0 currentColor,
+    0 0 10px white,
+    0 0 20px white,
+    0 0 30px white;
+  animation: titleGlow 2s ease-in-out infinite alternate;
+  image-rendering: pixelated;
+}
+.title-main span {
+  display: inline-block;
+  animation: colorPulse 3s ease-in-out infinite;
+  -webkit-text-stroke: 2px currentColor;
+  text-shadow:
+    2px 0 0 currentColor,
+    -2px 0 0 currentColor,
+    0 2px 0 currentColor,
+    0 -2px 0 currentColor,
+    2px 2px 0 currentColor,
+    -2px -2px 0 currentColor,
+    2px -2px 0 currentColor,
+    -2px 2px 0 currentColor,
+    0 0 10px white,
+    0 0 20px white,
+    0 0 30px white;
+}
+@keyframes colorPulse {
+  0%, 100% {
+    color: #FFB6C1;
+    text-shadow:
+      2px 0 0 #D85F8F,
+      -2px 0 0 #D85F8F,
+      0 2px 0 #D85F8F,
+      0 -2px 0 #D85F8F,
+      2px 2px 0 #D85F8F,
+      -2px -2px 0 #D85F8F,
+      2px -2px 0 #D85F8F,
+      -2px 2px 0 #D85F8F,
+      0 0 10px white,
+      0 0 20px #FFB6C1,
+      0 0 30px #FFB6C1;
+  }
+  16% {
+    color: #FFD700;
+    text-shadow:
+      2px 0 0 #D4A017,
+      -2px 0 0 #D4A017,
+      0 2px 0 #D4A017,
+      0 -2px 0 #D4A017,
+      2px 2px 0 #D4A017,
+      -2px -2px 0 #D4A017,
+      2px -2px 0 #D4A017,
+      -2px 2px 0 #D4A017,
+      0 0 10px white,
+      0 0 20px #FFD700,
+      0 0 30px #FFD700;
+  }
+  32% {
+    color: #98FB98;
+    text-shadow:
+      2px 0 0 #50C878,
+      -2px 0 0 #50C878,
+      0 2px 0 #50C878,
+      0 -2px 0 #50C878,
+      2px 2px 0 #50C878,
+      -2px -2px 0 #50C878,
+      2px -2px 0 #50C878,
+      -2px 2px 0 #50C878,
+      0 0 10px white,
+      0 0 20px #98FB98,
+      0 0 30px #98FB98;
+  }
+  48% {
+    color: #ADD8E6;
+    text-shadow:
+      2px 0 0 #4682B4,
+      -2px 0 0 #4682B4,
+      0 2px 0 #4682B4,
+      0 -2px 0 #4682B4,
+      2px 2px 0 #4682B4,
+      -2px -2px 0 #4682B4,
+      2px -2px 0 #4682B4,
+      -2px 2px 0 #4682B4,
+      0 0 10px white,
+      0 0 20px #ADD8E6,
+      0 0 30px #ADD8E6;
+  }
+  64% {
+    color: #DDA0DD;
+    text-shadow:
+      2px 0 0 #9932CC,
+      -2px 0 0 #9932CC,
+      0 2px 0 #9932CC,
+      0 -2px 0 #9932CC,
+      2px 2px 0 #9932CC,
+      -2px -2px 0 #9932CC,
+      2px -2px 0 #9932CC,
+      -2px 2px 0 #9932CC,
+      0 0 10px white,
+      0 0 20px #DDA0DD,
+      0 0 30px #DDA0DD;
+  }
+  80% {
+    color: #FFA07A;
+    text-shadow:
+      2px 0 0 #E9967A,
+      -2px 0 0 #E9967A,
+      0 2px 0 #E9967A,
+      0 -2px 0 #E9967A,
+      2px 2px 0 #E9967A,
+      -2px -2px 0 #E9967A,
+      2px -2px 0 #E9967A,
+      -2px 2px 0 #E9967A,
+      0 0 10px white,
+      0 0 20px #FFA07A,
+      0 0 30px #FFA07A;
+  }
+}
+.title-sparkles {
+  position: absolute;
+  font-size: 28px;
+  animation: sparkleTwinkle 5s ease-in-out infinite;
+  opacity: 0.7;
+  z-index: 100;
+}
+.title-sparkles:first-child {
+  top: -15px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+.left-sparkle {
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  animation-delay: 0.8s;
+}
+.right-sparkle {
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  animation-delay: 1.6s;
+}
+.top-sparkle {
+  top: -20px;
+  left: 35%;
+  transform: translateX(-50%);
+  animation-delay: 2.4s;
+}
+.bottom-sparkle {
+  bottom: -20px;
+  left: 55%;
+  transform: translateX(-50%);
+  animation-delay: 3.2s;
+}
+.title-bow {
+  position: absolute;
+  height: 110px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+.left-bow {
+  left: -110px;
+}
+.right-bow {
+  right: -110px;
+}
+@keyframes titleGlow {
+  0% {
+    text-shadow:
+      2px 0 0 currentColor,
+      -2px 0 0 currentColor,
+      0 2px 0 currentColor,
+      0 -2px 0 currentColor,
+      2px 2px 0 currentColor,
+      -2px -2px 0 currentColor,
+      2px -2px 0 currentColor,
+      -2px 2px 0 currentColor,
+      0 0 10px currentColor,
+      0 0 20px #ff66cc,
+      0 0 30px #ff66cc;
+  }
+  100% {
+    text-shadow:
+      3px 0 0 currentColor,
+      -3px 0 0 currentColor,
+      0 3px 0 currentColor,
+      0 -3px 0 currentColor,
+      3px 3px 0 currentColor,
+      -3px -3px 0 currentColor,
+      3px -3px 0 currentColor,
+      -3px 3px 0 currentColor,
+      0 0 15px currentColor,
+      0 0 25px #ff66cc,
+      0 0 35px #ff66cc;
+  }
+}
+@keyframes sparkleTwinkle {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    opacity: 0.7;
+  }
+  25% {
+    transform: scale(1.2) translateY(-3px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(1.25) translateY(-2px);
+    opacity: 0.9;
+  }
+}
+.gif-belt-wrapper {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 0.7cm;
+}
+.gif-belt {
+  display: flex;
+  width: max-content;
+  animation: gifScroll 101s linear infinite;
+}
+.gif-belt img {
+  height: 0.7cm;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+@keyframes gifScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 60px;
+  transform: translateX(-0.5cm);
+}
+.left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  transform: translateY(4cm);
+}
+.png-frame {
+  display: inline-block;
+  position: relative;
+}
+.png-frame img {
+  height: 500px;
+  max-width: 100%;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.png-frame::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  background: url('frame2.jpg') no-repeat center center;
+  background-size: contain;
+  z-index: 0;
+  pointer-events: none;
+}
+.empty-box {
+  width: 8cm;
+  height: 5cm;
+  background: #ffeef2;
+  border-radius: 16px;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  transform: translateY(-0.18cm);
+}
+.poll-frame {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: calc(8cm + 24px);
+  height: calc(5cm + 24px);
+  z-index: 2;
+  pointer-events: none;
+}
+#poll-box {
+  overflow-y: auto;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 3;
+  background-image: url('gifdecoframe.gif');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+#poll-result {
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+  justify-content: flex-start;
+  padding: 15px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1,25px 1,25px 0,25px #555, 0,25px 0,25px 1,25px #555;
+}
+#poll-box {
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1,5px 1,5px 0,25px #555, 0,25px 0,25px 1,5px #555;
+  text-align: center;
+}
+#poll-box h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+#poll-box .poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+#poll-box .poll-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#poll-box .poll-option input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ff66cc;
+  border-radius: 50%;
+  outline: none;
+  position: relative;
+}
+#poll-box .poll-option input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #ff66cc;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+}
+#poll-box .poll-option label {
+  font-size: 16px;
+}
+#poll-box button {
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 16px;
+  border: 2px solid #ff66cc;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1px 1px 0 white;
+  background-color: #fff0f8;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(255, 102, 204, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+#poll-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(255, 102, 204, 0.3);
+  background-color: #ffe6f2;
+}
+#poll-box button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(255, 102, 204, 0.2);
+}
+#poll-box button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    transparent 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 55%
+  );
+  transform: rotate(30deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#poll-box button:hover::before {
+  opacity: 1;
+  animation: sparkle 1.5s infinite;
+}
+@keyframes sparkle {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
+}
+#poll-result p {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  text-align: center;
+}
+#poll-result img {
+  max-width: 100%;
+  max-height: 150px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+}
+#poll-result button {
+  padding: 12px 18px;
+  line-height: 1.4;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 16px;
+  border: 2px solid #ff66cc;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1px 1px 0 white;
+  background-color: #fff0f8;
+  margin-top: 10px;
+  transition3px 3px 0 currentColor,
+      -3px -3px 0 currentColor,
+      3px -3px 0 currentColor,
+      -3px 3px 0 currentColor,
+      0 0 15px currentColor,
+      0 0 25px #ff66cc,
+      0 0 35px #ff66cc;
+  }
+}
+@keyframes sparkleTwinkle {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    opacity: 0.7;
+  }
+  25% {
+    transform: scale(1.2) translateY(-3px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+    opacity: 0.8;
+  }
+  75% {
+    transform: scale(1.25) translateY(-px);
+    opacity: 0.9;
+  }
+}
+.gif-belt-wrapper {
+  overflow: hidden;
+  width: 100%;
+  margin-top: 0.7cm;
+}
+.gif-belt {
+  display: flex;
+  width: max-content;
+  animation: gifScroll 101s linear infinite;
+}
+.gif-belt img {
+  height: 0.7cm;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+}
+@keyframes gifScroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 60px;
+  transform: translateX(-0.5cm);
+}
+.left-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  transform: translateY(4cm);
+  position: relative; /* Added to position .poll-frame relative to .left-column */
+}
+.png-frame {
+  display: inline-block;
+  position: relative;
+}
+.png-frame img {
+  height: 500px;
+  max-width: 100%;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.png-frame::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  background: url('frame2.jpg') no-repeat center center;
+  background-size: contain;
+  z-index: 0;
+  pointer-events: none;
+}
+.poll-frame {
+  position: absolute;
+  top: 480px;
+  left: 57px;
+  width: calc(8cm + 40px);
+  height: calc(5cm + 40px);
+  z-index: 2;
+  pointer-events: none;
+  object-fit: contain;
+  transform: scale(0.93, 1.15); /* Add this line */
+}
+#poll-box {
+  overflow-y: auto;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 3;
+  background-image: url('gifdecoframe.gif');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+#poll-result {
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 3;
+  justify-content: flex-start;
+  padding: 15px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1,25px 1,25px 0,25px #555, 0,25px 0,25px 1,25px #555;
+}
+#poll-box {
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1,5px 1,5px 0,25px #555, 0,25px 0,25px 1,5px #555;
+  text-align: center;
+}
+#poll-box h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+#poll-box .poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+#poll-box .poll-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#poll-box .poll-option input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ff66cc;
+  border-radius: 50%;
+  outline: none;
+  position: relative;
+}
+#poll-box .poll-option input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #ff66cc;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+}
+#poll-box .poll-option label {
+  font-size: 16px;
+}
+#poll-box button {
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 16px;
+  border: 2px solid #ff66cc;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1px 1px 0 white;
+  background-color: #fff0f8;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(255, 102, 204, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+#poll-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(255, 102, 204, 0.3);
+  background-color: #ffe6f2;
+}
+#poll-box button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(255, 102, 204, 0.2);
+}
+#poll-box button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    transparent 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 55%
+  );
+  transform: rotate(30deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#poll-box button:hover::before {
+  opacity: 1;
+  animation: sparkle 1.5s infinite;
+}
+@keyframes sparkle {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
+}
+#poll-result p {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  text-align: center;
+}
+#poll-result img {
+  max-width: 100%;
+  max-height: 150px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+}
+#poll-result button {
+  padding: 12px 18px;
+  line-height: 1.4;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 16px;
+  border: 2px solid #ff66cc;
+  font-family: 'PollFont', sans-serif;
+  color: #ff66cc;
+  text-shadow: 1px 1px 0 white;
+  background-color: #fff0f8;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(255, 102, 204, 0.2);
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#poll-result button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(255, 102, 204, 0.3);
+  background-color: #ffe6f2;
+}
+#poll-result button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(255, 102, 204, 0.2);
+}
+#poll-result button::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    transparent 45%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 55%
+  );
+  transform: rotate(30deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#poll-result button:hover::before {
+  opacity: 1;
+  animation: sparkle 1.5s infinite;
+}
+.sparkle {
+  display: inline-block;
+  animation: sparkleTwinkle 2s ease-in-out infinite;
+}
+.sparkle:nth-child(1) { animation-delay: 0.2s; }
+.sparkle:nth-child(2) { animation-delay: 0.4s; }
+.sparkle:nth-child(3) { animation-delay: 0.6s; }
+.sparkle:nth-child(4) { animation-delay: 0.8s; }
+.right-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
+  font-size: 46px;
+  transform: translateY(4cm);
+  position: relative;
+}
+.sections::before {
+  content: "";
+  position: absolute;
+  top: -530px;
+  left: -500px;
+  right: -620px;
+  bottom: -470px;
+  background: url('frame4.png') no-repeat;
+  background-position: center center;
+  background-size: 1330px 1190px;
+  z-index: 0;
+  pointer-events: none;
+}
+.section-link {
+  color: #e75480;
+  text-decoration: none;
+  font-weight: bold;
+  transition: transform 0.2s;
+  position: relative;
+  display: inline-block;
+  cursor: none;
+  text-shadow:
+    6px 4px 0 black,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 8px #ffffff,
+    0 0 16px #ffffff,
+    0 0 22px white;
+  z-index: 1;
+}
+.section-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-icon {
+  width: 36px;
+  height: auto;
+  image-rendering: pixelated;
+  margin-top: -8px;
+  margin-right: -6px;
+  transform: translateX(-6px);
+}
+.section-link::before {
+  content: attr(data-jp);
+  position: absolute;
+  top: -34px;
+  left: 6px;
+  transform: rotate(-2.5deg);
+  font-size: 69px;
+  color: #caa0ff;
+  opacity: 1;
+  z-index: -1;
+  pointer-events: none;
+  white-space: nowrap;
+  text-shadow:
+    6px 4px 0 black,
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 6px #ffffff,
+    0 0 12px #ffffff,
+    0 0 18px white;
+}
+.section-link:hover {
+  transform: scale(1.1);
+}
+.corner-gif {
+  position: absolute;
+  z-index: 99;
+}
+.top-left-gif {
+  top: 10px;
+  left: 10px;
+  width: 130px;
+}
+.top-right-gif {
+  top: 10px;
+  right: 10px;
+  width: 150px;
+}
+.floating-gramophone-gif {
+  position: absolute;
+  top: 700px;
+  left: 40px;
+  width: 160px;
+  z-index: 1000;
+  pointer-events: none;
+  animation: gramophoneFloat 5s ease-in-out infinite;
+}
+@keyframes gramophoneFloat {
+  0%, 100% { transform: scaleX(-1) translateY(0); }
+  50% { transform: scaleX(-1) translateY(-5px); }
+}
+button,
+input[type="radio"],
+label,
+.section-link {
+  cursor: none !important;
+}
+.poll-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.poll-gif {
+  width: 100px;
+  height: auto;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+.poll-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.sticky-gif-container {
+  position: sticky;
+  top: 12px;
+  align-self: flex-start;
+}
+.poll-bg-gif {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+.music-controls {
+  position: absolute;
+  top: 870px;
+  left: 30px;
+  z-index: 1001;
+  display: flex;
+  gap: 12px;
+}
+.music-controls button {
+  font-size: 22px;
+  background-color: #fff0f8;
+  border: 2px solid #ff66cc;
+  border-radius: 12px;
+  color: #ff66cc;
+  padding: 8px 12px;
+  font-family: 'PollFont', sans-serif;
+  text-shadow: 1px 1px 0 white;
+  box-shadow: 0 4px 8px rgba(255, 102, 204, 0.2);
+  transition: all 0.3s ease;
+  cursor: none;
+}
+.music-controls button:hover {
+  background-color: #ffe6f2;
+  transform: translateY(-2px);
+}
+.section-link[data-jp="ホーム"] .section-icon {
+  margin-left: -10px;
+}
+.png-frame {
+  display: inline-block;
+  position: relative;
+  transform: translateY(-65px);
+}
+</style>
 </head>
 <body>
-  <div id="custom-cursor">
-    <div class="cursor-cat-inner"></div>
+<img src="gifdecoframe8.gif" alt="corner deco" class="poll-top-left-deco">
+<div id="custom-cursor">
+  <div class="cursor-cat-inner"></div>
+</div>
+<img src="stampcatrealeatcorn.gif" alt="left gif" class="corner-gif top-left-gif">
+<img src="caumua.gif" alt="right gif" class="corner-gif top-right-gif">
+<img src="index2.gif" alt="Right Floating Gif" class="floating-right-gif">
+<img src="gramophone.gif" alt="Gramophone" class="floating-gramophone-gif">
+<div class="title-container">
+  <div class="music-controls">
+    <button onclick="prevSong()">⏮️</button>
+    <button onclick="togglePlay()">⏯️</button>
+    <button onclick="nextSong()">⏭️</button>
   </div>
-
-  <div class="title">
-    🎀 Your Prosperous Universe 🎀
+  <div class="title-wrapper">
+    <div class="title-shadow">YOUR PROSPEROUS UNIVERSE</div>
+    <div class="title-main"><span>Y</span><span>O</span><span>U</span><span>R</span><span> </span><span>P</span><span>R</span><span>O</span><span>S</span><span>P</span><span>E</span><span>R</span><span>O</span><span>U</span><span>S</span><span> </span><span>U</span><span>N</span><span>I</span><span>V</span><span>E</span><span>R</span><span>S</span><span>E</span></div>
+    <div class="title-sparkles">✨</div>
+    <div class="title-sparkles left-sparkle">✨</div>
+    <div class="title-sparkles right-sparkle">✨</div>
+    <div class="title-sparkles top-sparkle">✨</div>
+    <div class="title-sparkles bottom-sparkle">✨</div>
   </div>
-
-  <!-- GIF Conveyor Belt -->
-  <div class="gif-belt-wrapper">
-    <div class="gif-belt">
-      <!-- Loop gif1.gif to gif48.gif twice for infinite scroll -->
-      <!-- First round -->
-      <!-- prettier-ignore -->
-      ${Array.from({ length: 48 }, (_, i) => `<img src="gif${i+1}.gif" alt="gif${i+1}" />`).join('')}
-      <!-- Second round -->
-      ${Array.from({ length: 48 }, (_, i) => `<img src="gif${i+1}.gif" alt="gif${i+1}" />`).join('')}
+  <img src="bow-left.png" alt="Left Bow" class="title-bow left-bow">
+  <img src="bow-right.png" alt="Right Bow" class="title-bow right-bow">
+</div>
+<div class="gif-belt-wrapper">
+  <div class="gif-belt"></div>
+</div>
+<div class="container">
+  <div class="left-column">
+    <div class="png-frame">
+      <img src="cute-box.png" alt="Cute Character" />
     </div>
-  </div>
-
-  <div class="container">
-    <div class="left-column">
-      <div class="png-frame">
-        <img src="cute-box.png" alt="Cute Character" />
+    <img src="frame5.jfif" alt="Poll Frame" class="poll-frame">
+    <div class="empty-box">
+      <img src="gifdecoframe.gif" alt="poll background" class="poll-bg-gif">
+      <div id="poll-box">
+        <div class="poll-layout">
+          <div class="sticky-gif-container">
+            <img src="gifghibli14.gif" alt="Poll GIF" class="poll-gif" />
+          </div>
+          <div class="poll-content">
+            <h3>Which of these do you relate to the most?</h3>
+            <div class="poll-options">
+              <div class="poll-option">
+                <input type="radio" id="stars" name="poll" value="stars">
+                <label for="stars">The Stars</label>
+              </div>
+              <div class="poll-option">
+                <input type="radio" id="sun" name="poll" value="sun">
+                <label for="sun">The Sun</label>
+              </div>
+              <div class="poll-option">
+                <input type="radio" id="sky" name="poll" value="sky">
+                <label for="sky">The Sky</label>
+              </div>
+              <div class="poll-option">
+                <input type="radio" id="sea" name="poll" value="sea">
+                <label for="sea">The Ocean</label>
+              </div>
+              <div class="poll-option">
+                <input type="radio" id="moon" name="poll" value="moon">
+                <label for="moon">The Moon</label>
+              </div>
+              <div class="poll-option">
+                <input type="radio" id="cloud" name="poll" value="cloud">
+                <label for="cloud">The Clouds</label>
+              </div>
+            </div>
+            <button onclick="showResult()" class="cute-button">
+              <span class="sparkle">✨</span>
+              <span class="view-text">View</span>
+              <span class="sparkle">✨</span>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="empty-box"></div>
-    </div>
-    <div class="right-content">
-      <div class="sections">
-        <a href="#" class="section-link" data-jp="ホーム">Home</a>
-        <a href="#" class="section-link" data-jp="ギャラリー">Gallery</a>
-        <a href="#" class="section-link" data-jp="もの">Stuff</a>
-        <a href="#" class="section-link" data-jp="について">About</a>
-        <a href="#" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
-        <a href="#" class="section-link" data-jp="安心スペース">Safe Space</a>
-        <a href="#" class="section-link" data-jp="かわいいゾーン">Cute Zones</a>
-        <a href="#" class="section-link" data-jp="楽しい">Fun</a>
+      <div id="poll-result">
+        <p id="result-text"></p>
+        <img id="result-image" src="" alt="">
+        <button onclick="resetPoll()" class="cute-button">
+          <span class="sparkle">✨</span>
+          <span>Go back</span>
+          <span class="sparkle">✨</span>
+        </button>
       </div>
     </div>
   </div>
+  <div class="right-content">
+    <div class="sections">
+      <a href="#" class="section-link" data-jp="ホーム">
+        <span>Home</span>
+      </a>
+<a href="gallery.html" class="section-link" data-jp="ギャラリー" target="_blank">Gallery</a>
+<a href="stuff.html" class="section-link" data-jp="もの">Stuff</a>
+      <a href="#" class="section-link" data-jp="について">About</a>
+      <a href="#" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
+      <a href="#" class="section-link" data-jp="安心スペース">Safe Space</a>
+      <a href="#" class="section-link" data-jp="かわいいゾーン">Cute Zones</a>
+      <a href="#" class="section-link" data-jp="楽しい">Fun</a>
+    </div>
+  </div>
+</div>
+<script>
+const titleLetters = document.querySelectorAll('.title-main span');
+const pastelColors = [
+  { fill: '#FFB6C1', stroke: '#D85F8F' },
+  { fill: '#FFD700', stroke: '#D4A017' },
+  { fill: '#98FB98', stroke: '#50C878' },
+  { fill: '#ADD8E6', stroke: '#4682B4' },
+  { fill: '#DDA0DD', stroke: '#9932CC' },
+  { fill: '#FFA07A', stroke: '#E9967A' }
+];
 
-  <script>
-    const cursor = document.getElementById('custom-cursor');
-    document.addEventListener('mousemove', e => {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-    });
+titleLetters.forEach((letter, index) => {
+  letter.style.animationDelay = `${index * 0.12}s`;
+  const randomColor = pastelColors[Math.floor(Math.random() * pastelColors.length)];
+  letter.style.color = randomColor.fill;
+  letter.style.textShadow = `
+    1px 0 0 ${randomColor.stroke},
+    -1px 0 0 ${randomColor.stroke},
+    0 1px 0 ${randomColor.stroke},
+    0 -1px 0 ${randomColor.stroke},
+    1px 1px 0 ${randomColor.stroke},
+    -1px -1px 0 ${randomColor.stroke},
+    1px -1px 0 ${randomColor.stroke},
+    -1px 1px 0 ${randomColor.stroke},
+    0 0 10px white,
+    0 0 20px ${randomColor.fill},
+    0 0 30px ${randomColor.fill}
+  `;
+});
 
-    // Insert GIFs dynamically so you don't have to manually write 96 lines
-    document.querySelector(".gif-belt").innerHTML =
-      [...Array(2)].map(() =>
-        [...Array(48)].map((_, i) => `<img src="gif${i + 1}.gif" alt="gif${i + 1}" />`).join("")
-      ).join("");
-  </script>
+const cursor = document.getElementById('custom-cursor');
+document.addEventListener('mousemove', e => {
+  const offsetX = 26;
+  const offsetY = 20;
+  cursor.style.left = (e.clientX - offsetX) + 'px';
+  cursor.style.top = (e.clientY - offsetY) + 'px';
+});
+
+document.querySelector(".gif-belt").innerHTML = [...Array(2)].map(() =>
+  [...Array(48)].map((_, i) => `<img src="gif${i + 1}.gif" alt="gif${i + 1}" />`).join("")
+).join("");
+
+const songs = ['mineshaft.mp3', 'shinjuku.mp3', 'naruto.mp3', 'nop.mp3'];
+let currentSongIndex = 0;
+let audio = loadSong(currentSongIndex);
+audio.volume = 0.1;
+audio.addEventListener('ended', nextSong);
+let isPlaying = false;
+
+function playSong() {
+  audio.play();
+  isPlaying = true;
+}
+
+function pauseSong() {
+  audio.pause();
+  isPlaying = false;
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    pauseSong();
+  } else {
+    playSong();
+  }
+}
+
+function nextSong() {
+  audio.pause();
+  currentSongIndex = (currentSongIndex + 1) % songs.length;
+  audio = loadSong(currentSongIndex);
+  playSong();
+}
+
+function loadSong(index) {
+  const songName = songs[index];
+  const newAudio = new Audio(songName);
+  if (songName === 'shinjuku.mp3') {
+    newAudio.volume = 0.217;
+  } else if (songName === 'naruto.mp3') {
+    newAudio.volume = 0.15;
+  } else if (songName === 'nop.mp3') {
+    newAudio.volume = 0.12;
+  } else {
+    newAudio.volume = 0.1;
+  }
+  newAudio.addEventListener('ended', nextSong);
+  return newAudio;
+}
+
+function prevSong() {
+  audio.pause();
+  currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+  audio = loadSong(currentSongIndex);
+  playSong();
+}
+
+function showResult() {
+  const selectedOption = document.querySelector('input[name="poll"]:checked');
+  if (!selectedOption) return;
+
+  const choice = selectedOption.value;
+  const pollBox = document.getElementById('poll-box');
+  const pollResult = document.getElementById('poll-result');
+  const resultText = document.getElementById('result-text');
+  const resultImage = document.getElementById('result-image');
+
+  let text = "", img = "";
+  switch (choice) {
+    case "stars":
+      text = "You're a dreamer, a visionary, you love to seek mystery, infinite possibilities, and you're drawn to the endless mysteries of the cosmos.";
+      img = "thestar.jpg";
+      break;
+    case "sun":
+      text = "You radiate warmth and energy, thriving in leadership and uplifting others with your vibrant spirit.";
+      img = "thesun.jpg";
+      break;
+    case "sky":
+      text = "You value freedom and openness, with a boundless imagination and a love for new horizons.";
+      img = "thesky.jpg";
+      break;
+    case "sea":
+      text = "You're deep and introspective, with emotions that run like powerful tides, calm yet wild.";
+      img = "thesea.jpg";
+      break;
+    case "moon":
+      text = "You're intuitive and reflective, connected to cycles and emotions, glowing softly in quiet moments.";
+      img = "themoon.jpg";
+      break;
+    case "cloud":
+      text = "You're adaptable, ever-shifting, and a bit mysterious. You float through life with a dreamy, creative vibe, sometimes calm, sometimes stormy, always moving with the winds of change.";
+      img = "thecloud.jpg";
+      break;
+  }
+
+  resultText.textContent = text;
+  resultImage.src = img;
+  resultImage.alt = choice;
+
+  pollBox.style.display = 'none';
+  pollResult.style.display = 'flex';
+}
+
+function resetPoll() {
+  document.getElementById('poll-box').style.display = 'block';
+  document.getElementById('poll-result').style.display = 'none';
+  document.querySelectorAll('input[name="poll"]').forEach(radio => {
+    radio.checked = false;
+  });
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TV Series</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'PixelFont', sans-serif;
+      background: transparent;
+      overflow-x: hidden;
+    }
+
+    /* Video background styling */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Container wrapping all images so line can be positioned relative */
+    .images-wrapper {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding-bottom: 20px; /* Reduced the bottom padding here */
+    }
+
+    /* Common styles for static repeated lines */
+    .static-line-left, .static-line-right {
+      position: absolute;
+      white-space: nowrap;
+      width: 300vh; /* A large value to ensure it covers the full scroll height */
+      user-select: none;
+      pointer-events: none;
+      font-weight: bold;
+      font-size: 104px;
+      font-family: 'PixelFont', sans-serif;
+      display: flex;
+      gap: 24px;
+      z-index: 5;
+      color: white;
+    }
+
+    /* Left line specific styles */
+    .static-line-left {
+      top: 47.5cm; /* 37.5cm + 10cm */
+      left: -20px;
+      transform: rotate(-90deg) translateX(-100%);
+      transform-origin: top left;
+    }
+
+    /* Right line specific styles */
+    .static-line-right {
+      top: 53.5cm; /* 43.5cm + 10cm */
+      right: -20px;
+      transform: rotate(90deg) translateX(-100%);
+      transform-origin: top right;
+    }
+
+    .static-line-left span.pink, .static-line-right span.pink {
+      color: #ff69b4;
+      text-shadow: 5px 5px 0 #8b008b;
+    }
+
+    .static-line-left span.white, .static-line-right span.white {
+      color: white;
+      text-shadow: 5px 5px 0 #333; /* Even darker grey shadow */
+    }
+
+    /* Each image row */
+    .image-row {
+      width: 100%;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Special styling for the first image row (assassin) */
+    .image-row.assassin-row {
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    /* Frame for all images */
+    .frame {
+      position: relative;
+      border-radius: 12px;
+      overflow: visible;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    /* Special frame size for assassin image */
+    .frame.assassin-frame {
+      width: 580px;
+    }
+
+    /* Frame size for other images */
+    .frame:not(.assassin-frame):not(.smaller-frame) {
+      width: 600px;
+    }
+
+    /* Special frame size for smaller image */
+    .frame.smaller-frame {
+      width: 450px;
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: -16px;
+      z-index: 0;
+      border-radius: 18px;
+      background-image: var(--img);
+      background-size: cover;
+      background-position: center;
+      filter: blur(12px) saturate(1.05);
+      opacity: 0.7;
+      transform: scale(1.02);
+      transition: filter 0.3s ease;
+    }
+
+    .frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+      object-fit: cover;
+      background: #111;
+      transition: transform 0.3s ease;
+    }
+
+    /* Hover effect: zoom in frame and image only */
+    .frame:hover {
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    .frame:hover img {
+      transform: scale(1.05);
+    }
+
+    /* Info box styling */
+    .info-box {
+      position: absolute;
+      top: 50%;
+      left: 100%; /* right next to the frame */
+      transform: translate(20px, -50%);
+      width: 380px;
+      max-width: 80vw;
+      background: #000; /* solid black, no transparency */
+      color: white;
+      padding: 20px 20px 40px; /* Adjusted bottom padding */
+      border-radius: 12px;
+      font-size: 18px; /* increased font size */
+      font-weight: normal;
+      line-height: 1.4;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s linear; /* quick appear/disappear */
+      z-index: 15;
+    }
+
+    /* Show info box instantly on hover, no bounce or animation */
+    .frame:hover .info-box,
+    .info-box:hover {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .info-box::before {
+      content: '';
+      position: absolute;
+      top: -75px;
+      bottom: -75px;
+      left: -85px;
+      right: -75px;
+      z-index: -1;
+    }
+
+    /* Common styles for nav buttons */
+    .prev-btn, .next-btn {
+      position: absolute;
+      bottom: 10px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 32px; /* Increased arrow size */
+      cursor: pointer;
+      user-select: none;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.2s ease;
+      z-index: 16;
+    }
+
+    .prev-btn:hover, .next-btn:hover {
+      color: #ff69b4;
+    }
+
+    .prev-btn {
+      left: 10px;
+    }
+
+    .next-btn {
+      right: 10px;
+    }
+
+    .pics-box {
+      position: relative; /* Required for the pseudo-element */
+      top: 0.5cm;
+      max-width: 650px;
+      margin: 0 auto;
+      border-radius: 20px;
+      border: 2px solid #fff;
+      box-shadow:
+        0 0 5px #fff,
+        0 0 10px #ff69b4,
+        0 0 20px #ff69b4,
+        0 0 40px #ff69b4;
+    }
+
+    /* Apply background and blur to a pseudo-element to avoid creating a stacking context on the parent */
+    .pics-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: rgba(211, 211, 211, 0.02);
+      backdrop-filter: blur(2px);
+      /* Adjust radius to fit inside the parent's border */
+      border-radius: 16px; 
+      z-index: -1; /* Place it behind the content of .pics-box */
+    }
+    .go-back-container {
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+      padding-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="images-wrapper">
+    <div class="static-line-left" aria-hidden="true" role="presentation" aria-label="Static video games text">
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+    </div>
+
+    <div class="static-line-right" aria-hidden="true" role="presentation">
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+      <span class="pink">TV SERIES</span><span class="white">TV SERIES</span><span class="pink">TV SERIES</span>
+      <span class="white">TV SERIES</span><span class="pink">TV SERIES</span><span class="white">TV SERIES</span>
+    </div>
+
+    <div class="pics-box">
+      <div class="image-row assassin-row">
+        <div class="frame assassin-frame" style="--img: url('got.jpg');">
+          <img src="got.jpg" alt="Game of Thrones">
+          <div class="info-box">
+            <p>
+              In the vast and dangerous world of Westeros, noble houses fight for the Iron Throne, each driven by loyalty, pride, or ruthless ambition. From icy, haunted landscapes in the North to the golden courts of the South, every corner hides its own power games and deadly secrets. 
+            </p>
+            <p>
+              The battles are breathtaking, but the real tension comes from whispered plots, shifting alliances, and choices that can shatter kingdoms. Heroes and villains aren’t fixed roles here—every character carries shades of both, and fortunes can change in an instant.
+            </p>
+            <p>
+              The show’s world feels alive, full of history, myth, and political intrigue that keeps you guessing at every turn. One moment, it’s about love and loyalty; the next, it’s war and betrayal.
+            </p>
+            <p>
+              Game of Thrones doesn’t just tell a story—it builds a living, breathing realm where every decision matters and no one is truly safe. It’s as much about human ambition as it is about thrones and crowns.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('bb.jpg');">
+          <img src="bb.jpg" alt="Breaking Bad">
+          <div class="info-box">
+            <p>
+              What happens when an ordinary man decides to break the rules completely? Breaking Bad takes that question and turns it into a tense, thrilling spiral of choices, consequences, and moral decay. 
+            </p>
+            <p>
+              Walter White, a high school chemistry teacher, is pushed into a world where precision and danger go hand in hand. The show doesn’t just rely on explosive moments—it builds slow, tight suspense until even silence feels like it could shatter. Each episode draws you deeper into a life where the lines between survival, greed, and power blur beyond recognition. 
+            </p>
+            <p>
+              Every character feels real, flawed, and unpredictable, making every interaction a gamble. The New Mexico backdrop adds a raw, almost haunting beauty to the chaos unfolding. 
+            </p>
+            <p>
+              It’s a series that grips you with its sharp storytelling and refuses to let go, constantly making you question how far someone will go when their back is against the wall—and what happens when they start to like it.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('gg.jpg');">
+          <img src="gg.jpg" alt="Gossip Girl">
+          <div class="info-box">
+            <p>
+              In the glittering world of Manhattan’s elite, wealth isn’t just power—it’s currency for secrets, schemes, and social dominance. Gossip Girl dives into the lives of privileged teenagers who seem to have it all, but whose perfectly polished images hide tangled relationships and scandalous truths. 
+            </p>
+            <p>
+              Overseeing it all is an anonymous blogger, always ready to expose the juiciest details to the entire Upper East Side. The show sparkles with fashion, drama, and sharp dialogue, but beneath the glamour, it’s a game of manipulation where friendships can be as fragile as alliances in a royal court. Every party, trip, and romantic twist comes with the risk of public humiliation. 
+            </p>
+            <p>
+              Yet, even with all the scheming, there’s a magnetic pull to this glamorous chaos—because behind the headlines and heartbreak, the characters are still chasing love, identity, and belonging. 
+            </p>
+            <p>
+              It’s addictive, dramatic, and wickedly fun, a window into a world where everyone has something to hide—and someone willing to tell.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame smaller-frame" style="--img: url('tgp.png');">
+          <img src="tgp.png" alt="The Good Place">
+          <div class="info-box">
+            <p>
+              Bright, colorful, and too good to be true, The Good Place starts as a quirky afterlife comedy and quickly reveals itself as something far deeper. 
+            </p>
+            <p>
+              When Eleanor Shellstrop wakes up in a perfect little neighborhood with endless frozen yogurt, cheerful neighbors, and not a single hangover in sight, she’s pretty sure she’s not supposed to be here—and that’s when things start to spiral. The show is part candy-colored comedy, part moral disaster, and part “how the hell did we get here?” chaos, mixing laugh-out-loud humor with surprisingly thoughtful explorations of what it means to be a good person. 
+            </p>
+            <p>
+              Every episode throws in clever twists, bizarre rules, and imaginative settings, balancing slapstick jokes with genuine philosophical questions. 
+            </p>
+            <p>
+              One moment it’s a dumb joke about clowns, the next it’s questioning the entire point of humanity. It’s messy, fast, and totally unlike any afterlife you’ve ever imagined—and that’s exactly what makes it so fun.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('shameless.jpg'); width: 450px;">
+          <img src="shameless.jpg" alt="Shameless">
+          <div class="info-box">
+            <p>
+              Loud, filthy, and completely unfiltered, Shameless drags you straight into the Gallagher family’s world—where bills don’t get paid, drinks never run out, and trouble is basically a daily sport. 
+            </p>
+            <p>
+              On Chicago’s South Side, morality is flexible, scams are survival tactics, and family loyalty comes with plenty of screaming matches and slammed doors. Everyone’s hustling for cash, dignity, or their next bad decision, and somehow managing to laugh through the wreckage. 
+            </p>
+            <p>
+              It’s raunchy, unpredictable, and brimming with moments that are as heartbreaking as they are hilarious. No one here plays the hero—just people doing whatever it takes to get through the day, even if it’s messy, illegal, or downright stupid. And that’s the hook: it’s shamelessly human. 
+            </p>
+            <p>
+              Under all the chaos and bad behavior, there’s a stubborn kind of love holding it all together… barely. This isn’t a pretty story, but it’s alive, loud, and impossible to look away from.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('witcher.jpg');">
+          <img src="witcher.jpg" alt="The Witcher">
+          <div class="info-box">
+            <p>
+              Based on Andrzej Sapkowski’s bestselling fantasy books, The Witcher follows Geralt of Rivia, a solitary monster hunter who roams a war-torn land filled with magic, political intrigue, and dangerous creatures.
+            </p>
+            <p>
+              Trained from childhood and enhanced through alchemy, Geralt takes contracts to slay monsters—ranging from nightmarish ghouls and wraiths to cursed beasts and ancient demons—while navigating the mistrust and prejudice of the humans he protects.
+            </p>
+            <p>
+              Along his journey, Geralt crosses paths with Yennefer, a powerful sorceress, and Ciri, a princess whose fate is bound to his own.
+            </p>
+            <p>
+              Battling assassins, armies, and supernatural horrors, they are drawn into a tangled web of prophecy, power, and survival in a morally complex world. Together, their intertwined stories unfold through high-stakes adventure and moments of personal struggle, set against the backdrop of an expansive and visually rich fantasy realm.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="image-row">
+        <div class="frame" style="--img: url('umbrella.jpg'); width: 550px;">
+          <img src="umbrella.jpg" alt="The Umbrella Academy">
+          <div class="info-box">
+            <p>
+              The Umbrella Academy is a stylish, unpredictable superhero series adapted from the comic books by Gerard Way and Gabriel Bá.
+            </p>
+            <p>
+              It begins with 43 mysterious, simultaneous births around the globe, from which eccentric billionaire Sir Reginald Hargreeves adopts seven children with extraordinary abilities.
+            </p>
+            <p>
+              Raised to fight crime as a young team, the siblings—each with unique powers, from mind control to necromancy—eventually drift apart due to clashing personalities and unresolved traumas.
+            </p>
+            <p>
+              Years later, they reunite for their father’s funeral, only to uncover hidden truths about their past and face a far greater challenge: preventing an impending apocalypse.
+            </p>
+            <p>
+              The arrival of Number Five, a time-traveling brother carrying grim warnings from the future, thrusts them into a race against time.
+            </p>
+            <p>
+              Set across shifting timelines and packed with eccentric personalities, the series blends dysfunctional family drama, offbeat humor, mystery, and high-energy action into a story where saving the world might be easier than fixing their broken relationships.
+            </p>
+            <button class="prev-btn" aria-label="Previous paragraph" title="Previous paragraph" type="button">‹</button>
+            <button class="next-btn" aria-label="Next paragraph" title="Next paragraph" type="button">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="go-back-container">
+    <a href="stuff.html" class="btn">← Go Back</a>
+  </div>
+
+  <script>
+    document.querySelectorAll('.info-box').forEach(box => {
+      const paras = box.querySelectorAll('p');
+      const prevBtn = box.querySelector('.prev-btn');
+      const nextBtn = box.querySelector('.next-btn');
+
+      let current = 0;
+
+      const updateArrowVisibility = () => {
+        const total = paras.length;
+        // Hide arrows if there's only one paragraph
+        if (total < 2) {
+          prevBtn.style.display = 'none';
+          nextBtn.style.display = 'none';
+          return;
+        }
+        // Show/hide prev arrow
+        prevBtn.style.display = (current > 0) ? 'block' : 'none';
+        // Show/hide next arrow
+        nextBtn.style.display = (current < total - 1) ? 'block' : 'none';
+      };
+
+      // Set initial state
+      paras.forEach((p, i) => {
+        p.style.display = i === 0 ? 'block' : 'none';
+      });
+      updateArrowVisibility();
+
+      prevBtn.addEventListener('click', () => {
+        paras[current].style.display = 'none';
+        current = (current - 1 + paras.length) % paras.length;
+        paras[current].style.display = 'block';
+        updateArrowVisibility();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        paras[current].style.display = 'none';
+        current = (current + 1) % paras.length;
+        paras[current].style.display = 'block';
+        updateArrowVisibility();
+      });
+    });
+  </script>
+</body>
+</html>

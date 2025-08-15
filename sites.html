@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sites</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Font for the first text */
+    @font-face {
+      font-family: 'DisplayFont';
+      src: url('font3.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Font for the second text */
+    @font-face {
+      font-family: 'DisplayFont2';
+      src: url('font4.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Font for the ENTER text top layer */
+    @font-face {
+      font-family: 'EnterFont';
+      src: url('font6.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Font for the detail text */
+    @font-face {
+      font-family: 'DetailFont';
+      src: url('font8.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif; /* Using a standard web-safe font for the button */
+      background: transparent;
+      overflow-x: hidden;
+    }
+
+    /* New container for the sliding panels */
+    #panels-container {
+      display: flex;
+      width: 200%;
+      height: 100%;
+      transition: transform 0.8s ease-in-out;
+    }
+
+    #panels-container.slide-active {
+      transform: translateX(-50%);
+    }
+
+    /* Each panel takes up the full screen and centers its content.
+       This replaces the old body styling. */
+    .panel {
+      width: 50%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* Move the entire second panel up */
+    #panel-2 {
+      transform: translateY(-1.2cm);
+    }
+
+    /* Video background styling */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Content box */
+    .content-box {
+      position: relative;
+      width: 90%;
+      max-width: 700px;
+      min-height: 580px; /* Original height for the positioning container */
+      /* Flex properties to center and space content */
+      display: flex;
+      flex-direction: column;
+      justify-content: center; /* Changed to center for better overlap control */
+      align-items: center;
+      padding: 20px;
+      overflow: hidden; /* Prevents text from spilling out due to negative margin */
+      transform: translateY(-1.3mm); /* Original position */
+    }
+
+    /* The new visual background for the box, which can be moved independently */
+    .box-visual-background {
+      position: absolute;
+      top: 100px; /* This 'shortens' the box from the top without moving content */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      border: 5px solid #C2185B; /* Changed to match the "cute..." text color */
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: -1; /* Sit behind all other content in the box */
+    }
+
+    /* Style for the added GIF */
+    .flying-gif {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 320px; /* Final size increase */
+      z-index: 5;   /* Sits on top of the text layers */
+      transform: translate(calc(-0.5cm + 2mm), calc(4.5cm - 3mm)); /* Moved 3mm up */
+    }
+
+    /* --- Enter Text Styles --- */
+    .enter-text-wrapper {
+      position: absolute;
+      bottom: 140px;
+      z-index: 3;
+      transform: translate(-4cm, 2cm); /* Moved 1cm to the left again */
+      cursor: pointer; /* To indicate it's clickable */
+      transition: transform 0.1s ease-out; /* Smooth transition for the click effect */
+    }
+    .enter-text {
+      font-size: 3rem; /* Increased size a bit */
+      letter-spacing: 2px;
+      color: transparent;
+      position: relative;
+      line-height: 1.2;
+    }
+    .enter-text.font-2 {
+      font-family: 'EnterFont', sans-serif;
+    }
+    .enter-text::after, .enter-text::before {
+      content: attr(data-text);
+      position: absolute;
+      left: 0; top: 0; width: 100%;
+    }
+    .enter-text::after { color: #333; z-index: 2; }
+    .enter-text.font-2::after { color: #F06292; } /* Match the color of the main title */
+    .enter-text::before {
+      color: rgba(0,0,0,0.4);
+      z-index: 1;
+      filter: blur(4px);
+      transform: translate(4px, 4px);
+    }
+
+    /* Click effect for the Enter button */
+    #enter-btn:active {
+      transform: translate(-4cm, calc(2cm + 3px)) scale(0.98); /* Moves down and shrinks slightly on click */
+    }
+
+    /* --- Details Text Styles --- */
+    .details-text {
+      font-family: 'DetailFont', sans-serif;
+      font-size: 1.3rem; /* Increased size a bit */
+      color: #C2185B; /* Darker version of the frame color #F06292 */
+      letter-spacing: 1px;
+      display: flex;
+      gap: 20px; /* Increased space between items */
+      align-items: center;
+      position: absolute;
+      bottom: 230px; /* Position it above the "Enter" text */
+      left: 50%;
+      transform: translate(calc(-50% - 3.0cm), 1.5cm); /* Moved 0.5cm to the left */
+      z-index: 3;
+    }
+
+    /* Prevent text inside the details from wrapping */
+    .details-text span {
+      white-space: nowrap;
+    }
+
+    .details-text .separator {
+      color: #aaa; /* Lighter color for the separator */
+    }
+
+    /* --- Stamp Styles --- */
+
+    /* Container to hold the stamps in a row */
+    .stamps-container {
+      position: absolute;
+      bottom: 20px; /* Position the whole row at the bottom */
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center; /* Center the stamps horizontally */
+      align-items: center;   /* Align them vertically */
+      gap: 15px; /* Moved stamps closer */
+      z-index: 4;
+      transform: translate(-3.0cm, -2.0cm); /* Moved up another 3mm */
+    }
+
+    /* Individual stamp styling */
+    .stamp1, .stamp2, .stamp3 {
+      width: 90px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Style for the new rose GIF */
+    .rose-gif {
+      position: absolute;
+      bottom: 20px;
+      left: calc(20px + 0.5cm + 3mm); /* Moved 1mm to the right */
+      width: 380px; /* Made the rose even huger */
+      transform: rotate(0); /* Made parallel to horizontal */
+      z-index: 4;
+      /* Moved shadow 1mm lower */
+      filter: drop-shadow(calc(8px - 0.5mm) calc(8px - 1mm) 0 black);
+    }
+
+    /* --- Refactored for text segment control --- */
+
+    /* 1. Base container style. This is now a flex container for the text segments. */
+    .title-text {
+      font-size: 3rem; /* Reduced from 3.5rem */
+      line-height: 1.2;
+      letter-spacing: 0px;
+      /* This is now a flex container to hold the spans */
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+    }
+
+    /* The individual text segments (spans) */
+    .title-text span {
+      position: relative;
+      color: transparent; /* Hide original text, keep its space */
+      display: inline-block; /* Ensures transform works as expected */
+    }
+
+    /* Class to move the "FL" segment */
+    .move-right {
+      transform: translateX(calc(15px - 1mm)); /* Moved "FL" 1mm to the left */
+    }
+
+    /* Reverted "NO" text to its original position */
+    #panel-2 .move-right {
+      transform: translateX(calc(15px - 3mm));
+    }
+
+    /* 2. Font-specific classes (These remain on the container) */
+    .font-1 {
+      font-family: 'DisplayFont', sans-serif;
+      z-index: 1; /* Set a base stacking order */
+      transform: translate(1cm, -3.8cm); /* Moved 1cm to the right */
+    }
+    .font-2 {
+      font-family: 'DisplayFont2', sans-serif;
+      margin-top: -3.6rem; /* Adjusted for new font size (3rem * 1.2) */
+      transform: translate(1cm, -5.567cm); /* Moved 1cm to the right */
+      z-index: 2;
+    }
+
+    /* 3. The top text layer, now applied to each span */
+    .title-text span::after {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      color: #333;
+      z-index: 2;
+    }
+
+    /* Color override for the top text (font4.ttf) */
+    .font-2 span::after {
+      color: #F06292; /* Lighter cyber pink */
+    }
+
+    /* 4. The shadow layer, also applied to each span */
+    .title-text span::before {
+      content: attr(data-text);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      color: rgba(0,0,0,0.4);
+      z-index: 1;
+      filter: blur(8px);
+      transform: translate(6px, 6px);
+    }
+
+    /* Position override for the text in the second panel to align it
+       with the text from the first panel. */
+    #panel-2 .font-1 {
+      transform: translate(calc(-0.5cm + 1mm), -3.9cm); /* Moved down 1.5cm */
+    }
+    #panel-2 .font-2 {
+      transform: translate(-0.5cm, -4.067cm); /* Moved right 1.5cm and down 1.5cm */
+    }
+
+    /* Style for the new back arrow GIF */
+    .back-arrow-gif {
+      position: absolute;
+      left: calc(20px + 6cm); /* Moved 1cm to the right */
+      top: 50%;
+      transform: translateY(calc(-50% + 0.5cm)) rotate(90deg); /* Moved 0.5cm down */
+      width: 80px; /* Adjust size as needed */
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.2s ease;
+    }
+    .back-arrow-gif:hover {
+      transform: translateY(calc(-50% + 0.5cm)) rotate(90deg) scale(1.1); /* Keep rotation on hover */
+    }
+
+    /* Style for the duplicated, flipped arrow */
+    .forward-arrow-gif {
+      position: absolute;
+      right: calc(20px + 5.7cm); /* Moved 5.7cm to the left */
+      top: 50%;
+      transform: translateY(calc(-50% + 0.5cm)) rotate(90deg) scaleY(-1); /* Moved 0.5cm down */
+      width: 80px;
+      z-index: 10;
+      transition: transform 0.2s ease;
+    }
+    .forward-arrow-gif:hover {
+      transform: translateY(calc(-50% + 0.5cm)) rotate(90deg) scaleY(-1) scale(1.1);
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* New Dropdown Styles */
+    .site-chooser {
+      margin-top: 40px;
+      text-align: center;
+      color: #333;
+      z-index: 5;
+      position: relative; /* To ensure z-index works */
+    }
+
+    .site-chooser h3 {
+      font-family: 'DetailFont', sans-serif; /* Using an existing font */
+      font-size: 1.5rem;
+      color: #C2185B; /* Using an existing color */
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+
+    .site-chooser select {
+      padding: 8px 12px;
+      font-size: 1rem;
+      font-family: sans-serif;
+      border-radius: 5px;
+      border: 2px solid #C2185B; /* Matched color to the frame/details text */
+      background: white;
+      min-width: 150px;
+      cursor: pointer;
+      outline: none; /* Remove default browser outline on focus */
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .site-chooser select:focus {
+      box-shadow: 0 0 8px rgba(194, 24, 91, 0.5); /* Add a glow effect on focus */
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div id="panels-container">
+    <!-- Panel 1: Original Content -->
+    <div id="panel-1" class="panel">
+      <div class="content-box">
+        <!-- This div creates the visible box -->
+        <div class="box-visual-background"></div>
+        <img src="fly.gif" alt="Flying animation" class="flying-gif" />
+        <img src="rose.gif" alt="Rose animation" class="rose-gif" />
+
+        <div class="stamps-container">
+          <img src="stamp1.png" alt="Stamp 1" class="stamp1" />
+          <img src="stamp2.gif" alt="Stamp 2" class="stamp2" />
+          <img src="stamp3.gif" alt="Stamp 3" class="stamp3" />
+        </div>
+
+        <div class="details-text">
+          <span>cute</span>
+          <span class="separator">|</span>
+          <span>open-minded</span>
+          <span class="separator">|</span>
+          <span>nostalgic</span>
+        </div>
+
+        <!-- Enter button -->
+        <div class="enter-text-wrapper" id="enter-btn">
+          <div class="enter-text font-2" data-text="Enter">Enter</div>
+        </div>
+
+        <div class="title-text font-1">
+          <span class="move-right" data-text="FL">FL</span><span data-text="YING SITES FOR THE 2025">YING SITES FOR THE 2025</span>
+        </div>
+        <div class="title-text font-2">
+          <span class="move-right" data-text="FL">FL</span><span data-text="YING SITES FOR THE 2025">YING SITES FOR THE 2025</span>
+        </div>
+      </div>
+      <a href="stuff.html" class="btn">← Go Back</a>
+    </div>
+
+    <!-- Panel 2: New Content -->
+    <div id="panel-2" class="panel">
+      <!-- New back arrow GIF, now a direct child of the panel -->
+      <img src="arrow2.gif" alt="Go Back" id="go-back-arrow" class="back-arrow-gif" />
+      <!-- Duplicated and flipped arrow -->
+      <img src="arrow2.gif" alt="Forward" class="forward-arrow-gif" />
+      <div class="content-box">
+        <div class="box-visual-background"></div>
+        <!-- New text with same styling as original -->
+        <div class="title-text font-1">
+          <span class="move-right" data-text="NO">NO</span><span data-text="NCHALANT">NCHALANT</span>
+        </div>
+        <div class="title-text font-2">
+          <span class="move-right" data-text="NO">NO</span><span data-text="NCHALANT">NCHALANT</span>
+        </div>
+
+        <div class="site-chooser">
+          <select name="sites" id="site-select">
+            <option value="" selected>Choose ur option</option>
+            <option value="useless">useless</option>
+            <option value="silly-cat">silly cat</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const panelsContainer = document.getElementById('panels-container');
+    const enterButton = document.getElementById('enter-btn');
+    const goBackButton = document.getElementById('go-back-arrow');
+    const siteSelect = document.getElementById('site-select');
+
+    enterButton.addEventListener('click', () => {
+      panelsContainer.classList.add('slide-active');
+    });
+
+    goBackButton.addEventListener('click', (e) => {
+      e.preventDefault(); // Prevent default anchor behavior
+      panelsContainer.classList.remove('slide-active');
+      siteSelect.selectedIndex = 0; // Reset the dropdown to the first option
+    });
+  </script>
+</body>
+</html>

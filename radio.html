@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Radio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script async src="https://www.youtube.com/iframe_api"></script>
+  <style>
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: 'PixelFont', sans-serif;
+      background: transparent; overflow-x: hidden;
+    }
+
+    /* Define z-index values as CSS variables for easy state management */
+    :root {
+      --purple-box-z-index: 0;
+      --frame-z-index: 1;
+      --content-z-index: 2;
+    }
+
+    body.psp-view-active {
+      --purple-box-z-index: 0; /* Stays at the bottom */
+      --content-z-index: 1;    /* Sits between box and frame */
+      --frame-z-index: 2;      /* Moves to the top */
+    }
+
+    /* Video background */
+    .video-bg {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: -1;
+    }
+
+    /* Frame image (let clicks pass through it) */
+    .radio-image {
+      position: absolute; top: 50%; left: 50%;
+      --translate-x: 0;
+      transform: translateX(var(--translate-x)) translate(-50%, calc(-50% + 0.5cm));
+      width: 70vw; height: auto; border-radius: 15px;
+      z-index: var(--frame-z-index);
+      pointer-events: none; /* IMPORTANT: don't block clicks on items underneath */
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block; padding: 14px 28px; font-size: 20px;
+      background: rgba(255,255,255,.85); color: #222; border: none;
+      border-radius: 8px; text-decoration: none; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.4);
+      transition: transform .2s ease, box-shadow .2s ease;
+      margin: 20px; position: relative; z-index: 10;
+    }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,.5); }
+
+    /* Go back container */
+    .go-back-container {
+      position: absolute; bottom: calc(30px - 3cm); left: 50%;
+      transform: translateX(-50%); text-align: center; z-index: 20;
+    }
+
+    /* New: Background element for the purple box */
+    .gif-container-bg {
+      position: absolute; top: 160px; left: 320px; width: 865px;
+      --translate-x: 0;
+      transform: translateX(var(--translate-x));
+      background-color: rgba(221,179,255,.3);
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.4);
+      z-index: var(--purple-box-z-index); /* Uses the variable */
+      transition: height .3s ease-in-out;
+    }
+
+    /* Box for GIFs */
+    .gif-container {
+      position: absolute; top: 160px; left: 320px; width: 865px;
+      --translate-x: 0;
+      transform: translateX(var(--translate-x));
+      padding: 20px 20px 0; /* Reduced top padding to make box shorter */
+      display: flex;
+      /* Changed to a column layout to stack the GIFs above the new text */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 25px;
+      z-index: var(--content-z-index);
+    }
+
+    /* New wrapper to keep GIFs side-by-side inside the column layout */
+    .gif-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .gif-container.is-psp-view {
+      padding: 0 20px;
+    }
+
+    /* Move PSP unit up in the second view */
+    .gif-container.is-psp-view #psp {
+      transform: translateY(-1.14cm);
+      margin-bottom: -3mm;
+    }
+
+    /* Bring GIFs to the very front */
+    .contained-gif { width: 400px; height: auto; border-radius: 6px; cursor: pointer; position: relative; z-index: 2; }
+    .gif-2 { width: 300px; }
+    .gif-1 { transform: translateX(-20px); }
+
+    /* Styles for the "Click us" prompt */
+    .click-us-prompt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 28px;
+      color: white;
+      /* Inclined, bold black shadow */
+      text-shadow: 3px 3px 0 #000;
+      transform: translateY(-1cm); /* Move the prompt up */
+    }
+
+    .heart-icon {
+      /* Apply the same shadow style to the icon shape */
+      filter: drop-shadow(3px 3px 0 #000);
+      /* Minor vertical adjustment to align with text */
+      transform: translateY(calc(3px - 0.5mm - 0.05cm)); /* Moved up 0.05cm */
+    }
+
+    @keyframes slideOutLeft {
+      to {
+        --translate-x: -100vw;
+        opacity: 0;
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        --translate-x: 100vw;
+        opacity: 0;
+      }
+      to {
+        --translate-x: 0;
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOutRight {
+      to {
+        --translate-x: 100vw;
+        opacity: 0;
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        --translate-x: -100vw;
+        opacity: 0;
+      }
+      to {
+        --translate-x: 0;
+        opacity: 1;
+      }
+    }
+
+    .slide-out-left {
+      animation: slideOutLeft 0.5s forwards;
+    }
+
+    .slide-in-right {
+      animation: slideInRight 0.5s forwards;
+    }
+
+    .slide-out-right {
+      animation: slideOutRight 0.5s forwards;
+    }
+
+    .slide-in-left {
+      animation: slideInLeft 0.5s forwards;
+    }
+
+    /* PSP Styles */
+    #psp {
+      width: 720px; /* Adjust based on your psp.png width */
+      position: relative;
+      margin: 0 auto; /* Centers it */
+    }
+
+    #psfuckenp {
+      width: 100%; /* Ensures it fits the container */
+    }
+
+    .pspbutton {
+      background: none;
+      border: none;
+      position: absolute;
+      top: 135px; /* Vertical position for buttons */
+      cursor: pointer;
+    }
+
+    #bleft {
+      left: calc(70px - 1cm + 1mm);
+      top: calc(135px + 2.6cm - 1mm - 0.065cm);
+    }
+
+    #bright {
+      left: calc(580px - 13cm + 3mm + 0.415mm);
+      top: calc(135px + 2.6cm - 2mm + 0.020cm); /* Moved up another 0.01cm */
+    }
+
+    .pspbutton:active {
+      filter: brightness(80%);
+    }
+
+    .pspbutton img {
+      width: auto; /* Adjust if your button images need resizing */
+      height: auto;
+    }
+
+    #pspstuff {
+      margin-top: -300px; /* Adjust to overlay the video on the PSP screen area */
+      overflow: hidden;
+      position: absolute;
+      left: calc(160px + 1mm - 0.05cm); /* Moved 0.05cm to the left */
+      top: calc(100px + 9cm - 2mm); /* Moved another 0.5mm higher */
+      width: 400px; /* Width of the video frame */
+      height: 230px; /* Height of the video frame */
+    }
+
+    #pspstuff iframe,
+    #pspstuff #player {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <img src="framew.png" alt="Radio Frame" class="radio-image">
+
+  <!-- White box with GIFs -->
+  <div class="gif-container-bg"></div>
+  <div class="gif-container">
+    <div class="gif-wrapper">
+      <a
+        id="pspLink"
+        href="#"
+        onclick="event.preventDefault(); transitionToPSP();"
+        aria-label="Open PSP YouTube playlist"
+      >
+        <img src="mu1.gif" alt="Music GIF 1" class="contained-gif gif-1">
+      </a>
+
+      <!-- Spotify GIF clickable: tries app on mobile, web fallback; desktop opens new tab -->
+      <a
+        id="spotifyLink"
+        href="https://open.spotify.com/playlist/5NhLfZjw43aKdjAUWt8Ggj?si=ce494b726d5d4be7"
+        target="_blank" rel="noopener noreferrer"
+        onclick="return openSpotify(event);"
+        aria-label="Open Spotify playlist"
+      >
+        <img src="mu2.gif" alt="Music GIF 2" class="contained-gif gif-2">
+      </a>
+    </div>
+    <div class="click-us-prompt">
+      <span>Click us</span>
+      <svg class="heart-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+        <path fill="none" stroke="currentColor" stroke-width="2" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    </div>
+  </div>
+  
+  <div class="go-back-container">
+    <a href="stuff.html" class="btn">← Go Back</a>
+  </div>
+
+  <script>
+    const gifContainer = document.querySelector('.gif-container');
+    const gifContainerBg = document.querySelector('.gif-container-bg');
+    const radioFrame = document.querySelector('.radio-image');
+    const goBackLink = document.querySelector('.go-back-container a');
+    let initialContent = gifContainer.innerHTML;
+    let isPSPView = false;
+
+    // Use a ResizeObserver to automatically sync the background height
+    // with the content container's height. This is more efficient than
+    // manual checks.
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        // Use requestAnimationFrame to prevent layout thrashing
+        requestAnimationFrame(() => {
+          gifContainerBg.style.height = `${entry.target.offsetHeight}px`;
+        });
+      }
+    });
+    resizeObserver.observe(gifContainer);
+
+    function openSpotify(e) {
+      const link = document.getElementById('spotifyLink');
+      const webUrl = link.href;
+      // Extract playlist ID from the URL for the app scheme
+      const match = webUrl.match(/playlist\/([a-zA-Z0-9]+)/);
+      const playlistId = match ? match[1] : '5NhLfZjw43aKdjAUWt8Ggj';
+      const appUrl = `spotify:playlist:${playlistId}`;
+
+      // Mobile: try app first, then same-tab fallback (avoids popup blockers)
+      if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        e.preventDefault();
+        const start = Date.now();
+        // Try to open the Spotify app
+        window.location.href = appUrl;
+        // If app didn't take over, navigate to web after a short delay
+        setTimeout(function () {
+          if (Date.now() - start < 1500) {
+            window.location.href = webUrl; // same-tab fallback = more reliable on iOS/Android
+          }
+        }, 700);
+        return false;
+      }
+      // Desktop: let the <a> open a new tab normally
+      return true;
+    }
+
+    var player;
+    var apiReady = false;
+    var videosReady = false;
+    var playlistId = 'PLSPrPV-BvV-Muq11m3ryQh8oBFl9QziQr';
+    var videoIds = [];
+    var currentIndex = 0;
+
+    function onYouTubeIframeAPIReady() {
+      apiReady = true;
+      if (videosReady && document.getElementById('player')) {
+        initPlayer();
+      }
+    }
+
+    function loadPlaylistVideos(callback) {
+      // YouTube's old feed API doesn't support direct client-side fetching from a different domain
+      // due to browser CORS security policy. We use a simple CORS proxy to get around this.
+      // Note: This public proxy is for development/hobby use.
+      // Also, the YouTube XML feed is deprecated and may stop working or return incomplete results.
+      const proxyUrl = 'https://api.allorigins.win/raw?url=';
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`;
+      const requestUrl = `${proxyUrl}${encodeURIComponent(feedUrl)}`;
+
+      fetch(requestUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+        .then(doc => {
+          const entries = doc.getElementsByTagName('entry');
+          if (doc.querySelector('parsererror') || entries.length === 0) {
+              console.error("Failed to parse playlist XML or playlist is empty.");
+              throw new Error("Failed to parse playlist XML or playlist is empty.");
+          }
+          videoIds = Array.from(entries).map(entry => entry.getElementsByTagName('yt:videoId')[0].textContent);
+          videosReady = true;
+          callback();
+        })
+        .catch(error => {
+            console.error('Failed to load YouTube playlist:', error);
+            videosReady = true; // Mark as ready to avoid blocking other logic
+            videoIds = []; // Ensure videoIds is empty on failure
+            callback(); // Call callback to proceed, which will now handle the empty list
+        });
+    }
+
+    function initPlayer() {
+      if (!videoIds || videoIds.length === 0) {
+        console.error("Cannot init player, no videos found in playlist.");
+        document.getElementById('player').innerHTML = '<p style="color:white; text-align:center; padding-top: 80px;">Could not load playlist.</p>';
+        return;
+      }
+      player = new YT.Player('player', {
+        height: '230',
+        width: '400',
+        videoId: videoIds[currentIndex],
+        playerVars: {
+          'autoplay': 0  // Set to 1 if you want auto-play
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // event.target.playVideo(); // Uncomment if you want auto-play
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED) {
+        nextVideo();
+      }
+    }
+
+    function nextVideo() {
+      if (!player || !videoIds || videoIds.length === 0) return;
+      currentIndex = (currentIndex + 1) % videoIds.length;
+      player.loadVideoById(videoIds[currentIndex]);
+    }
+
+    function previousVideo() {
+      if (!player || !videoIds || videoIds.length === 0) return;
+      currentIndex = (currentIndex - 1 + videoIds.length) % videoIds.length;
+      player.loadVideoById(videoIds[currentIndex]);
+    }
+
+    function transitionToPSP() {
+      const frame = radioFrame;
+      const container = gifContainer; // Content
+      const containerBg = gifContainerBg; // Background
+
+      // Clean up classes from previous animations to ensure this one runs
+      frame.classList.remove('slide-in-left', 'slide-in-right');
+      container.classList.remove('slide-in-left', 'slide-in-right');
+      containerBg.classList.remove('slide-in-left', 'slide-in-right');
+
+      frame.classList.add('slide-out-left');
+      container.classList.add('slide-out-left');
+      containerBg.classList.add('slide-out-left');
+
+      const handleAnimationEnd = () => {
+        container.removeEventListener('animationend', handleAnimationEnd);
+
+        // Clear current content
+        container.innerHTML = '';
+        // Temporarily set a small height to prevent the background from disappearing
+        container.style.minHeight = '1px';
+
+        // Add PSP content
+        container.innerHTML = `
+          <div id="psp">
+            <img id="psfuckenp" src="psp.png" loading="lazy" alt="PSP Console">
+
+            <button id="bleft" class="pspbutton" onclick="previousVideo()">
+              <img src="back.png" loading="lazy" alt="Back Button">
+            </button>
+
+            <button id="bright" class="pspbutton" onclick="nextVideo()">
+              <img src="next.png" loading="lazy" alt="Next Button">
+            </button>
+
+            <div id="pspstuff">
+              <div id="player"></div>
+            </div>
+          </div>
+        `;
+
+        // Add class to body to trigger z-index swap in CSS
+        document.body.classList.add('psp-view-active');
+
+        // Change go back behavior
+        goBackLink.href = "#";
+        goBackLink.onclick = function(e) {
+          e.preventDefault();
+          transitionBack();
+        };
+
+        isPSPView = true;
+        container.classList.add('is-psp-view');
+
+        // Reset for slide in
+        frame.style.opacity = '0';
+        frame.style.setProperty('--translate-x', '100vw');
+        container.style.opacity = '0';
+        container.style.setProperty('--translate-x', '100vw');
+        containerBg.style.opacity = '0';
+        containerBg.style.setProperty('--translate-x', '100vw');
+
+        // Force reflow
+        void frame.offsetWidth;
+        void container.offsetWidth;
+        void containerBg.offsetWidth;
+
+        // Start slide in
+        frame.classList.remove('slide-out-left');
+        container.classList.remove('slide-out-left');
+        containerBg.classList.remove('slide-out-left');
+        frame.classList.add('slide-in-right');
+        container.classList.add('slide-in-right');
+        containerBg.classList.add('slide-in-right');
+        container.style.minHeight = ''; // Clear min-height
+
+        // Load videos and init player if ready
+        loadPlaylistVideos(function() {
+          if (apiReady) {
+            initPlayer();
+          }
+        });
+      };
+
+      container.addEventListener('animationend', handleAnimationEnd);
+    }
+
+    function transitionBack() {
+      if (!isPSPView) return;
+
+      const frame = radioFrame;
+      const container = gifContainer; // Content
+      const containerBg = gifContainerBg; // Background
+
+      // Clean up classes from previous animations to ensure this one runs
+      frame.classList.remove('slide-in-left', 'slide-in-right');
+      container.classList.remove('slide-in-left', 'slide-in-right');
+      containerBg.classList.remove('slide-in-left', 'slide-in-right');
+
+      frame.classList.add('slide-out-right');
+      container.classList.add('slide-out-right');
+      containerBg.classList.add('slide-out-right');
+
+      const handleAnimationEnd = () => {
+        container.removeEventListener('animationend', handleAnimationEnd);
+
+        // Stop and destroy player if exists
+        if (player) {
+          player.stopVideo();
+          player.destroy();
+          player = null; // Clear reference
+        }
+
+        // Restore initial content
+        container.innerHTML = initialContent;
+
+        // Remove class from body to restore original z-index
+        document.body.classList.remove('psp-view-active');
+
+        // Restore go back link
+        goBackLink.href = "stuff.html";
+        goBackLink.onclick = null;
+
+        isPSPView = false;
+        container.classList.remove('is-psp-view');
+
+        // Reset for slide in
+        frame.style.opacity = '0';
+        frame.style.setProperty('--translate-x', '-100vw');
+        container.style.opacity = '0';
+        container.style.setProperty('--translate-x', '-100vw');
+        containerBg.style.opacity = '0';
+        containerBg.style.setProperty('--translate-x', '-100vw');
+
+        // Force reflow
+        void frame.offsetWidth;
+        void container.offsetWidth;
+        void containerBg.offsetWidth;
+
+        // Start slide in
+        frame.classList.remove('slide-out-right');
+        container.classList.remove('slide-out-right');
+        containerBg.classList.remove('slide-out-right');
+        frame.classList.add('slide-in-left');
+        container.classList.add('slide-in-left');
+        containerBg.classList.add('slide-in-left');
+      };
+
+      container.addEventListener('animationend', handleAnimationEnd);
+    }
+  </script>
+
+</body>
+</html>
