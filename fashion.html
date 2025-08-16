@@ -242,7 +242,7 @@ h1 { display: none; }
           extension = 'jfif';
         }
         const media = document.createElement(extension === 'mp4' ? 'video' : 'img');
-        media.src = `fashion/f${num}.${extension}`;
+        media.src = `f${num}.${extension}`;
         
         if (extension === 'mp4') {
           media.controls = true;
