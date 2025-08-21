@@ -200,12 +200,12 @@ h1 { display: none; }
 
     document.addEventListener('DOMContentLoaded', () => {
       const gallery = document.getElementById('gallery');
-      const imageCount = 116;
+      const imageCount = 123;
 
       // special cases
-      const jfifList = [115,116,114,112,110,109,111,38,4,42,43,40,79,26,31,6,35,24,74,2,80,1,8,39,16,14,36,27,48,15,13,5,3,20,30,7,10,21,77,17,28,9,47,18,12,49,29,68,25,23,76,11];
+      const jfifList = [115,116,114,112,110,109,111,38,4,42,43,40,79,26,31,6,35,24,74,2,80,1,8,39,16,14,36,27,48,15,13,5,3,20,30,7,10,21,77,17,28,9,47,18,12,49,29,68,25,118,119,120,121,122,23,76,11];
       const mp4List = [54,56,63,55,58,53];
-      const jpegList = [70,72,71,69];
+      const jpegList = [70,72,71,69,117,123];
 
       let imageNumbers = Array.from({length: imageCount}, (_, i) => i + 1);
       imageNumbers = shuffleArray(imageNumbers);
@@ -219,11 +219,11 @@ h1 { display: none; }
 
         let extension = 'jpg';
         if (mp4List.includes(num)) extension = 'mp4';
-        else if (jpegList.includes(num)) extension = 'jpeg';
+        else if (jpegList.includes(num)) extension = 'JPEG';
         else if (jfifList.includes(num)) extension = 'jfif';
 
         const media = document.createElement(extension === 'mp4' ? 'video' : 'img');
-        media.src = `random/r${num}.${extension}`;
+        media.src = `r${num}.${extension}`;
         
         if (extension === 'mp4') {
           media.controls = true;
