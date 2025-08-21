@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
 h1 { display: none; }
-    /* fonts (copied from original code) */
     @font-face {
       font-family: 'PixelFont';
       src: url('fontpixel.ttf') format('truetype');
@@ -22,8 +21,6 @@ h1 { display: none; }
       font-style: normal;
       font-display: swap;
     }
-
-    /* page layout + background (matches original code) */
     html, body { height: 100%; }
     body {
       margin: 0;
@@ -40,8 +37,6 @@ h1 { display: none; }
       position: relative;
       padding: 20px;
     }
-
-    /* ensure content sits above sparkles */
     .content {
       position: relative;
       z-index: 1;
@@ -49,13 +44,11 @@ h1 { display: none; }
       max-width: 1200px;
       margin: 0 auto;
     }
-
     h1 {
       font-size: 3rem;
       text-shadow: 0 4px 10px rgba(0,0,0,0.5);
       margin: 0 0 20px 0;
     }
-
     a.btn {
       text-decoration: none;
       font-family: 'CandySeason', sans-serif;
@@ -68,13 +61,10 @@ h1 { display: none; }
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: inline-block;
     }
-
     a.btn:hover {
       transform: translateY(-4px);
       box-shadow: 0 12px 24px rgba(0,0,0,0.45);
     }
-
-    /* Organic masonry layout */
     .gallery {
       display: flex;
       flex-wrap: wrap;
@@ -82,7 +72,6 @@ h1 { display: none; }
       width: 100%;
       padding-bottom: 20px;
     }
-
     .gallery-item {
       flex: 1 1 300px;
       display: flex;
@@ -96,21 +85,17 @@ h1 { display: none; }
       min-height: 200px;
       max-height: 400px;
     }
-
     .gallery-item.tall {
       min-height: 300px;
       max-height: 500px;
     }
-
     .gallery-item.wide {
       flex-grow: 2;
     }
-
     .gallery-item:hover {
       transform: scale(1.03);
       box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-
     .gallery-item img {
       width: auto;
       height: auto;
@@ -118,8 +103,6 @@ h1 { display: none; }
       max-height: 100%;
       object-fit: contain;
     }
-
-    /* Sparkle dots (copied from Code B, adjusted for full height) */
     .sparkle {
       position: absolute;
       width: 5px;
@@ -131,13 +114,10 @@ h1 { display: none; }
       z-index: 0;
       opacity: 0.95;
     }
-
     @keyframes sparkle {
       0% { transform: translateY(0) scale(1); opacity: 1; }
       100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
     }
-
-    /* Responsive adjustments */
     @media (max-width: 1024px) {
       .gallery-item {
         flex-basis: 250px;
@@ -168,9 +148,7 @@ h1 { display: none; }
 <body>
   <div class="content">
     <h1>Nature 1</h1>
-    <div class="gallery" id="gallery">
-      <!-- Images will be added dynamically via script -->
-    </div>
+    <div class="gallery" id="gallery"></div>
     <a class="btn" href="gallery.html">← Go back</a>
   </div>
 
@@ -207,29 +185,33 @@ h1 { display: none; }
 
     document.addEventListener('DOMContentLoaded', () => {
       const gallery = document.getElementById('gallery');
-      const startNum = 152;
-      const endNum = 302;
-      const imageCount = endNum - startNum + 1;
-      
-      let imageNumbers = Array.from({length: imageCount}, (_, i) => startNum + i);
-      imageNumbers = shuffleArray(imageNumbers);
-      
+      const startNum = 303;
+      const endNum = 453;
+
+      // Map for special extensions
+      const specialExt = {
+        432: 'png',
+        433: 'png',
+        442: 'avif'
+      };
+
+      const imageNumbers = shuffleArray(
+        Array.from({ length: endNum - startNum + 1 }, (_, i) => i + startNum)
+          .filter(num => num !== 453) // REMOVE na453.jpg
+      );
+
       imageNumbers.forEach(num => {
         const item = document.createElement('div');
         item.className = 'gallery-item';
-        
-        if (Math.random() > 0.7) {
-          item.classList.add('tall');
-        }
-        if (Math.random() > 0.8) {
-          item.classList.add('wide');
-        }
-        
+        if (Math.random() > 0.7) item.classList.add('tall');
+        if (Math.random() > 0.8) item.classList.add('wide');
+
         const img = document.createElement('img');
-        img.src = `na${num}.jpg`;
+        const ext = specialExt[num] || 'jpg';
+        img.src = `na${num}.${ext}`;
         img.alt = `Nature ${num}`;
         img.loading = 'lazy';
-        
+
         item.appendChild(img);
         gallery.appendChild(item);
       });
