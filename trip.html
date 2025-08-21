@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Mountain Trip</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        @font-face {
+            font-family: 'FontPixel1';
+            src: url('fontpixel1.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'FontSpace';
+            src: url('fontspace2.ttf') format('truetype');
+        }
+
+        /* Basic Reset and Body Styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Georgia', serif;
+            overflow: hidden; /* Prevents scrollbars */
+            background-color: #000; /* Add a black background for letterboxing */
+        }
+
+        /* Common styles for all scenes */
+        .scene {
+            height: 100vh;
+            width: 100vw;
+            background-size: 98%; /* A very subtle zoom-out */
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: default; /* Use default cursor for all scenes */
+        }
+
+        #fade-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9998; /* Below custom cursor, above everything else */
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #pixel-transition-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 10000; display: grid; pointer-events: none; visibility: hidden;
+        }
+        #pixel-transition-overlay > span { background-color: #000; transition: opacity 0.5s ease-in-out; }
+
+        /* Scene 1: The Mountain Base */
+        #scene1 {
+            background-image: url('mountain.jpg');
+            /* This scene is visible by default */
+        }
+
+        /* New Scenes */
+        #scene2 {
+            background-image: url('m1.jpg');
+            display: none;
+        }
+        #scene3 {
+            background-image: url('m2.jpg');
+            display: none;
+        }
+        #scene4 {
+            background-image: url('m3.jpg');
+            display: none;
+        }
+        #scene6 {
+            background-image: url('ac2.jpg');
+            display: none;
+        }
+        #scene7 {
+            background-image: url('ac3.jpg');
+            display: none;
+        }
+        #scene8 {
+            background-image: url('ac4.jpg');
+            display: none;
+        }
+        #scene9 {
+            background-image: url('liminal.jpg');
+            display: none;
+        }
+        #scene10 {
+            background-color: #808080; /* Grey background */
+            background-image: none;
+            display: none;
+        }
+        #scene11 {
+            background-image: url('mountain.jpg');
+            display: none;
+        }
+
+
+        /* Scene 5: The Mountaintop (Original Scene 2) */
+        #scene5 {
+            background-image: url('mountaintop.jpg');
+            display: none; /* This scene is hidden initially */
+        }
+
+        /* Main text styling */
+        .scene-text {
+            font-family: 'Press Start 2P', cursive; /* Pixel font */
+            font-size: 1.2em; /* Reduced size */
+            padding: 0 20px;
+            padding-top: 10vh; /* Moved text upper */
+            max-width: 800px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            line-height: 1.5; /* Added for better readability with pixel font */
+        }
+
+        #scene5-peak-text {
+            transform: translateY(-2.4cm);
+        }
+
+        /* "Click anywhere to continue" instruction styling */
+        .continue-prompt {
+            position: absolute;
+            bottom: calc(40px - 1.2cm); /* Moved 0.5cm lower */
+            font-family: 'FontSpace', sans-serif;
+            font-size: 1.2em;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Key GIF styling */
+        #key-gif {
+            position: absolute;
+            right: calc(50px - 0.2cm); /* Moved 0.2cm to the right */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100px; /* Slightly smaller key */
+            height: auto;
+            display: none; /* Hidden initially */
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.5));
+            cursor: default; /* Use default cursor */
+            transition: all 1.5s ease-in-out;
+        }
+
+        /* Door Image styling */
+        #door-image {
+            position: absolute;
+            right: 170px; /* Positioned to the left of the key */
+            top: 50%;
+            transform: translateY(calc(-50% - 0.3cm)); /* Moved 0.3cm up */
+            width: 220px; /* Increased door size */
+            height: auto;
+            opacity: 0; /* Hidden for fade-in effect */
+            display: none; /* Hidden initially */
+            filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.5));
+            transition: all 1.5s ease-in-out;
+        }
+
+        /* A clone of the #dialog-box style for the new scenes */
+        .story-dialog-box {
+            position: absolute; /* Positioned like the original dialog box */
+            bottom: 30px;
+            width: 80%;
+            max-width: 700px;
+            background-color: rgba(255, 182, 193, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        /* Dialog Box at the bottom */
+        #dialog-box {
+            display: none;
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 700px;
+            background-color: rgba(255, 182, 193, 0.8); /* Pinkish and more transparent */
+            color: #2c2c2c;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        #dialog-box > div[id^="dialog-display-"] {
+            display: flex; /* Use flexbox for the inner panels */
+            flex-direction: column;
+            justify-content: space-between; /* This pushes content to top and bottom */
+            width: 100%;
+            min-height: 160px; /* Ensures the box has height to push content apart */
+        }
+
+        #dialog-box ul,
+        #scene7-choice-box ul,
+        #scene8-dialog-box ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        #dialog-box li,
+        #scene7-choice-box li,
+        #scene8-dialog-box li {
+            font-family: 'FontPixel1', cursive;
+            font-size: 1.6em; /* Further increased size */
+            font-weight: normal;
+            margin-bottom: 12px;
+            cursor: default;
+            line-height: 1.6;
+            color: #2c2c2c;
+            padding: 5px; /* Add padding for background effect */
+            border-radius: 5px; /* For rounded background on hover */
+            transition: all 0.2s ease-in-out; /* Smooth transition for all properties */
+        }
+
+        #dialog-box li:hover,
+        #scene7-choice-box li:hover,
+        #scene8-dialog-box li:hover {
+            color: white; /* Make text white */
+            background-color: rgba(0, 0, 0, 0.4); /* Add a darker background */
+            text-shadow: 1px 1px 5px #000; /* Add shadow for readability */
+            transform: scale(1.02); /* Slightly enlarge */
+        }
+
+        .dialog-main-text {
+            font-family: 'FontPixel1', cursive; /* Use pixel font */
+            font-size: 1.9em; /* Further increased size */
+            font-weight: normal; /* Less bold text */
+            margin: 0; /* Reset margin */
+            line-height: 1.6;
+        }
+
+        .dialog-continue-prompt {
+            font-family: 'FontSpace', sans-serif;
+            font-size: 0.9em;
+            font-style: italic;
+            padding-top: 15px; /* Add some space from the text above */
+            color: #555;
+            margin-bottom: -15px; /* Pulls prompt closer to the dialog box bottom */
+        }
+
+        #custom-cursor {
+            position: absolute;
+            display: none;
+            width: 200px;
+            height: auto;
+            transform: rotate(62deg); /* Rotated */
+            pointer-events: none; /* So it doesn't block clicks */
+            z-index: 9999;
+        }
+
+        /* Dialog navigation buttons */
+        .dialog-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: pink; /* Changed color */
+            text-shadow: 1px 1px 3px black;
+            cursor: default; /* Use default cursor, JS will hide it */
+            display: none; /* Hide by default */
+            z-index: 10;
+        }
+        #dialog-prev {
+            left: -50px; /* Positioned outside the box */
+        }
+        #dialog-next {
+            right: -50px; /* Positioned outside the box */
+        }
+
+        /* Image inside the dialog box */
+        .dialog-image {
+            max-width: 150px; /* Significantly decreased size */
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* Wrapper for side-by-side content in dialog */
+        .dialog-content-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .dialog-content-wrapper .dialog-main-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        /* Butterfly Game Styles */
+        #butterfly-gif {
+            position: absolute;
+            width: 80px;
+            height: auto;
+            display: none;
+            z-index: 10000;
+            cursor: pointer;
+            /* Transition is now handled by JS for dynamic flight */
+        }
+
+        #catch-hint-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(30, 30, 30, 0.85);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 9999;
+            font-family: 'FontSpace', sans-serif;
+            text-align: center;
+        }
+
+        #butterfly-hint-box {
+            /* This uses .story-dialog-box but needs positioning override */
+            position: fixed; /* Override absolute positioning */
+            top: 65%; /* Position below the enlarged butterfly */
+            left: 50%;
+            bottom: auto; /* Reset bottom property */
+            transform: translate(-50%, -50%);
+            width: 50%;
+            max-width: 500px;
+        }
+
+        .skip-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            color: white;
+            background-color: rgba(0,0,0,0.6);
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            z-index: 10001; /* Above butterfly */
+        }
+        .skip-button:hover {
+            background-color: white;
+            color: black;
+        }
+
+        #attic-pic {
+            display: none;
+            max-height: 60vh;
+            width: auto;
+            transform: translateY(-1.5cm);
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out, transform 0.3s ease-out;
+        }
+
+        #knock-gif {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 150px;
+            height: auto;
+            display: none;
+        }
+
+        #attic-pic.enlarged {
+            transform: translateY(-1.5cm) scale(1.5);
+        }
+
+        .story-dialog-box.relative-pos {
+            position: relative;
+            bottom: auto;
+            margin-top: 20px;
+        }
+
+        #scene7-wrong-box {
+            width: 90%;
+            max-width: 800px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pic2 {
+            max-width: 90%; /* Increased size */
+            max-height: 80vh; /* Increased size */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transform: translateY(-2cm); /* Move up */
+        }
+
+        #scene8-main-text {
+            transform: translateY(-2cm); /* Move up */
+        }
+
+        #pic2, #scene8-dialog-box {
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out;
+        }
+
+        #pic2.visible,
+        #scene8-dialog-box.visible {
+            opacity: 1;
+        }
+
+        #scene8-dialog-box .dialog-main-text {
+            font-size: 2.5em; /* Increased size */
+        }
+
+
+        /* Shaking animations */
+        @keyframes shake-strong {
+            0% { transform: translate(2px, 2px) rotate(0deg); }
+            10% { transform: translate(-4px, -5px) rotate(-2deg); }
+            20% { transform: translate(-6px, 0px) rotate(2deg); }
+            30% { transform: translate(6px, 5px) rotate(0deg); }
+            40% { transform: translate(4px, -4px) rotate(2deg); }
+            50% { transform: translate(-4px, 5px) rotate(-2deg); }
+            60% { transform: translate(-6px, 4px) rotate(0deg); }
+            70% { transform: translate(6px, 4px) rotate(-2deg); }
+            80% { transform: translate(-4px, -4px) rotate(2deg); }
+            90% { transform: translate(4px, 5px) rotate(0deg); }
+            100% { transform: translate(2px, -3px) rotate(-2deg); }
+        }
+
+        .shake-angry {
+            animation: shake-strong 0.4s infinite;
+        }
+
+        @keyframes earthquake {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-8px, 2px); }
+            20% { transform: translate(8px, -2px); }
+            30% { transform: translate(-8px, 2px); }
+            40% { transform: translate(8px, -2px); }
+            50% { transform: translate(-8px, 2px); }
+            60% { transform: translate(8px, -2px); }
+            70% { transform: translate(0, 0); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .earthquake {
+            animation: earthquake 0.5s linear infinite;
+        }
+
+        /* Scene 5 Drag and Drop Animation */
+        #key-gif.animate-to-center {
+            width: 150px;
+            top: 50%;
+            left: calc(50% - 100px - 4.5cm); /* Moved 1cm left */
+            transform: translate(-50%, -50%) scale(1.5);
+            z-index: 100;
+            cursor: grab;
+        }
+        #door-image.animate-to-center {
+            width: 330px;
+            top: 50%;
+            left: calc(50% + 100px + 1cm); /* Moved 1cm right */
+            transform: translate(-50%, -50%) scale(1.2);
+            opacity: 1;
+            z-index: 99;
+        }
+
+        #drag-guidance-box {
+            position: absolute;
+            bottom: calc(50px - 1.2cm); /* Moved down 0.4cm */
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            background-color: rgba(255, 182, 193, 0.8);
+            color: #2c2c2c;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            padding: 10px 20px; /* Reduced padding to make the box shorter */
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            text-align: center;
+            display: none;
+            z-index: 101;
+        }
+
+        #drag-guidance-box p {
+            font-family: 'FontPixel1', cursive;
+            font-size: 1.5em;
+            font-weight: normal;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        #keyhole-gif {
+            position: absolute;
+            display: none;
+            width: 150px;
+            height: auto;
+            z-index: 101; /* Above the door */
+            pointer-events: none;
+        }
+
+        /* Scene 9 Styles */
+        #scene9-main-text {
+            transition: transform 1.5s ease-in-out;
+        }
+        #scene9-main-text.move-to-top {
+            transform: translateY(-9.5cm); /* Moved up 9.5cm */
+        }
+
+        #scene9-choice-container {
+            display: none; /* Hidden initially */
+            flex-direction: row;
+            justify-content: space-around;
+            align-items: flex-start; /* Align to top to account for text */
+            width: 80%;
+            gap: 40px;
+            margin-top: 40px;
+            transform: translateY(-2cm);
+        }
+
+        .choice-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .choice-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(80, 80, 80, 0.2);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            transform: scale(0.9);
+            animation: fadeInMystery 2.5s ease-out forwards;
+        }
+
+        #scene9-choice-container img {
+            max-width: 380px;
+            height: auto;
+            cursor: pointer;
+            filter: drop-shadow(3px 3px 10px rgba(0,0,0,0.7));
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #scene9-choice-container img:hover {
+            transform: scale(1.05);
+        }
+        
+        #witch-choice-option {
+            transform: translateY(2.5cm);
+        }
+
+        .choice-text {
+            font-family: 'FontPixel1', cursive;
+            font-size: 2em; /* Increased size */
+            color: white;
+            text-shadow: 1px 1px 3px black;
+            margin-top: 15px;
+            max-width: 420px; /* Made box fatter */
+            min-height: 100px; /* Reserve space for text */
+        }
+
+        @keyframes fadeInMystery {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Scene 10 Loading Animation */
+        #scene10 {
+            justify-content: center; /* Align content to the center */
+            align-items: center;
+        }
+
+        #loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: darkcyan;
+        }
+
+        #loading-text {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2em; /* Increased size */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+            transform: translateY(-0.4cm); /* Move up */
+        }
+
+        #loading-subtext {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.4em; /* Increased size */
+            color: darkcyan;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            margin-top: 15px;
+            transform: translateY(0.4cm); /* Move down */
+        }
+
+        #dots-wrapper {
+            display: flex; 
+            align-items: flex-end; /* Align dots and witch gif to their bottom edge */
+            gap: 20px;
+        }
+
+        #witch-loader-gif {
+            width: 150px; /* Increased size */
+            height: auto;
+        }
+
+        .loading-dot {
+            width: 30px;
+            height: 30px;
+            background-color: darkcyan;
+            border-radius: 2px; /* Slightly rounded squares */
+            opacity: 0;
+            animation: dot-fade-in 2.1s infinite;
+        }
+
+        /* Stagger the animation for each dot */
+        .loading-dot:nth-of-type(1) { animation-delay: 0.3s; }
+        .loading-dot:nth-of-type(2) { animation-delay: 0.6s; }
+        .loading-dot:nth-of-type(3) { animation-delay: 0.9s; }
+        .loading-dot:nth-of-type(4) { animation-delay: 1.2s; }
+        .loading-dot:nth-of-type(5) { animation-delay: 1.5s; }
+        .loading-dot:nth-of-type(6) { animation-delay: 1.8s; }
+
+        @keyframes dot-fade-in {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        /* Scene 11 Gallery */
+        #scene11-main-text {
+            transform: translateY(-6cm); /* Move up */
+        }
+
+        #gallery-wrapper {
+            display: none; /* Controlled by JS */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(0.6cm); /* Move the whole block down */
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out;
+        }
+
+        #gallery-container {
+            background-color: rgba(50, 50, 50, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            max-width: 90vw;
+            max-height: 80vh;
+        }
+
+        #gallery-subtext {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1em;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            margin-top: 20px;
+            max-width: 800px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        #gallery-image {
+            max-width: calc(90vw - 150px); /* Account for padding and nav buttons */
+            max-height: calc(80vh - 40px); /* Account for padding */
+            object-fit: contain; /* Ensure aspect ratio is maintained */
+        }
+
+        .gallery-nav {
+            font-size: 3em;
+            color: white;
+            text-shadow: 1px 1px 5px black;
+            cursor: pointer;
+            user-select: none; /* Prevent text selection */
+            transition: transform 0.2s ease-in-out;
+        }
+        .gallery-nav:hover { transform: scale(1.2); color: pink; }
+    </style>
+</head>
+<body>
+
+    <div id="fade-overlay"></div>
+    <div id="pixel-transition-overlay"></div>
+
+    <!-- First Display -->
+    <div id="scene1" class="scene">
+        <p id="intro-text" class="scene-text">A Bizarre Adventure on June the 25th</p>
+        <p class="scene-text" id="scene1-main-text" style="display:none;">"The day's looking nice. Guess I'll roam this mountain."</p>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- New Scene 2 -->
+    <div id="scene2" class="scene">
+        <p class="scene-text" id="scene2-day-text" style="display: none;">[Day 2: Where the Path Awakens]</p>
+        <p class="continue-prompt"></p>
+        <div class="story-dialog-box">
+            <p class="dialog-main-text"></p>
+            <p class="dialog-continue-prompt"></p>
+        </div>
+    </div>
+
+    <!-- New Scene 3 -->
+    <div id="scene3" class="scene">
+        <p class="scene-text" id="scene3-day-text" style="display: none;">[Day 5: Guided by the Silent Sky]</p>
+        <p class="continue-prompt"></p>
+        <div class="story-dialog-box">
+            <p class="dialog-main-text"></p>
+            <p class="dialog-continue-prompt"></p>
+        </div>
+        <button id="skip-butterfly-btn" class="skip-button" style="display: none;">Skip</button>
+    </div>
+
+    <!-- New Scene 4 -->
+    <div id="scene4" class="scene">
+        <p class="scene-text" id="scene4-day-text" style="display: none;">[Day 6: Haven of the Mountain Folk]</p>
+        <p class="continue-prompt"></p>
+        <div class="story-dialog-box">
+            <p class="dialog-main-text"></p>
+            <p class="dialog-continue-prompt"></p>
+        </div>
+    </div>
+
+    <!-- Original Second Display, now Scene 5 -->
+    <div id="scene5" class="scene">
+        <p class="scene-text" id="scene5-arriving-text" style="display:none;">[Arriving at the top]</p>
+        <p class="scene-text" id="scene5-peak-text" style="display:none;">"The mountain's peak is more breathtaking than I imagined. A chilly air infused with timeless nostalgia."</p>
+        <p class="continue-prompt"></p>
+        <img id="key-gif" src="key.gif" alt="A mysterious key">
+        <img id="door-image" src="door.jpeg" alt="A mysterious door">
+        <img id="keyhole-gif" src="keyhole.gif" alt="A keyhole">
+        <div id="drag-guidance-box">
+            <p>Drag the key to the pink door</p>
+        </div>
+    </div>
+
+    <!-- New Scene 6 -->
+    <div id="scene6" class="scene">
+        <div id="scene6-text-container">
+            <p class="scene-text" id="scene6-arrival-text"></p>
+            <p class="scene-text" id="scene6-kitchen-text" style="display:none; transform: translateY(-2.0cm);"></p>
+            <img id="cook-gif" src="cook.gif" alt="Cooking" style="display: none; transform: translateY(-3.3cm);">
+        </div>
+        <div class="story-dialog-box">
+            <p class="dialog-main-text"></p>
+            <p class="dialog-continue-prompt"></p>
+        </div>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- New Scene 7 -->
+    <div id="scene7" class="scene">
+        <p class="scene-text" id="scene7-main-text"></p>
+        <img id="attic-pic" src="pic1.jpeg" alt="A person at the door" class="scene-text">
+        <img id="knock-gif" src="knock.gif" alt="knocking hand">
+        
+        <!-- Box for initial story -->
+        <div id="scene7-story-box" class="story-dialog-box" style="display: none;">
+            <p class="dialog-main-text"></p>
+            <p class="dialog-continue-prompt"></p>
+        </div>
+
+        <!-- Box for "Wrong direction..." -->
+        <div id="scene7-wrong-box" class="story-dialog-box" style="display: none; text-align: center;">
+             <p class="dialog-main-text"></p>
+             <p class="dialog-continue-prompt"></p>
+        </div>
+
+        <!-- Box for "Hah...?" and options -->
+        <div id="scene7-choice-box" class="story-dialog-box" style="display: none;">
+            <div style="width: 100%;">
+                <p class="dialog-main-text" style="text-align: left;"></p>
+                <ul style="display: none;">
+                    <li id="option-goback">▶ Go back</li>
+                    <li id="option-continue">▶ Continue</li>
+                </ul>
+            </div>
+        </div>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- New Scene 8 -->
+    <div id="scene8" class="scene">
+        <p class="scene-text" id="scene8-main-text"></p>
+        <img id="pic2" src="pic2.jfif" alt="Living room view" style="display: none;">
+        <div id="scene8-dialog-box" class="story-dialog-box" style="display: none;">
+            <p class="dialog-main-text">I SAID GO BACK!!!</p>
+            <ul>
+                <li id="option8-goback">▶ Go back</li>
+                <li id="option8-continue">▶ Continue</li>
+            </ul>
+        </div>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- New Scene 9 -->
+    <div id="scene9" class="scene">
+        <p class="scene-text" id="scene9-main-text"></p>
+        <div id="scene9-choice-container">
+            <div class="choice-option">
+                <div class="choice-wrapper">
+                    <img id="scene9-door" src="door.jpeg" alt="A door">
+                </div>
+                <p class="choice-text" id="door-choice-text"></p>
+            </div>
+            <div class="choice-option" id="witch-choice-option">
+                <div class="choice-wrapper">
+                    <img id="scene9-witch" src="witchadult.gif" alt="A witch">
+                </div>
+                <p class="choice-text" id="witch-choice-text"></p>
+            </div>
+        </div>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- New Scene 10 -->
+    <div id="scene10" class="scene">
+        <div id="loading-container">
+            <p id="loading-text">Loading...</p>
+            <div id="dots-wrapper">
+                <img src="witchsmol.gif" alt="loading witch" id="witch-loader-gif">
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            </div>
+            <p id="loading-subtext">Following smol witch to the destination...</p>
+        </div>
+    </div>
+
+    <!-- New Scene 11 -->
+    <div id="scene11" class="scene">
+        <p class="scene-text" id="scene11-main-text"></p>
+        <div id="gallery-wrapper">
+            <div id="gallery-container">
+                <div id="gallery-prev" class="gallery-nav">&#9664;</div>
+                <img id="gallery-image" src="" alt="Gallery view">
+                <div id="gallery-next" class="gallery-nav">&#9654;</div>
+            </div>
+            <p id="gallery-subtext">Here are some of the memorable shots during your 25-day journey inside the mountains, enjoy.</p>
+        </div>
+        <p class="continue-prompt"></p>
+    </div>
+
+    <!-- Dialog Box for Scene 5 -->
+    <div id="dialog-box">
+        <div id="dialog-prev" class="dialog-nav">&#9664;</div>
+        <div id="dialog-next" class="dialog-nav">&#9654;</div>
+        <div id="dialog-display-1">
+            <div><!-- Wrapper for top content -->
+                <p class="dialog-main-text">A magic key appears, filling the air with a breeze of enchantment and showering gifts upon the hard-working adventurer.</p>
+            </div>
+            <div><!-- Wrapper for bottom content -->
+                <p class="dialog-continue-prompt"></p>
+            </div>
+        </div>
+        <div id="dialog-display-2">
+            <div><!-- Wrapper for top content -->
+                <div class="dialog-content-wrapper">
+                    <p class="dialog-main-text">High on the wild mountain, a kind family offers their doors to you – a soft bed, hot food, and rooms built of wood and stone for a night of comfort. It’s a gift any weary adventurer would accept without question.</p>
+                    <img src="ac10.gif" alt="A cozy accommodation" class="dialog-image">
+                </div>
+            </div>
+            <div><!-- Wrapper for bottom content -->
+                <p class="dialog-continue-prompt"></p>
+            </div>
+        </div>
+        <div id="dialog-display-3">
+             <div><!-- Wrapper for top content -->
+                <p class="dialog-main-text">Outside, the magic key’s light still glows like a star – yet starts to shimmer in the air and ready to vanish at any moment if you turn away.</p>
+            </div>
+            <div><!-- Wrapper for bottom content -->
+                <p class="dialog-continue-prompt"></p>
+            </div>
+        </div>
+        <div id="dialog-display-4">
+             <div><!-- Wrapper for top content -->
+                <p class="dialog-main-text">Here lies the fork of your story: the warmth of shelter, or the cold breath of adventure. Comfort, or the chase of the unknown – which will you choose?</p>
+                <ul>
+                    <li id="option-ignore">▶ Ignore the key and enter the warm accomodation, the door will disappear for good after that.</li>
+                    <li id="option-use-key">▶ Use the magic key and enter the door, continue the journey with an exhausted body.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Butterfly Game Elements -->
+    <div id="catch-hint-box">Hint: Catch the butterfly for a small hint.</div>
+    <div id="butterfly-hint-box" class="story-dialog-box">
+        <p class="dialog-main-text">Press "q" to go back to the previous displays during your journey</p>
+        <p class="dialog-continue-prompt">[SPACE] or Click anywhere to continue</p>
+    </div>
+    <img id="butterfly-gif" src="butterfly.gif" alt="A flying butterfly">
+
+    <img id="custom-cursor" src="cursortrip.gif" alt="">
+
+    <script>
+         // Get references to the HTML elements
+        const introText = document.getElementById('intro-text');
+        const scene1MainText = document.getElementById('scene1-main-text');
+        const scene1Prompt = scene1.querySelector('.continue-prompt');
+
+        const scene5ArrivingText = document.getElementById('scene5-arriving-text');
+        const scene5PeakText = document.getElementById('scene5-peak-text');
+        const scene5Prompt = document.querySelector('#scene5 .continue-prompt');
+
+        const keyGif = document.getElementById('key-gif');
+        const doorImage = document.getElementById('door-image');
+        const dialogBox = document.getElementById('dialog-box');
+        const dialogParts = Array.from(dialogBox.querySelectorAll('#dialog-box > div[id^="dialog-display-"]'));
+        const dialogPrev = document.getElementById('dialog-prev');
+        const dialogNext = document.getElementById('dialog-next');
+        const customCursor = document.getElementById('custom-cursor');
+        const fadeOverlay = document.getElementById('fade-overlay');
+        const keyholeGif = document.getElementById('keyhole-gif');
+        const dragGuidanceBox = document.getElementById('drag-guidance-box');
+
+
+        // Butterfly Game Elements
+        const butterflyGif = document.getElementById('butterfly-gif');
+        const catchHintBox = document.getElementById('catch-hint-box');
+        const butterflyHintBox = document.getElementById('butterfly-hint-box');
+        const skipButterflyBtn = document.getElementById('skip-butterfly-btn');
+
+        // --- State Management ---
+        let gameState = 'INTRO';
+        let currentScene = 1;
+        let activeTyping = null;
+        let currentDialogIndex = 0;
+        let butterflyAnimationTimeout;
+        let butterflyGameInitTimeout;
+        let qPressCount = 0;
+        let isDraggingKey = false;
+        let keyOffsetX = 0;
+        let keyOffsetY = 0;
+        let isTransitioning = false;
+
+        // Scene 11 State
+        const scene11MainText = document.getElementById('scene11-main-text');
+        const galleryContainer = document.getElementById('gallery-container');
+        const galleryImage = document.getElementById('gallery-image');
+        const galleryPrev = document.getElementById('gallery-prev');
+        const galleryNext = document.getElementById('gallery-next');
+        const pixelOverlay = document.getElementById('pixel-transition-overlay');
+        const galleryImages = [];
+        let shuffledGalleryImages = [];
+        let currentGalleryIndex = 0;
+
+        // Function to show a scene instantly
+        function showScene(sceneNum) {
+            const currentSceneEl = document.getElementById(`scene${currentScene}`);
+            // Stop any shaking effects on the old scene
+            currentSceneEl.classList.remove('earthquake');
+            currentSceneEl.querySelectorAll('.shake-angry').forEach(el => el.classList.remove('shake-angry'));
+
+            currentSceneEl.style.display = 'none';
+            document.getElementById(`scene${sceneNum}`).style.display = 'flex';
+            currentScene = sceneNum;
+            qPressCount = 0; // Reset for the new scene
+            startScene(sceneNum); // Trigger automatic animations for the new scene
+        }
+
+        // Function for pixelated transition between scenes
+        async function transitionToScene(sceneNum) {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            gameState = 'TRANSITIONING';
+
+            const cols = 50;
+            const rows = Math.ceil(cols * (window.innerHeight / window.innerWidth));
+            
+            // Create and show pixel grid
+            pixelOverlay.innerHTML = '';
+            pixelOverlay.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            pixelOverlay.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            for (let i = 0; i < rows * cols; i++) {
+                const pixel = document.createElement('span');
+                pixelOverlay.appendChild(pixel);
+            }
+            pixelOverlay.style.visibility = 'visible';
+            const pixels = Array.from(pixelOverlay.children);
+            pixels.forEach(p => p.style.opacity = '1');
+
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Switch scenes underneath the overlay
+            showScene(sceneNum);
+
+            // Dissolve the pixels to reveal the new scene
+            pixels.forEach((pixel) => {
+                setTimeout(() => { pixel.style.opacity = '0'; }, Math.random() * 1000);
+            });
+
+            // Clean up after transition
+            setTimeout(() => { pixelOverlay.style.visibility = 'hidden'; isTransitioning = false; }, 1500);
+        }
+
+        // Function to create a typewriter effect for text
+        function typeWriter(element, text, onComplete) {
+            let i = 0;
+            let completed = false;
+            element.innerHTML = ''; // Clear the element's content
+
+            const complete = () => {
+                if (!completed) {
+                    completed = true;
+                    if (onComplete) onComplete();
+                }
+            };
+
+            const intervalId = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(intervalId);
+                    complete();
+                }
+            }, 65); // Slower typing speed
+
+            return {
+                skip: () => {
+                    clearInterval(intervalId);
+                    element.innerHTML = text;
+                    complete();
+                }
+            };
+        }
+
+        // Function to orchestrate displaying text with typing and prompts
+        function displayText(textElement, promptElement, fullText, continueText, onTypingComplete) {
+            if (promptElement) {
+                promptElement.textContent = '[SPACE] or Click anywhere to skip';
+                promptElement.style.visibility = 'visible';
+            }
+
+            const onComplete = () => {
+                activeTyping = null;
+                if (promptElement) {
+                    promptElement.textContent = continueText;
+                }
+                if (onTypingComplete) onTypingComplete();
+            };
+
+            activeTyping = typeWriter(textElement, fullText, onComplete);
+        }
+
+        // Function to show a specific dialog panel in Scene 5
+        function showDialog(index) {
+            if (index < 0 || index >= dialogParts.length) return;
+            currentDialogIndex = index;
+
+            if (activeTyping) activeTyping.skip();
+
+            dialogParts.forEach(part => part.style.display = 'none');
+            const currentPart = dialogParts[index];
+            currentPart.style.display = 'flex';
+
+            dialogPrev.style.display = (index > 0) ? 'block' : 'none';
+            dialogNext.style.display = (index < dialogParts.length - 1) ? 'block' : 'none';
+
+            const textElement = currentPart.querySelector('.dialog-main-text');
+            const promptElement = currentPart.querySelector('.dialog-continue-prompt');
+            const fullText = textElement.dataset.fullText;
+
+            if (index === 3) { // Special logic for the options dialog
+                const ul = currentPart.querySelector('ul');
+                ul.style.visibility = 'hidden'; // Hide the list initially
+                const options = Array.from(ul.querySelectorAll('li'));
+                options.forEach(li => li.innerHTML = ''); // Clear list items
+
+                displayText(textElement, null, fullText, '', () => { // No prompt after main text
+                    // Main text finished typing, now type options
+                    ul.style.visibility = 'visible';
+                    let i = 0;
+                    function typeNextOption() {
+                        if (i < options.length) {
+                            const li = options[i];
+                            gameState = 'TYPING_AUTO'; // Prevent interaction while options type
+                            activeTyping = typeWriter(li, li.dataset.fullText, () => {
+                                i++;
+                                typeNextOption(); // Chain to the next option
+                            });
+                        } else {
+                            // All options typed, re-enable interaction
+                            activeTyping = null;
+                            gameState = 'DIALOG';
+                        }
+                    }
+                    typeNextOption();
+                });
+            } else {
+                // Original logic for other dialogs
+                displayText(textElement, promptElement, fullText, '[SPACE] or Click anywhere to continue');
+            }
+        }
+
+        function goToScene9FinalState() {
+            // Hide all scenes
+            document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            
+            // Show scene 9
+            const scene9 = document.getElementById('scene9');
+            scene9.style.display = 'flex';
+            currentScene = 9;
+            gameState = 'SCENE_9_AWAIT_FINAL_CHOICE';
+
+            // Configure elements to their final state instantly
+            const scene9MainText = document.getElementById('scene9-main-text');
+            scene9MainText.innerHTML = "[You're now in the liminal space.<br>Choose your next destination]";
+            scene9MainText.style.display = 'block';
+            scene9MainText.classList.add('move-to-top');
+
+            const scene9Choices = document.getElementById('scene9-choice-container');
+            scene9Choices.style.display = 'flex';
+            
+            // Make wrappers visible instantly without animation
+            scene9Choices.querySelectorAll('.choice-wrapper').forEach(cw => {
+                cw.style.opacity = 1;
+                cw.style.transform = 'scale(1)';
+                cw.style.animation = 'none';
+            });
+
+            document.getElementById('door-choice-text').innerHTML = "\"Another door!? I wonder where it will lead me to this time.\"";
+            document.getElementById('witch-choice-text').innerHTML = "\"A graceful and powerful-looking witch!? I hope she brings me to somewhere mysterious and exciting!\"";
+            
+            document.querySelector('#scene9 .continue-prompt').style.visibility = 'hidden';
+
+            // Ensure fade overlay is not visible
+            fadeOverlay.style.opacity = '0';
+        }
+
+        function goToScene5Choices() {
+            // Hide all scenes
+            document.querySelectorAll('.scene').forEach(s => s.style.display = 'none');
+            
+            // Show scene 5
+            const scene5 = document.getElementById('scene5');
+            scene5.style.display = 'flex';
+            currentScene = 5;
+            gameState = 'DIALOG'; // Ready for choice
+
+            // Configure elements to their final state instantly
+            document.getElementById('scene5-arriving-text').style.display = 'none';
+            document.getElementById('scene5-peak-text').style.display = 'none';
+            document.querySelector('#scene5 .continue-prompt').style.visibility = 'hidden';
+            
+            // Reset key and door from any drag/animation states
+            keyGif.className = '';
+            keyGif.style.cssText = ''; // Resets all inline styles
+            keyGif.style.display = 'block';
+
+            doorImage.className = '';
+            doorImage.style.cssText = '';
+            doorImage.style.display = 'block';
+            doorImage.style.opacity = '1';
+
+            keyholeGif.style.display = 'none';
+            dragGuidanceBox.style.display = 'none';
+
+            dialogBox.style.display = 'block';
+            
+            // Manually show the final dialog part instantly, skipping the typewriter.
+            if (activeTyping) {
+                activeTyping.skip();
+                activeTyping = null;
+            }
+            dialogParts.forEach(part => part.style.display = 'none');
+            const finalDialogPart = document.getElementById('dialog-display-4');
+            finalDialogPart.style.display = 'flex';
+            currentDialogIndex = 3;
+
+            const textElement = finalDialogPart.querySelector('.dialog-main-text');
+            const ul = finalDialogPart.querySelector('ul');
+            const options = Array.from(ul.querySelectorAll('li'));
+
+            textElement.innerHTML = textElement.dataset.fullText;
+            options.forEach(li => {
+                li.innerHTML = li.dataset.fullText;
+            });
+            ul.style.visibility = 'visible';
+
+            dialogPrev.style.display = 'block';
+            dialogNext.style.display = 'none';
+
+            // Ensure fade overlay is not visible
+            fadeOverlay.style.opacity = '0';
+        }
+
+        // This function runs automatically when a scene loads
+        function startScene(sceneNum) {
+            let el, prompt;
+            switch(sceneNum) {
+                case 2:
+                    el = document.getElementById('scene2-day-text');
+                    prompt = document.querySelector('#scene2 .continue-prompt');
+                    el.style.display = 'block';
+                    document.querySelector('#scene2 .story-dialog-box').style.display = 'none';
+                    prompt.style.visibility = 'visible';
+                    gameState = 'TYPING_AUTO';
+                    displayText(el, prompt, el.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_2_AWAIT_BOX';
+                    });
+                    break;
+                case 3:
+                    el = document.getElementById('scene3-day-text');
+                    prompt = document.querySelector('#scene3 .continue-prompt');
+                    el.style.display = 'block';
+                    document.querySelector('#scene3 .story-dialog-box').style.display = 'none';
+                    prompt.style.visibility = 'visible';
+                    prompt.style.display = 'block'; // Ensure display is not none
+                    skipButterflyBtn.style.display = 'none';
+                    gameState = 'TYPING_AUTO';
+                    displayText(el, prompt, el.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_3_AWAIT_BOX';
+                    });
+                    break;
+                case 4:
+                    el = document.getElementById('scene4-day-text');
+                    prompt = document.querySelector('#scene4 .continue-prompt');
+                    el.style.display = 'block';
+                    document.querySelector('#scene4 .story-dialog-box').style.display = 'none';
+                    prompt.style.visibility = 'visible';
+                    gameState = 'TYPING_AUTO';
+                    displayText(el, prompt, el.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_4_AWAIT_BOX';
+                    });
+                    break;
+                case 5:
+                    // Reset all elements of scene 5 to their initial state
+                    document.getElementById('scene5-arriving-text').style.display = 'none';
+                    document.getElementById('scene5-peak-text').style.display = 'none';
+                    document.querySelector('#scene5 .continue-prompt').style.visibility = 'visible';
+                    
+                    keyGif.className = ''; // a.k.a. remove 'animate-to-center'
+                    keyGif.style.cssText = '';
+                    keyGif.style.display = 'none';
+                    
+                    doorImage.className = ''; // a.k.a. remove 'animate-to-center'
+                    doorImage.style.cssText = '';
+                    doorImage.style.display = 'none';
+                    doorImage.style.opacity = '0';
+
+                    keyholeGif.style.display = 'none';
+                    dragGuidanceBox.style.display = 'none';
+                    dialogBox.style.display = 'none';
+
+                    // Start the scene's intro text
+                    el = document.getElementById('scene5-arriving-text');
+                    prompt = document.querySelector('#scene5 .continue-prompt');
+                    el.style.display = 'block';
+                    gameState = 'TYPING_AUTO';
+                    displayText(el, prompt, el.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_5_AWAIT_PEAK';
+                    });
+                    break;
+                case 6:
+                    const arrivalTextEl = document.getElementById('scene6-arrival-text');
+                    const kitchenTextEl = document.getElementById('scene6-kitchen-text');
+                    const scene6Dialog = document.querySelector('#scene6 .story-dialog-box');
+                    const textContainer = document.getElementById('scene6-text-container');
+                    const cookGif = document.getElementById('cook-gif');
+                    const scene6Prompt = document.querySelector('#scene6 .continue-prompt');
+
+                    // Reset scene 6 elements for re-entry
+                    arrivalTextEl.innerHTML = '';
+                    kitchenTextEl.innerHTML = '';
+                    arrivalTextEl.style.display = 'block';
+                    kitchenTextEl.style.display = 'none';
+                    scene6Dialog.style.display = 'none';
+                    textContainer.style.display = 'block';
+                    cookGif.style.display = 'none';
+                    scene6Prompt.style.visibility = 'hidden';
+
+                    gameState = 'SCENE_6_TYPING_ARRIVAL';
+                    activeTyping = typeWriter(arrivalTextEl, '[Arrived at the cozy accommodation]', () => {
+                        kitchenTextEl.style.display = 'block';
+                        gameState = 'SCENE_6_TYPING_KITCHEN';
+                        activeTyping = typeWriter(kitchenTextEl, 'First visit: kitchen', () => {
+                            activeTyping = null;
+                            gameState = 'SCENE_6_AWAIT_ISOLATED_TEXT';
+                            scene6Prompt.textContent = '[SPACE] or Click anywhere to continue';
+                            scene6Prompt.style.visibility = 'visible';
+                        });
+                    });
+                    break;
+                case 7:
+                    const scene7MainText = document.getElementById('scene7-main-text');
+                    const storyBox = document.getElementById('scene7-story-box');
+                    const wrongBox = document.getElementById('scene7-wrong-box');
+                    const choiceBox = document.getElementById('scene7-choice-box');
+                    const atticPic = document.getElementById('attic-pic');
+                    const scene7Prompt = document.querySelector('#scene7 .continue-prompt');
+                    const scene7Options = choiceBox.querySelector('ul');
+                    const knockGif = document.getElementById('knock-gif');
+
+                    // Reset scene 7 elements
+                    scene7MainText.style.display = 'block';
+                    storyBox.style.display = 'none';
+                    wrongBox.style.display = 'none';
+                    choiceBox.style.display = 'none';
+                    choiceBox.style.transform = '';
+                    atticPic.style.display = 'none';
+                    atticPic.style.opacity = '0';
+                    atticPic.classList.remove('enlarged');
+                    knockGif.style.display = 'none';
+                    scene7Prompt.style.visibility = 'hidden';
+                    scene7Options.style.display = 'none';
+
+                    gameState = 'SCENE_7_TYPING_MAIN';
+                    displayText(scene7MainText, scene7Prompt, "[Second visit: attic room]", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_7_AWAIT_FIRST_BOX';
+                    });
+                    break;
+                case 8:
+                    const scene8MainText = document.getElementById('scene8-main-text');
+                    const pic2 = document.getElementById('pic2');
+                    const scene8Dialog = document.getElementById('scene8-dialog-box');
+                    const scene8Prompt = document.querySelector('#scene8 .continue-prompt');
+
+                    // Reset scene 8 elements
+                    scene8MainText.innerHTML = '';
+                    scene8MainText.style.display = 'block';
+                    pic2.style.display = 'none';
+                    scene8Dialog.style.display = 'none';
+                    pic2.classList.remove('visible');
+                    scene8Dialog.classList.remove('visible');
+                    scene8Prompt.style.visibility = 'hidden';
+
+                    gameState = 'SCENE_8_TYPING_MAIN';
+                    displayText(scene8MainText, scene8Prompt, '[Third visit: living room]', '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_8_AWAIT_PIC_AND_DIALOG';
+                    });
+                    break;
+                case 9:
+                    const scene9MainText = document.getElementById('scene9-main-text');
+                    const scene9Choices = document.getElementById('scene9-choice-container');
+                    const scene9Prompt = document.querySelector('#scene9 .continue-prompt');
+
+                    // Reset scene 9 elements
+                    scene9MainText.innerHTML = '';
+                    scene9MainText.style.display = 'block';
+                    scene9MainText.classList.remove('move-to-top');
+                    scene9Choices.style.display = 'none';
+                    document.getElementById('door-choice-text').innerHTML = '';
+                    document.getElementById('witch-choice-text').innerHTML = '';
+                    scene9Prompt.style.visibility = 'hidden';
+
+                    gameState = 'SCENE_9_TYPING_MAIN';
+                    displayText(scene9MainText, scene9Prompt, "[You're now in the liminal space.<br>Choose your next destination]", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_9_STEP_1_MOVE_TEXT'; // Start of the new sequence
+                    });
+                    break;
+                case 10:
+                    // This scene is now automatic.
+                    // The timeout will trigger the transition to scene 11.
+                    setTimeout(() => {
+                        if (currentScene === 10 && !isTransitioning) {
+                            transitionToScene(11);
+                        }
+                    }, 6000);
+                    break;
+                case 11:
+                    const scene11Prompt = document.querySelector('#scene11 .continue-prompt');
+                    document.getElementById('gallery-wrapper').style.display = 'none';
+                    scene11MainText.style.display = 'block';
+                    scene11MainText.innerHTML = ''; // Clear previous text
+                    gameState = 'TYPING_AUTO';
+                    displayText(scene11MainText, scene11Prompt, "Enjoy the view", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_11_AWAIT_GALLERY';
+                    });
+                    break;
+            }
+        }
+
+        // --- Butterfly Game Logic ---
+        function flyButterfly() {
+            if (gameState !== 'SCENE_3_CATCH_BUTTERFLY') return;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const butterflySize = butterflyGif.offsetWidth;
+            const newX = Math.random() * (vw - butterflySize);
+            const newY = Math.random() * (vh - butterflySize);
+            const newRot = (Math.random() * 180) - 90;
+            const duration = 1 + Math.random() * 2;
+            const timingFunctions = ['ease-in-out', 'ease-in', 'ease-out', 'linear'];
+            const timingFunction = timingFunctions[Math.floor(Math.random() * timingFunctions.length)];
+            butterflyGif.style.transition = `all ${duration}s ${timingFunction}`;
+            butterflyGif.style.transform = `translate(${newX}px, ${newY}px) rotate(${newRot}deg)`;
+            butterflyAnimationTimeout = setTimeout(flyButterfly, duration * 1000);
+        }
+
+        function initiateButterflyGame() {
+            gameState = 'TYPING_AUTO';
+            document.querySelector('#scene3 .scene-text').style.display = 'none';
+            document.querySelector('#scene3 .story-dialog-box').style.display = 'none';
+            document.querySelector('#scene3 .continue-prompt').style.display = 'none';
+            skipButterflyBtn.style.display = 'block';
+            catchHintBox.style.display = 'block';
+            // Clear any previous timeout to be safe
+            clearTimeout(butterflyGameInitTimeout); 
+            butterflyGameInitTimeout = setTimeout(() => {
+                // Check if we are still in the right state/scene before proceeding
+                if (currentScene !== 3 || gameState === 'TRANSITIONING') return;
+                catchHintBox.style.display = 'none';
+                gameState = 'SCENE_3_CATCH_BUTTERFLY';
+                butterflyGif.style.display = 'block';
+                butterflyGif.style.transform = `translate(${window.innerWidth / 2}px, ${window.innerHeight / 2}px)`;
+                flyButterfly();
+            }, 2000);
+        }
+
+        function handleInteraction() {
+            if (activeTyping) {
+                activeTyping.skip();
+                return;
+            }
+            let box, typed, boxPrompt;
+
+            switch (gameState) {
+                // --- Scene 1 ---
+                case 'INTRO':
+                    gameState = 'SCENE_1_TYPING';
+                    introText.style.display = 'none';
+                    scene1MainText.style.display = 'block';
+                    displayText(scene1MainText, scene1Prompt, scene1MainText.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_1_COMPLETE';
+                    });
+                    break;
+                case 'SCENE_1_COMPLETE':
+                    gameState = 'TRANSITIONING';
+                    fadeOverlay.style.opacity = '1';
+                    setTimeout(() => {
+                        showScene(2);
+                        fadeOverlay.style.opacity = '0';
+                    }, 1500);
+                    break;
+
+                // --- Scene 2 ---
+                case 'SCENE_2_AWAIT_BOX':
+                    document.querySelector('#scene2 .continue-prompt').style.visibility = 'hidden';
+                    box = document.querySelector('#scene2 .story-dialog-box');
+                    typed = box.querySelector('.dialog-main-text');
+                    boxPrompt = box.querySelector('.dialog-continue-prompt');
+                    box.style.display = 'block';
+                    gameState = 'TYPING_MANUAL';
+                    displayText(typed, boxPrompt, "Fresh air, gentle waterfalls, and the first steps into the wild.", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_2_AWAIT_NEXT';
+                    });
+                    break;
+                case 'SCENE_2_AWAIT_NEXT':
+                    showScene(3);
+                    break;
+
+                // --- Scene 3 ---
+                case 'SCENE_3_AWAIT_BOX':
+                    document.querySelector('#scene3 .continue-prompt').style.visibility = 'hidden';
+                    box = document.querySelector('#scene3 .story-dialog-box');
+                    typed = box.querySelector('.dialog-main-text');
+                    boxPrompt = box.querySelector('.dialog-continue-prompt');
+                    box.style.display = 'block';
+                    gameState = 'TYPING_MANUAL';
+                    displayText(typed, boxPrompt, "Stars whisper above the waves, keeping secrets only travelers hear.", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_3_AWAIT_NEXT';
+                    });
+                    break;
+                case 'SCENE_3_AWAIT_NEXT':
+                    initiateButterflyGame();
+                    break;
+                case 'SCENE_3_HINT_DISPLAYED':
+                    skipButterflyBtn.style.display = 'none';
+                    butterflyGif.style.display = 'none';
+                    butterflyHintBox.style.display = 'none';
+                    butterflyGif.style.transition = 'none';
+                    butterflyGif.style.width = '80px';
+                    butterflyGif.style.height = 'auto';
+                    butterflyGif.style.cursor = 'pointer';
+                    butterflyGif.style.left = '';
+                    butterflyGif.style.top = '';
+                    butterflyGif.style.transform = '';
+                    showScene(4);
+                    break;
+
+                // --- Scene 4 ---
+                case 'SCENE_4_AWAIT_BOX':
+                    document.querySelector('#scene4 .continue-prompt').style.visibility = 'hidden';
+                    box = document.querySelector('#scene4 .story-dialog-box');
+                    typed = box.querySelector('.dialog-main-text');
+                    boxPrompt = box.querySelector('.dialog-continue-prompt');
+                    box.style.display = 'block';
+                    gameState = 'TYPING_MANUAL';
+                    displayText(typed, boxPrompt, "The heart of the mountain offers shelter, a glowing village welcomes the weary traveler with food and fire.", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_4_AWAIT_NEXT';
+                    });
+                    break;
+                case 'SCENE_4_AWAIT_NEXT':
+                    showScene(5);
+                    break;
+
+                // --- Scene 5 ---
+                case 'SCENE_5_AWAIT_PEAK':
+                    scene5PeakText.style.display = 'block';
+                    gameState = 'TYPING_MANUAL';
+                    displayText(scene5PeakText, scene5Prompt, scene5PeakText.dataset.fullText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_5_AWAIT_KEY';
+                    });
+                    break;
+                case 'SCENE_5_AWAIT_KEY':
+                    gameState = 'SCENE_5_KEY_VISIBLE';
+                    scene5Prompt.style.visibility = 'hidden';
+                    keyGif.style.display = 'block';
+                    break;
+                case 'DIALOG':
+                    if (currentDialogIndex < dialogParts.length - 1 && !activeTyping) {
+                        showDialog(currentDialogIndex + 1);
+                    }
+                    break;
+                
+                // --- Scene 6 ---
+                case 'SCENE_6_AWAIT_ISOLATED_TEXT':
+                    const arrivalText = document.getElementById('scene6-arrival-text');
+                    const kitchenText = document.getElementById('scene6-kitchen-text');
+                    const scene6Prompt = document.querySelector('#scene6 .continue-prompt');
+                    
+                    scene6Prompt.style.visibility = 'hidden';
+                    arrivalText.innerHTML = '';
+                    kitchenText.style.display = 'none';
+
+                    const newMainText = `"Isolated wood house on top of the mountains, I'm the real G."`;
+                    displayText(arrivalText, scene6Prompt, newMainText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_6_AWAIT_HEALING_DIALOG';
+                    });
+                    break;
+
+                case 'SCENE_6_AWAIT_HEALING_DIALOG':
+                    const isolatedTextEl = document.getElementById('scene6-arrival-text');
+                    const scene6Dialog = document.querySelector('#scene6 .story-dialog-box');
+                    const dialogText = scene6Dialog.querySelector('.dialog-main-text');
+                    const dialogPrompt6 = scene6Dialog.querySelector('.dialog-continue-prompt');
+                    const cookGif = document.getElementById('cook-gif');
+                    
+                    document.querySelector('#scene6 .continue-prompt').style.visibility = 'hidden';
+                    isolatedTextEl.style.display = 'none';
+                    
+                    scene6Dialog.style.display = 'block';
+                    cookGif.style.display = 'block';
+
+                    const healingText = "The owners have already prepared raw and fresh vegetables for you to cook, so now you're enjoying the best resting and healing day ever in the long hard 25-day-mountain-exploring journey.";
+                    displayText(dialogText, dialogPrompt6, healingText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_6_AWAIT_ENJOYING_DIALOG';
+                    });
+                    break;
+
+                case 'SCENE_6_AWAIT_ENJOYING_DIALOG':
+                    const enjoyingDialogTextEl = document.querySelector('#scene6 .dialog-main-text');
+                    const enjoyingDialogPrompt = document.querySelector('#scene6 .story-dialog-box .dialog-continue-prompt');
+                    displayText(enjoyingDialogTextEl, enjoyingDialogPrompt, "*Enjoying the food*", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_6_AWAIT_NEXT_SCENE';
+                    });
+                    break;
+
+                case 'SCENE_6_AWAIT_NEXT_SCENE':
+                    showScene(7);
+                    break;
+
+                // --- Scene 7 ---
+                case 'SCENE_7_AWAIT_FIRST_BOX':
+                    const scene7MainText = document.getElementById('scene7-main-text');
+                    const storyBox = document.getElementById('scene7-story-box');
+                    const storyBoxText = storyBox.querySelector('.dialog-main-text');
+                    const storyBoxPrompt = storyBox.querySelector('.dialog-continue-prompt');
+                    
+                    scene7MainText.style.display = 'none';
+                    document.querySelector('#scene7 .continue-prompt').style.visibility = 'hidden';
+                    storyBox.style.display = 'block';
+
+                    const firstAtticText = "Tempted by the upper floors and the rain sound, you go upstairs and immerse yourself in the cozy attic space, all by yourself.";
+                    displayText(storyBoxText, storyBoxPrompt, firstAtticText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_7_AWAIT_SECOND_BOX';
+                    });
+                    break;
+
+                case 'SCENE_7_AWAIT_SECOND_BOX':
+                    document.getElementById('knock-gif').style.display = 'block';
+                    const storyBoxText2 = document.querySelector('#scene7-story-box .dialog-main-text');
+                    const storyBoxPrompt2 = document.querySelector('#scene7-story-box .dialog-continue-prompt');
+                    const secondAtticText = "Suddenly, a gentle knock echoed from the door at the back, caught you by surprise.";
+                    displayText(storyBoxText2, storyBoxPrompt2, secondAtticText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_7_AWAIT_THIRD_BOX';
+                    });
+                    break;
+
+                case 'SCENE_7_AWAIT_THIRD_BOX':
+                    document.getElementById('knock-gif').style.display = 'none';
+                    const storyBoxText3 = document.querySelector('#scene7-story-box .dialog-main-text');
+                    const storyBoxPrompt3 = document.querySelector('#scene7-story-box .dialog-continue-prompt');
+                    const thirdAtticText = "You went to check the sound nervously, only to be caught off guard by the person standing at the door.";
+                    displayText(storyBoxText3, storyBoxPrompt3, thirdAtticText, '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_7_AWAIT_PIC';
+                    });
+                    break;
+
+                case 'SCENE_7_AWAIT_PIC':
+                    document.getElementById('scene7-story-box').style.display = 'none';
+                    const atticPic = document.getElementById('attic-pic');
+                    atticPic.style.display = 'block';
+                    setTimeout(() => {
+                        atticPic.style.opacity = '1';
+                    }, 10);
+                    const scene7Prompt4 = document.querySelector('#scene7 .continue-prompt');
+                    scene7Prompt4.textContent = '[SPACE] or Click anywhere to continue';
+                    scene7Prompt4.style.visibility = 'visible';
+                    gameState = 'SCENE_7_AWAIT_ENLARGE';
+                    break;
+                
+                case 'SCENE_7_AWAIT_ENLARGE':
+                    gameState = 'TRANSITIONING'; // Prevent re-triggering
+                    const atticPicEnlarge = document.getElementById('attic-pic');
+                    document.querySelector('#scene7 .continue-prompt').style.visibility = 'hidden';
+
+                    // Apply the class to trigger the CSS transition for scaling
+                    atticPicEnlarge.classList.add('enlarged');
+
+                    // Show the text box at the same time
+                    const wrongBox = document.getElementById('scene7-wrong-box');
+                    const wrongBoxText = wrongBox.querySelector('.dialog-main-text');
+                    const wrongBoxPrompt = wrongBox.querySelector('.dialog-continue-prompt');
+                    wrongBox.style.display = 'flex';
+
+                    // Start typing the text
+                    displayText(wrongBoxText, wrongBoxPrompt, "Wrong direction little girl, go back.", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_7_AWAIT_HAH_BOX';
+                    });
+                    break;
+
+                case 'SCENE_7_AWAIT_HAH_BOX':
+                    // attic-pic remains visible
+                    document.getElementById('scene7-wrong-box').style.display = 'none';
+                    const choiceBox = document.getElementById('scene7-choice-box');
+                    const choiceBoxText = choiceBox.querySelector('.dialog-main-text');
+                    const options7 = choiceBox.querySelector('ul');
+                    choiceBox.style.display = 'flex';
+                    choiceBox.style.transform = 'translateY(-1cm)';
+                    displayText(choiceBoxText, null, `"Hah...? But..."`, '', () => {
+                        options7.style.display = 'block';
+                        gameState = 'SCENE_7_AWAITING_CHOICE';
+                    });
+                    break;
+                
+                // --- Scene 8 ---
+                case 'SCENE_8_AWAIT_PIC_AND_DIALOG':
+                    const scene8MainText = document.getElementById('scene8-main-text');
+                    const scene8Prompt = document.querySelector('#scene8 .continue-prompt');
+                    const pic2 = document.getElementById('pic2');
+                    const scene8Dialog = document.getElementById('scene8-dialog-box');
+
+                    scene8MainText.style.display = 'none';
+                    scene8Prompt.style.visibility = 'hidden';
+                    pic2.style.display = 'block';
+                    scene8Dialog.style.display = 'block';
+
+                    setTimeout(() => {
+                        pic2.classList.add('visible');
+                        scene8Dialog.classList.add('visible');
+                    }, 10);
+                    gameState = 'SCENE_8_AWAITING_CHOICE';
+                    break;
+
+                // --- Scene 9 ---
+                case 'SCENE_9_STEP_1_MOVE_TEXT': // Move text up
+                    const scene9MainText = document.getElementById('scene9-main-text');
+                    scene9MainText.classList.add('move-to-top');
+                    document.querySelector('#scene9 .continue-prompt').style.visibility = 'visible';
+                    gameState = 'SCENE_9_STEP_2_SHOW_IMAGES';
+                    break;
+
+                case 'SCENE_9_STEP_2_SHOW_IMAGES': // Show images
+                    const scene9Choices = document.getElementById('scene9-choice-container');
+                    scene9Choices.style.display = 'flex';
+                    document.querySelector('#scene9 .continue-prompt').style.visibility = 'visible';
+                    gameState = 'SCENE_9_STEP_3_TYPE_DOOR';
+                    break;
+
+                case 'SCENE_9_STEP_3_TYPE_DOOR': // Type door text
+                    document.querySelector('#scene9 .continue-prompt').style.visibility = 'hidden';
+                    const doorText = document.getElementById('door-choice-text');
+                    const scene9PromptForDoor = document.querySelector('#scene9 .continue-prompt');
+                    gameState = 'TYPING_MANUAL';
+                    displayText(doorText, scene9PromptForDoor, "\"Another door!? I wonder where it will lead me to this time.\"", '[SPACE] or Click anywhere to continue', () => {
+                        gameState = 'SCENE_9_STEP_4_TYPE_WITCH';
+                    });
+                    break;
+
+                case 'SCENE_9_STEP_4_TYPE_WITCH': // Type witch text
+                    document.querySelector('#scene9 .continue-prompt').style.visibility = 'hidden';
+                    const witchText = document.getElementById('witch-choice-text');
+                    const scene9PromptForWitch = document.querySelector('#scene9 .continue-prompt');
+                    gameState = 'TYPING_MANUAL';
+                    displayText(witchText, scene9PromptForWitch, "\"A graceful and powerful-looking witch!? I hope she brings me to somewhere mysterious and exciting!\"", '', () => {
+                        // On completion, hide the prompt and enable final choices
+                        scene9PromptForWitch.style.visibility = 'hidden';
+                        gameState = 'SCENE_9_AWAIT_FINAL_CHOICE';
+                    });
+                    break;
+                
+                // --- Scene 11 ---
+                case 'SCENE_11_AWAIT_GALLERY':
+                    scene11MainText.style.display = 'none';
+                    document.querySelector('#scene11 .continue-prompt').style.visibility = 'hidden';
+                    const galleryWrapper = document.getElementById('gallery-wrapper');
+                    galleryWrapper.style.display = 'flex';
+                    setTimeout(() => {
+                        galleryWrapper.style.opacity = '1';
+                    }, 10);
+                    shuffledGalleryImages = [...galleryImages];
+                    shuffleArray(shuffledGalleryImages);
+                    showGalleryImage(0);
+                    gameState = 'SCENE_11_GALLERY_VIEW';
+                    break;
+
+            }
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('#key-gif, .dialog-nav, li, #butterfly-gif, .skip-button, #scene9-door, #scene9-witch, .gallery-nav')) return;
+            handleInteraction();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                handleInteraction();
+            } else if (event.code === 'ArrowLeft') {
+                if (gameState === 'DIALOG' && currentDialogIndex > 0) dialogPrev.click();
+                if (gameState === 'SCENE_11_GALLERY_VIEW') {
+                    galleryPrev.click();
+                }
+            } else if (event.code === 'ArrowRight') {
+                if (gameState === 'DIALOG' && currentDialogIndex < dialogParts.length - 1) dialogNext.click();
+                if (gameState === 'SCENE_11_GALLERY_VIEW') {
+                    galleryNext.click();
+                }
+            } else if (event.key.toLowerCase() === 'q') {
+                if (currentScene === 11) {
+                    showScene(10);
+                    return;
+                } else if (currentScene === 10) {
+                    goToScene9FinalState();
+                    return;
+                } else if (currentScene === 9) {
+                    goToScene5Choices();
+                    return;
+                }
+                if (currentScene > 1) {
+                    qPressCount++;
+
+                    // Cancel any ongoing animations/typing
+                    if (activeTyping) {
+                        activeTyping.skip();
+                        activeTyping = null;
+                    }
+                    if (gameState.startsWith('SCENE_3_CATCH') || gameState === 'SCENE_3_HINT_DISPLAYED') {
+                        clearTimeout(butterflyAnimationTimeout);
+                        clearTimeout(butterflyGameInitTimeout);
+                        butterflyGif.style.display = 'none';
+                        butterflyHintBox.style.display = 'none';
+                        catchHintBox.style.display = 'none';
+                        skipButterflyBtn.style.display = 'none';
+                    }
+                    if (dialogBox.style.display === 'block') {
+                        dialogBox.style.display = 'none';
+                    }
+
+                    if (qPressCount === 1) {
+                        // First press: reset the current scene
+                        startScene(currentScene);
+                    } else {
+                        // Second press: go to the previous scene
+                        const targetScene = currentScene - 1;
+                        document.getElementById(`scene${currentScene}`).style.display = 'none';
+                        if (targetScene === 1) {
+                            const scene1 = document.getElementById('scene1');
+                            scene1.style.display = 'flex';
+                            currentScene = 1;
+                            introText.style.display = 'block';
+                            scene1MainText.style.display = 'none';
+                            scene1MainText.innerHTML = '';
+                            scene1Prompt.textContent = '[SPACE] or Click anywhere to begin';
+                            scene1Prompt.style.visibility = 'visible';
+                            gameState = 'INTRO';
+                            qPressCount = 0; // Reset for scene 1
+                        } else {
+                            showScene(targetScene);
+                        }
+                    }
+                }
+            }
+        });
+
+        keyGif.addEventListener('click', (event) => {
+            event.stopPropagation();
+            if (gameState === 'SCENE_5_KEY_VISIBLE') {
+                gameState = 'DIALOG';
+                scene5ArrivingText.style.display = 'none';
+                scene5PeakText.style.display = 'none';
+                doorImage.style.display = 'block';
+                setTimeout(() => { doorImage.style.opacity = '1'; }, 10);
+                dialogBox.style.display = 'block';
+                showDialog(0);
+            }
+        });
+
+        dialogPrev.addEventListener('click', () => showDialog(currentDialogIndex - 1));
+        dialogNext.addEventListener('click', () => showDialog(currentDialogIndex + 1));
+
+        document.getElementById('option-ignore').addEventListener('click', () => {
+            if (gameState === 'DIALOG' && currentDialogIndex === 3) {
+                gameState = 'TRANSITIONING';
+                fadeOverlay.style.opacity = '1';
+                setTimeout(() => {
+                    dialogBox.style.display = 'none';
+                    showScene(6);
+                    fadeOverlay.style.opacity = '0';
+                }, 1500);
+            }
+        });
+
+        document.getElementById('option-use-key').addEventListener('click', () => {
+            if (gameState === 'DIALOG' && currentDialogIndex === 3) {
+                gameState = 'SCENE_5_DRAG_AND_DROP';
+                dialogBox.style.display = 'none';
+
+                // Add a class to trigger simultaneous animation
+                keyGif.classList.add('animate-to-center');
+                doorImage.classList.add('animate-to-center');
+
+                // After animation is done, show the hint
+                setTimeout(() => {
+                    if (gameState !== 'SCENE_5_DRAG_AND_DROP') return; // Check if state changed
+                    dragGuidanceBox.style.display = 'block';
+                }, 1500); // Match the longest transition duration (top/left)
+            }
+        });
+
+        // Manual Drag and Drop Logic
+        keyGif.addEventListener('mousedown', (e) => {
+            if (gameState !== 'SCENE_5_DRAG_AND_DROP') return;
+            
+            e.preventDefault(); // Prevent default image drag
+            
+            isDraggingKey = true;
+            keyGif.style.cursor = 'grabbing';
+            keyGif.style.transition = 'none'; // Make movement instant
+
+            const rect = keyGif.getBoundingClientRect();
+            keyOffsetX = e.clientX - rect.left;
+            keyOffsetY = e.clientY - rect.top;
+
+            // Set position based on where it was, but using top/left for direct manipulation
+            keyGif.style.top = `${rect.top}px`;
+            keyGif.style.left = `${rect.left}px`;
+            keyGif.style.transform = keyGif.style.transform.replace(/scale\([^)]+\)/, 'scale(1.5)'); // Keep scale
+            keyGif.style.margin = '0';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingKey) return;
+            keyGif.style.left = `${e.pageX - keyOffsetX}px`;
+            keyGif.style.top = `${e.pageY - keyOffsetY}px`;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDraggingKey) return;
+
+            isDraggingKey = false;
+            keyGif.style.cursor = 'grab';
+
+            // Check if the key is over the door
+            const keyRect = keyGif.getBoundingClientRect();
+            const doorRect = doorImage.getBoundingClientRect();
+
+            const overlap = !(keyRect.right < doorRect.left || 
+                              keyRect.left > doorRect.right || 
+                              keyRect.bottom < doorRect.top || 
+                              keyRect.top > doorRect.bottom);
+
+            if (overlap && gameState === 'SCENE_5_DRAG_AND_DROP') {
+                // Success!
+                gameState = 'TRANSITIONING';
+
+                keyGif.style.display = 'none';
+                dragGuidanceBox.style.display = 'none';
+
+                const finalDoorRect = doorImage.getBoundingClientRect();
+                keyholeGif.style.left = `calc(${finalDoorRect.left + finalDoorRect.width / 2 - keyholeGif.width / 2}px + 3.5cm)`;
+                keyholeGif.style.top = `calc(${finalDoorRect.top + finalDoorRect.height / 2 - keyholeGif.height / 2}px + 2.6cm)`;
+                keyholeGif.style.display = 'block';
+
+                setTimeout(() => {
+                    fadeOverlay.style.opacity = '1';
+                    setTimeout(() => {
+                        showScene(9);
+                        fadeOverlay.style.opacity = '0';
+                    }, 1500);
+                }, 4000);
+            }
+        });
+        
+        // Scene 7 option listeners
+        document.getElementById('option-goback').addEventListener('click', () => {
+            if (gameState === 'SCENE_7_AWAITING_CHOICE') {
+                showScene(5);
+            }
+        });
+        document.getElementById('option-continue').addEventListener('click', () => {
+            if (gameState === 'SCENE_7_AWAITING_CHOICE') {
+                gameState = 'TRANSITIONING';
+                fadeOverlay.style.opacity = '1';
+                setTimeout(() => {
+                    showScene(8);
+                    fadeOverlay.style.opacity = '0';
+                }, 1500);
+            }
+        });
+
+        // Scene 8 option listeners
+        document.getElementById('option8-goback').addEventListener('click', () => {
+            if (gameState === 'SCENE_8_AWAITING_CHOICE') {
+                showScene(5);
+            }
+        });
+        document.getElementById('option8-continue').addEventListener('click', () => {
+            if (gameState === 'SCENE_8_AWAITING_CHOICE') {
+                const goBackButton = document.getElementById('option8-goback');
+                const scene8 = document.getElementById('scene8');
+
+                if (scene8.classList.contains('earthquake')) return;
+
+                goBackButton.classList.add('shake-angry');
+                scene8.classList.add('earthquake');
+                if (navigator.vibrate) {
+                    navigator.vibrate(3000);
+                }
+
+                setTimeout(() => {
+                    goBackButton.classList.remove('shake-angry');
+                    scene8.classList.remove('earthquake');
+                }, 3000);
+            }
+        });
+
+        // Scene 9 choice listeners
+        document.getElementById('scene9-door').addEventListener('click', () => {
+            if (gameState === 'SCENE_9_AWAIT_FINAL_CHOICE') {
+                sessionStorage.setItem('lastScene', '9');
+                window.location.href = 'birthday.html';
+            }
+        });
+        document.getElementById('scene9-witch').addEventListener('click', () => {
+            if (gameState === 'SCENE_9_AWAIT_FINAL_CHOICE') {
+                showScene(10);
+            }
+        });
+
+
+        // Scene 11 Gallery Listeners
+        galleryPrev.addEventListener('click', () => {
+            if (gameState === 'SCENE_11_GALLERY_VIEW') {
+                showGalleryImage(currentGalleryIndex - 1);
+            }
+        });
+        galleryNext.addEventListener('click', () => {
+            if (gameState === 'SCENE_11_GALLERY_VIEW') {
+                showGalleryImage(currentGalleryIndex + 1);
+            }
+        });
+        function showGalleryImage(index) {
+            if (shuffledGalleryImages.length === 0) return;
+            currentGalleryIndex = (index + shuffledGalleryImages.length) % shuffledGalleryImages.length;
+            galleryImage.src = shuffledGalleryImages[currentGalleryIndex];
+        }
+
+        butterflyGif.addEventListener('click', () => {
+            if (gameState !== 'SCENE_3_CATCH_BUTTERFLY') return;
+            clearTimeout(butterflyAnimationTimeout);
+            skipButterflyBtn.style.display = 'none';
+            gameState = 'SCENE_3_HINT_DISPLAYED';
+            const rect = butterflyGif.getBoundingClientRect();
+            butterflyGif.style.transition = 'none';
+            butterflyGif.style.left = `${rect.left}px`;
+            butterflyGif.style.top = `${rect.top}px`;
+            butterflyGif.style.transform = 'none';
+            setTimeout(() => {
+                butterflyGif.style.transition = 'all 0.5s ease-in-out';
+                butterflyGif.style.width = '110px';
+                butterflyGif.style.height = 'auto';
+                butterflyGif.style.cursor = 'default';
+                butterflyGif.style.left = '50%';
+                butterflyGif.style.top = '50%';
+                butterflyGif.style.transform = 'translate(-50%, -50%) translateY(-0.8cm)';
+                butterflyHintBox.style.display = 'block';
+            }, 20);
+        });
+
+        skipButterflyBtn.addEventListener('click', () => {
+            if (currentScene !== 3) return;
+            
+            clearTimeout(butterflyGameInitTimeout);
+            clearTimeout(butterflyAnimationTimeout);
+            butterflyGif.style.display = 'none';
+            catchHintBox.style.display = 'none';
+            skipButterflyBtn.style.display = 'none';
+            gameState = 'TRANSITIONING'; // Prevent race conditions
+            
+            showScene(4);
+        });
+
+        document.querySelectorAll('#option-ignore, #option-use-key, #key-gif, .dialog-nav, #scene7-choice-box li, #scene8-dialog-box li, #scene9-door, #scene9-witch, .gallery-nav').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                customCursor.style.display = 'block';
+                element.style.cursor = 'none';
+            });
+            element.addEventListener('mouseleave', () => {
+                customCursor.style.display = 'none';
+                element.style.cursor = (element.classList.contains('dialog-nav')) ? 'pointer' : 'default';
+            }); 
+            element.addEventListener('mousemove', (e) => {
+                const offset = 35;
+                customCursor.style.left = (e.pageX - offset) + 'px';
+                customCursor.style.top = (e.pageY - offset) + 'px';
+            });
+        });
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.scene-text:not(#intro-text), .dialog-main-text, #dialog-box li').forEach(el => {
+                if (el.closest('#butterfly-hint-box, #scene6 .story-dialog-box, #scene7-story-box, #scene7-wrong-box, #scene7-choice-box, #scene8-dialog-box, #drag-guidance-box')) return;
+                if (el.innerHTML.trim().length > 0) {
+                    el.dataset.fullText = el.innerHTML;
+                    if (!el.matches('li')) { // Don't clear list items initially
+                       el.innerHTML = '';
+                    }
+                }
+            });
+
+            // Populate gallery images array
+            for (let i = 1; i <= 13; i++) {
+                let extension = 'jpg';
+                if (i === 1 || i === 6) extension = 'gif';
+                if (i === 13) extension = 'png';
+                galleryImages.push(`view${i}.${extension}`);
+            }
+            const lastScene = sessionStorage.getItem('lastScene');
+            if (lastScene === '9') {
+                sessionStorage.removeItem('lastScene'); // Use it once, then clear it
+                goToScene9FinalState();
+            } else {
+                // Default start
+                scene1Prompt.textContent = '[SPACE] or Click anywhere to begin';
+            }
+        });
+    </script>
+
+</body>
+</html>

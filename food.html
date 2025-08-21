@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-g" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Food</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Font for the title text */
+    @font-face {
+      font-family: 'TitleFont';
+      src: url('font9.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Font for the new text */
+    @font-face {
+      font-family: 'NewTextFont';
+      src: url('font11.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* New font for the sip text */
+    @font-face {
+      font-family: 'SipFont';
+      src: url('font99.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Font for the classic buttons */
+    @font-face {
+      font-family: 'FontPoll';
+      src: url('fontpoll.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: sans-serif; /* Using a standard web-safe font for the button */
+      background: transparent;
+      overflow-y: scroll; /* Prevents layout shift when scrollbar appears/disappears */
+    }
+
+    a, .btn, .classic-btn, .gallery-item, #recipe-viewer {
+        cursor: default;
+    }
+
+    .panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+
+    /* Video background styling */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* This is the definitive fix for the horizontal overflow issue */
+    html {
+      overflow-x: hidden;
+    }
+
+    /* New wrapper to handle positioning and separate content from background */
+    .content-wrapper {
+      position: relative;
+      width: 75%;
+      max-width: 600px;
+      min-height: 600px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: translateX(calc(-8.8cm - 2mm)); /* Moved from .content-box */
+    }
+
+    /* Content box */
+    .content-box {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow: hidden;
+      z-index: 1; /* Content box is on a lower layer now */
+    }
+
+    /* The new visual background for the box */
+    .box-visual-background {
+      position: absolute;
+      top: 100px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 240, 245, 0.9); /* A light pastel pink */
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 1;
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      z-index: 10;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px); /* Keep vertical transform on hover */
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* New title style */
+    .page-title {
+      font-family: 'TitleFont', sans-serif;
+      font-size: 2.2rem; /* Reduced size a bit */
+      color: #C2185B; /* Matching the border color */
+      text-align: center;
+      z-index: 1;
+      line-height: 1.2;
+    }
+
+    /* The title is now an independent, absolute element */
+    .title-group {
+      position: absolute;
+      top: calc(18vh + 1cm - 2mm); /* Dragged 1cm down, then 2mm up */
+      left: 50%;
+      transform: translateX(calc(-50% - 8.8cm + 0.7mm)); /* Moved 0.05cm to the right */
+      width: 100%;
+      max-width: 600px; /* To keep text wrapping consistent with the box */
+      text-align: center;
+      z-index: 10;
+    }
+
+    /* New subtitle style */
+    .page-subtitle {
+      font-family: 'TitleFont', sans-serif;
+      font-size: 1.7rem; /* Increased from 1.5rem */
+      color: #333;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    /* A placeholder to keep the space where the title used to be */
+    .title-placeholder {
+      height: 85px; /* Approximate height of the original title */
+      margin-bottom: -10px; /* Fine-tunes space to mimic original layout */
+    }
+
+    /* Style for the added GIF */
+    .recipe-gif {
+      /* Keep the GIF in the normal layout flow */
+      position: relative;
+      z-index: 1;
+
+      /* Define a base size for the layout */
+      width: 250px;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-top: calc(15px + 12mm); /* Moved 6mm lower */
+
+      /* Scale the GIF visually without affecting other elements */
+      transform: scale(1.2); /* Increased size a bit */
+    }
+
+    /* Style for the new text */
+    .new-text {
+      font-family: 'NewTextFont', sans-serif;
+      font-size: 1.2rem; /* Reduced size a bit */
+      color: #333;
+      text-align: center;
+      position: absolute;   /* Takes the element out of the layout flow */
+      z-index: 2;           /* Ensures it appears above the background box */
+      width: 160px;         /* Defines a clear width */
+      bottom: calc(220px - 1cm + 16mm); /* Moved 4mm up */
+      left: calc(40px + 2mm); /* Moved 2mm to the right */
+    }
+
+    /* Style for the duplicated text */
+    .new-text-2 {
+      font-family: 'NewTextFont', sans-serif;
+      font-size: 1.2rem; /* Reduced size a bit */
+      color: #333;
+      text-align: center;
+      position: absolute;   /* Takes the element out of the layout flow */
+      z-index: 2;           /* Ensures it appears above the background box */
+      width: 200px;         /* Increased width to prevent unwanted wrapping */
+      bottom: calc(220px - 1cm - 8mm); /* Moved 2mm up */
+      right: calc(40px - 12mm); /* Moved 3mm to the right */
+    }
+
+    /* Style for the new GIF */
+    .extra-gif {
+      position: absolute;
+      top: 50%;
+      right: calc(8% + 18cm + 7mm);
+      transform: translateY(calc(-50% + 5.3cm - 3mm)); /* Moved 0.05cm down */
+      width: 500px; /* Increased size again */
+      height: auto;
+      border-radius: 10px;
+      z-index: 5;
+    }
+
+    /* Style for the new food22.gif */
+    .extra-gif-2 {
+      position: absolute;
+      bottom: 60px; /* Moved 4mm down */
+      left: calc(60px + 2.3cm - 2mm); /* Dragged 2.3cm to the right, then 2mm left */
+      width: 540px; /* Increased size a bit more */
+      height: auto;
+      border-radius: 10px;
+      z-index: 5;
+      transform: rotate(90deg); /* Rotated 90 degrees clockwise */
+    }
+
+    /* Container for the new classic buttons */
+    .button-container {
+      position: absolute; /* Take out of the normal flow */
+      right: calc(40px + 3cm); /* Moved 1cm further left */
+      top: calc(50% - 8cm); /* Vertically center, then move 8cm up */
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column; /* Stack the button rows vertically */
+      align-items: flex-end; /* Align rows to the right */
+      gap: 10px; /* Vertical gap between rows */
+      z-index: 10;
+    }
+
+    /* A new class to manage each row of buttons */
+    .button-row {
+      display: flex;
+      flex-direction: row;
+      gap: 10px; /* Horizontal gap between buttons */
+    }
+
+    /* New rule to move the second row of buttons */
+    .button-row:nth-child(2) {
+      transform: translateX(-1.5cm);
+    }
+
+    /* Style for the classic 3D buttons */
+    .classic-btn {
+      font-family: 'FontPoll', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900; /* Made the font a bit bolder */
+      color: #603838; /* Darker, brownish text color */
+      background-color: #E6A4B4; /* dark pink pastel background */
+      padding: 3px 8px;
+      text-decoration: none;
+      border-style: solid;
+      /* Emphasize right and bottom borders by making them thicker */
+      border-width: 2px 4px 4px 2px; /* top, right, bottom, left */
+      /* Light top/left, very dark bottom/right for a strong 3D effect */
+      border-color: #F5C6D0 #8B575C #8B575C #F5C6D0;
+      transition: all 0.05s linear;
+    }
+
+    .classic-btn:active,
+    .classic-btn.active {
+      background-color: #BEAEE2; /* A more vibrant pastel purple */
+      color: #FADADD; /* light pink */
+      /* Emphasize top and left borders for a "pressed" look */
+      border-width: 4px 2px 2px 4px; /* top, right, bottom, left */
+      /* Inverted border colors for a "pressed" look */
+      border-color: #8470A5 #D3C7EE #D3C7EE #8470A5; /* Darker top/left for pressed state */
+      transform: translateY(2px) translateX(2px); /* Adjusted transform for new border widths */
+      box-shadow: none;
+    }
+
+    /* New Gallery Styles */
+    .gallery-container {
+      position: absolute;
+      top: calc(50vh - 325px + 2cm); /* Moved down by 2cm */
+      height: 650px; /* Increased height */
+      left: calc(50% + 1cm); /* Position to the right of the center */
+      width: 680px; /* Increased width */
+      padding: 20px; /* Increased padding */
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: min-content; /* Helps ensure rows size correctly */
+      gap: 20px; /* This sets a 20px gap both horizontally and vertically. */
+      overflow-y: scroll; /* This enables the vertical scrollbar */
+      z-index: 5;
+      /* Hide the gallery's native scrollbar */
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+
+    .gallery-container::-webkit-scrollbar {
+      display: none; /* for Webkit browsers */
+    }
+
+    .gallery-item {
+      position: relative; /* Added for positioning the info box */
+      aspect-ratio: 1 / 1; /* Creates a perfect square */
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Fills the square, cropping excess */
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-image-wrapper {
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* This is crucial for cropping the image */
+      border-radius: 8px;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+
+    /* New style for the selected gallery item frame */
+    .gallery-item.selected-recipe .gallery-image-wrapper {
+      box-shadow: 0 0 0 3px #FF809A; /* An even thinner, bolder pastel-pink frame */
+    }
+
+    /* New styles for the hover info box */
+    .gallery-item-info {
+      display: none; /* Hide original info boxes, they are now data sources */
+    }
+
+    /* New styles for the global tooltip that follows the cursor */
+    #gallery-tooltip {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none; /* Prevents the tooltip from interfering with mouse events */
+      white-space: nowrap; /* Keep the text on one line */
+      z-index: 9999; /* Ensure it's on top of everything */
+      /* top and left are set dynamically by JS */
+    }
+
+    /* New spacer to create distance at the bottom of the gallery */
+    .gallery-bottom-spacer {
+      height: 1cm;
+      /* This is important to make the spacer span all columns of the grid layout */
+      grid-column: 1 / -1;
+    }
+
+    /* New spacer style to create a scrollable area for the body */
+    #scroll-spacer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      z-index: -1; /* Put it behind everything */
+      visibility: hidden;
+    }
+
+    /* Styles for the new recipe details container */
+    .recipe-details {
+      display: none; /* Hidden by default */
+      font-family: 'FontPoll', sans-serif;
+      color: #333;
+      font-size: 1.1rem;
+      font-weight: bold; /* Made the recipe text bolder */
+      text-align: left;
+      width: 100%; /* Fills the new recipe-viewer container */
+      max-width: 500px;
+      z-index: 2;
+      position: relative;
+      line-height: 1.6;
+      /* transform: translate(20px, 10px); /* This is no longer needed as the parent container handles positioning */
+    }
+    /* New style to ensure the main content wrapper maintains the flex layout */
+    #main-content-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .recipe-details ol {
+      list-style-type: decimal; /* Ensures numbers are shown */
+      list-style-position: outside; /* Places numbers outside the text block */
+      padding-inline-start: 40px; /* The correct property for list indentation */
+    }
+    .recipe-details li {
+      margin-bottom: 10px;
+    }
+    .recipe-details h4 {
+      font-weight: bold;
+      margin-bottom: 15px;
+      padding-inline-start: 40px; /* Align with list items */
+    }
+
+    /* New rules to align and space the recipe's p tags */
+    .recipe-details > p {
+      padding-inline-start: 40px; /* Align with list items */
+    }
+    .recipe-details ol + p {
+      margin-top: 15px; /* Add space for decoration text */
+    }
+
+    /* New styles for the recipe viewer box */
+    #recipe-viewer {
+      display: none; /* Hidden by default, shown via JS */
+      position: absolute; /* Positioned relative to the .content-box */
+      
+      /* Making the box "thinner and shorter" */
+      width: 90%;
+      height: 50%; /* Made the box even shorter */
+      
+      /* Centering the box within its parent and moving it down */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, calc(-50% + 0.7cm));
+      
+      /* Allows scrolling for longer recipes */
+      overflow-y: auto;
+      padding: 2rem; /* Provides nice spacing for the text inside */
+    }
+
+    /* New container for the bottom navigation buttons */
+    .bottom-nav-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 10;
+      transform: translateX(-12cm); /* Moves the whole group left */
+    }
+
+    /* New style for the "Have a sip! Take a bite!" text */
+    .sip-text {
+      font-family: 'SipFont', sans-serif;
+      font-size: 2.2rem; /* Increased size again */
+      color: #EC407A; /* Bolder pink color */
+      margin-top: 15px;
+    }
+
+    body {
+      scrollbar-color: transparent transparent; /* Firefox */
+    }
+
+    body::-webkit-scrollbar {
+      background: transparent;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: transparent;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="panel">
+    <img src="food3.gif" alt="Food animation" class="extra-gif">
+    <img src="food22.gif" alt="Another food animation" class="extra-gif-2">
+    <!-- The title is now an independent element, free to be on the top layer -->
+    <div class="title-group">
+      <h1 class="page-title">QUIET MEOW'S FOOD LOG</h1>
+      <p class="page-subtitle">25/06 EDITION</p>
+    </div>
+    <!-- The new wrapper holds both the background and the content -->
+    <div class="content-wrapper">
+      <div class="box-visual-background"></div>
+      <div class="content-box">
+        <!-- Wrapper for the main content view before a recipe is selected -->
+        <div id="main-content-view">
+          <!-- A placeholder keeps the recipe GIF in the correct position -->
+          <div class="title-placeholder"></div>
+          <!-- Added GIF -->
+          <img src="recipe.gif" alt="Recipe animation" class="recipe-gif">
+          <!-- Added new text with custom font -->
+          <p class="new-text">Fluffy cat<br>food random</p>
+          <!-- Duplicated and modified text -->
+          <p class="new-text-2">progress recipe<br>giggle wrong</p>
+        </div>
+
+        <!-- This is the new "invisible" box that holds all recipes -->
+        <!-- It is positioned inside the content-box but is smaller -->
+        <div id="recipe-viewer">
+          <!-- New hidden container for the milk pudding recipe -->
+          <div class="recipe-details recipe-content" id="milk-pudding-details-container">
+            <ol>
+              <li>Split the milk box into 2 parts</li>
+              <li>Pour ½ milk box into a pot and add sugar (mixture 1)</li>
+              <li>Pour cornstarch to the ½ remaining milk box, mix (mixture 2)</li>
+              <li>Cook mixture 1 on medium-low heat for 3-4 mins (mixture 3)</li>
+              <li>Pour mixture 3 in mixture 2 and mix them until they become thick and slightly dense->pour into a container, let it rest in fridge for 1 hour</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the tuna rice recipe -->
+          <div class="recipe-details recipe-content" id="tuna-rice-details-container">
+            <h4>Ingredients: 1 can of tuna, mayonnaise, Gochujang</h4>
+            <ol>
+              <li>Drain oil/water out of the tuna can</li>
+              <li>Pour tuna in a bowl, add mayonnaise, Gochujang, sesame oil, salt and pepper, mix well</li>
+              <li>Eat with rice and some seaweed</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Red Braised Pork recipe -->
+          <div class="recipe-details recipe-content" id="red-braised-pork-details-container">
+            <ol>
+              <li>Boil 15-20 quail eggs</li>
+              <li>Boil the pork belly cubes for half hour</li>
+              <li>Pan fry the pork cubes</li>
+              <li>Then transfer them to a pot</li>
+              <li>Add sliced ginger, scallion, brown sugar, soy sauce, hot water -> simmer for 1 hour, then add eggs, simmer the sauce until it turns sticky</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Bibimbap recipe -->
+          <div class="recipe-details recipe-content" id="bibimbap-details-container">
+            <ol>
+              <li>Slice 1 carrot, 1 zucchini, 2 cups of any mushroom</li>
+              <li>Stir spinach for 2-3 mins, carrot 3-5 mins, mushroom 5-7 mins, zucchini 3-4 mins, bean sprouts 2-3 mins (cook them separately)</li>
+              <li>Place cooked rice on a plate, add cooked veggies and 1 fried egg (preferably sunny-side up with slightly-cooked yolk), add bibimbap sauce</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Cucumber Salad recipe -->
+          <div class="recipe-details recipe-content" id="cucumber-salad-details-container">
+            <ol>
+              <li>Cucumber + red onion + garlic + Greek yogurt (or just yogurt, or cashew, or olive oil) + lemon juice (preferably yellow lemon) + salt + pepper+ chicken breast -> to a bowl with lid, shake it</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Egg Sandwich recipe -->
+          <div class="recipe-details recipe-content" id="egg-sandwich-details-container">
+            <ol>
+              <li>Boil 3 eggs in 15 mins, peel them then put into ice water for a while</li>
+              <li>Take out yolks, put into a small bowl (to make sauce), add mayonnaise (preferably Korean mayo), pink salt, pepper</li>
+              <li>Chop egg white into tiny pieces, then put them into the small bowl of mayo yolk, add more mayo, mix well</li>
+              <li>Eat with sandwich</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Veggies recipe -->
+          <div class="recipe-details recipe-content" id="veggies-details-container">
+            <ol>
+              <li>Cut carrot into thin strips, chop green onions</li>
+              <li>Stir carrot with green onions, add oil, some yumyum and soy sauce</li>
+              <li>Take out</li>
+              <li>Eat immediately or with some added toppings like sesame or seaweed</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Beef Ramen recipe -->
+          <div class="recipe-details recipe-content" id="beef-ramen-details-container">
+            <ol>
+              <li>Stir the beef both sides until golden brown</li>
+              <li>Take beef out</li>
+              <li>Melt some butter in the same pan, add onion, garlic, saute for a few mins, add mushroom, season with salt and pepper, cook until golden and soft for ~6 mins, add flour and mix well</li>
+              <li>Add the beef stock and mix until the sauce thickens and incorporated. Add worcestershire sauce, smoked paprika and Dijon mustard, stir to combine and bring it to a boil</li>
+              <li>Add sour cream and mix well</li>
+              <li>Add the stirred beef back to the pan, mix for 1 min</li>
+              <li>Now cook ramen in hot boiling water in another pot. When done, take noodle out, put into dish, laddle the sauce (the pan that has beef and 100+ types of sauce we just did over there) over the noodle, garnish with chives, Parmesan cheese</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Milk Toast recipe -->
+          <div class="recipe-details recipe-content" id="milk-toast-details-container">
+            <ol>
+              <li>Place a thich piece of toast to a pan, pour 30ml of milk in, use chopsticks or anything to adjust the toast around slightly so it can absorb the milk, add 10g butter to the pan, let the toast absorb the butter evenly</li>
+              <li>Fry over medium to low heat, fry until both sides of the toast turn golden brown and take it out of the pan</li>
+              <li>Drizzle honey on top of the toast</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Spicy Udon recipe -->
+          <div class="recipe-details recipe-content" id="spicy-udon-details-container">
+            <ol>
+              <li>Cook red onion, garlic, sausages, hot pepper paste (Gochujang), full cream milk together in a pan, after a while add sallt, black pepper, udon, mix well</li>
+              <li>After while add a cheese slice, put the lid on the pan, after a while take out the lid, add parsley flakes</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Mushroom Soup recipe -->
+          <div class="recipe-details recipe-content" id="mushroom-soup-details-container">
+            <ol>
+              <li>Sauté onion, garlic, mushrooms in butter</li>
+              <li>Stir in flour</li>
+              <li>Add broth, simmer 10 min</li>
+              <li>Add milk/cream, stir till thick</li>
+              <li>Season, garnish</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Banana Milk recipe -->
+          <div class="recipe-details recipe-content" id="banana-milk-details-container">
+            <ol>
+              <li>Banana to glass/bowl</li>
+              <li>Squish well, add condensed milk, mix well, add ice cubes, add milk</li>
+            </ol>
+            <p>Decoration: banana slices on top</p>
+          </div>
+          <!-- New hidden container for the Lemonade recipe -->
+          <div class="recipe-details recipe-content" id="lemonade-details-container">
+            <ol>
+              <li>Water + sugar in a pot, dissolve -> they’ll become syrup</li>
+              <li>Squeeze lemons (preferably yellow lemons) then pour lemon juice into bottle/glass, then pour syrup, sparkling water, add ice cubes</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Marie Latte recipe -->
+          <div class="recipe-details recipe-content" id="marie-latte-details-container">
+            <ol>
+              <li>Smash 2 biscuits into powder form</li>
+              <li>Add 20 ml milk</li>
+              <li>Mix well with hand or hand mixer</li>
+              <li>Get a glass: put ice cubes in, pour 120ml milk in, pour espresso then the biscuit liquid, whipping cream on top</li>
+            </ol>
+            <p>Decoration: biscuit</p>
+          </div>
+          <!-- New hidden container for the Strawberry Lemonade recipe -->
+          <div class="recipe-details recipe-content" id="strawberry-lemonade-details-container">
+            <ol>
+              <li>Strawberries to a bowl -> squish to nearly liquid -> add sugar</li>
+              <li>Pour everything into glass -> squish lemon (preferably yellow lemon)</li>
+              <li>Add ice cubes, Sprite -> Mix</li>
+              <li>Enjoy</li>
+            </ol>
+            <p>Decoration: Lemon piece</p>
+          </div>
+          <!-- New hidden container for the Jelly Pink recipe -->
+          <div class="recipe-details recipe-content" id="jelly-pink-details-container">
+            <ol>
+              <li>Jelly candies to a glass</li>
+              <li>Add hot water</li>
+              <li>Mix until dissolved</li>
+              <li>Leave in fridge for 5 hours</li>
+              <li>Take out</li>
+              <li>Add milk</li>
+              <li>Mix</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Watermelon Yakult recipe -->
+          <div class="recipe-details recipe-content" id="watermelon-yakult-details-container">
+            <p>watermelon + yakult + sprite</p>
+          </div>
+          <!-- New hidden container for the Mango Tea recipe -->
+          <div class="recipe-details recipe-content" id="mango-tea-details-container">
+            <h4>Ingredients: tea leaves (black/green/oolong), mango jam/mango puree + honey, ice.</h4>
+            <ol>
+              <li>Brew tea (5–7 min), strain</li>
+              <li>Shake tea + mango jam/mango puree + honey + ice</li>
+              <li>Pour into glass, add mango pieces & mint</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Strawberry Dessert recipe -->
+          <div class="recipe-details recipe-content" id="strawberry-dessert-details-container">
+            <ol>
+              <li>Cut strawberries into small pieces, put into big bowl, add creamy cashew, mix well, pour the mixture to a tray in spoon (or palm) size (so they become tiny cake pieces later)</li>
+              <li>Put tray in freezer, wait a few hours or overnight</li>
+              <li>Take tray out, pour peanut butter on each pieces</li>
+              <li>Get an empty bowl, pour choco chips n a lil ice cream in it, then put into oven until they become choco liquid</li>
+              <li>Dip the frozen strawberry pieces in that choco liquid bowl</li>
+              <li>Place those tiny cake pieces on the tray again</li>
+              <li>Put tray in freezer, take out after night or a few hours</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the 1 Ingredient Ice Cream recipe -->
+          <div class="recipe-details recipe-content" id="one-ingredient-ice-cream-details-container">
+            <ol>
+              <li>Cut bananas into small pieces</li>
+              <li>Freeze them for 3 hours</li>
+              <li>Take out frozen bananas, put in a blender</li>
+              <li>Pour almond milk or any milk of choice in blender</li>
+              <li>Start the blender</li>
+              <li>It will turn into ice cream</li>
+              <li>Take out, pour into bowl</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Chocolate Truffles recipe -->
+          <div class="recipe-details recipe-content" id="chocolate-truffles-details-container">
+            <ol>
+              <li>Cocoa powder in a bowl, add ½ to 1 can of condensed milk, mix it well until its texture is similar to clay</li>
+              <li>Transfer that mixture to a square bowl, wrap it with food wrap</li>
+              <li>Put bowl into fridge for a couple of hours</li>
+              <li>Take bowl out</li>
+              <li>Cut in smaller squares</li>
+              <li>Sprinkle them with cocoa powder</li>
+              <li>Enjoy</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the Oreo Milo Ball recipe -->
+          <div class="recipe-details recipe-content" id="oreo-milo-ball-details-container">
+            <ol>
+              <li>Oreo to zip bag -> smash to powder</li>
+              <li>Add condensed milk, add milo powder</li>
+              <li>Use handgloves to ball them into ball shape</li>
+              <li>Roll those balls into a bowl of milo powder so theyre covered by milo powder</li>
+              <li>Eat</li>
+            </ol>
+          </div>
+          <!-- New hidden container for the special GIF -->
+          <div class="recipe-details recipe-content" id="special-gif-container" style="text-align: center;">
+            <img src="food24.gif" alt="Surprise GIF" style="max-width: 100%; border-radius: 10px;">
+            <p class="sip-text">Have a sip! Take a bite!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Image Gallery -->
+    <div class="gallery-container">
+      <div class="gallery-item recipe-link" data-category="sweets" data-recipe-target="#milk-pudding-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="s3.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">4-ingredient milk pudding</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="easy" data-recipe-target="#tuna-rice-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo1.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">5-min Korean breakfast</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#lemonade-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b2.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">best homemade lemonade</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="comfort noodle" data-recipe-target="#spicy-udon-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo9.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">creamy spicy udon</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="comfort" data-recipe-target="#mushroom-soup-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo10.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">creamy mushroom soup</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#jelly-pink-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b5.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">viral jelly pink</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="sweets" data-recipe-target="#strawberry-dessert-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="s1.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">strawberry frozen dessert</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="easy" data-recipe-target="#bibimbap-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo3.jfif" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">Bibimbap</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#banana-milk-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b1.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">Korean banana milk</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="comfort sandwich" data-recipe-target="#milk-toast-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo8.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">milk toast</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="sweets balls" data-recipe-target="#oreo-milo-ball-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="s5.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">3-ingredient Oreo Milo ball</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#strawberry-lemonade-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b4.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">sparkling strawberry lemonade</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="easy" data-recipe-target="#red-braised-pork-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo2.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">Chinese red braised prok</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="super-easy" data-recipe-target="#veggies-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo6.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">veggies are not your enemies</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#marie-latte-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b3.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">Marie Regal Cream Latte</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="sweets" data-recipe-target="#one-ingredient-ice-cream-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="s2.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">1-ingredient ice cream</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="super-easy sandwich" data-recipe-target="#egg-sandwich-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo5.jfif" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">Japanese mayo egg sandwich</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#watermelon-yakult-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b6.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">watermelon yakult</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="beverages" data-recipe-target="#mango-tea-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="b7.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">mango tea</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="easy" data-recipe-target="#cucumber-salad-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo4.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">high protein cucumber salad</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="sweets" data-recipe-target="#chocolate-truffles-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="s4.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">2-ingredient chocolate truffles</div>
+      </div>
+      <div class="gallery-item recipe-link" data-category="comfort noodle" data-recipe-target="#beef-ramen-details-container">
+        <div class="gallery-image-wrapper">
+          <img src="fo7.jpg" alt="Gallery image">
+        </div>
+        <div class="gallery-item-info">beef Stroganoff ramen</div>
+      </div>
+      <!-- Special gallery item, managed by JS -->
+      <div class="gallery-item" id="special-item" style="display: none;">
+        <div class="gallery-image-wrapper">
+          <img src="foodqm.jpg" alt="Special surprise">
+        </div>
+      </div>
+      <!-- This is the new spacer div that creates the bottom margin -->
+      <div class="gallery-bottom-spacer"></div>
+    </div>
+
+    <div class="bottom-nav-container">
+      <a href="stuff.html" class="btn">&larr; Go Back</a>
+      <a href="mukbang.html" class="btn">Mukbang in the rain</a>
+    </div>
+
+    <!-- Classic Buttons -->
+    <div class="button-container">
+      <div class="button-row">
+        <a href="#" class="classic-btn active" id="btn-show-all" data-category="all">show all</a>
+        <a href="#" class="classic-btn" id="btn-easy-meals" data-category="easy">easy meals</a>
+        <a href="#" class="classic-btn" id="btn-super-easy" data-category="super-easy">super easy meals</a>
+        <a href="#" class="classic-btn" id="btn-beverages" data-category="beverages">beverages</a>
+        <a href="#" class="classic-btn" id="btn-sweets" data-category="sweets">sweets</a>
+      </div>
+      <div class="button-row">
+        <a href="#" class="classic-btn" id="btn-comfort" data-category="comfort">comfort foods</a>
+        <a href="#" class="classic-btn" id="btn-noodle" data-category="noodle">noodle</a>
+        <a href="#" class="classic-btn" id="btn-sandwich" data-category="sandwich">sandwich</a>
+        <a href="#" class="classic-btn" id="btn-balls" data-category="balls">balls</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden spacer div to control the body's scroll height -->
+  <div id="scroll-spacer"></div>
+
+  <!-- Global tooltip for the gallery -->
+  <div id="gallery-tooltip"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const gallery = document.querySelector('.gallery-container');
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      const spacer = document.getElementById('scroll-spacer');
+
+      if (!gallery || !spacer) {
+        console.error("Required elements for scrolling (gallery or spacer) not found.");
+        return;
+      }
+
+      // This function calculates the total scrollable height for the page.
+      // It's based on the gallery's total scrollable content (including our new spacer).
+      const updateScrollDimensions = () => {
+        const galleryScrollableHeight = gallery.scrollHeight - gallery.clientHeight;
+        spacer.style.height = window.innerHeight + galleryScrollableHeight + 'px';
+        // Re-sync scroll position in case of resize.
+        syncScroll();
+      };
+
+      // This function syncs the gallery's scroll position with the main page's scroll position.
+      // It's a direct 1-to-1 mapping.
+      const syncScroll = () => {
+        gallery.scrollTop = window.scrollY;
+      };
+
+      // This listener handles mouse wheel scrolling when the cursor is over the gallery.
+      gallery.addEventListener('wheel', (event) => {
+        event.preventDefault(); // Stop the browser from scrolling the gallery div.
+        window.scrollBy({ top: event.deltaY, behavior: 'auto' }); // Manually scroll the window instead.
+      }, { passive: false });
+
+      // Sync the gallery whenever the main page scrolls.
+      window.addEventListener('scroll', syncScroll);
+
+      // Recalculate heights whenever the window is resized.
+      window.addEventListener('resize', updateScrollDimensions);
+
+      // Use a MutationObserver to detect when the gallery's content changes (e.g., images loading).
+      const observer = new MutationObserver(updateScrollDimensions);
+      observer.observe(gallery, { childList: true, subtree: true, attributes: true });
+
+      // Initial setup.
+      updateScrollDimensions();
+
+      // --- GALLERY FILTERING LOGIC ---
+      const filterGallery = (category) => {
+        galleryItems.forEach(item => {
+          // Let handleSpecialItem control the special item, and always show the spacer
+          if (item.id === 'special-item' || item.classList.contains('gallery-bottom-spacer')) {
+            return;
+          }
+          
+          const itemCategories = item.dataset.category.split(' ');
+          // Show item if category is 'all' or if its category list includes the filter
+          if (category === 'all' || itemCategories.includes(category)) {
+            item.style.display = 'grid'; // Use 'grid' to match the grid container's display type
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        // The MutationObserver will automatically detect the style changes and
+        // call updateScrollDimensions() to fix the scrollbar length.
+      };
+
+      const filterButtons = document.querySelectorAll('.classic-btn');
+      filterButtons.forEach(button => {
+        // Don't add filter logic to the next button
+        if (button.id === 'btn-next' || button.id === 'btn-prev') return;
+
+        button.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // Remove active class from all buttons
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          // Add active class to the clicked button
+          e.currentTarget.classList.add('active');
+
+          const category = e.currentTarget.dataset.category;
+          filterGallery(category);
+          handleSpecialItem(); // Reset the chance for the special item
+        });
+      });
+
+      // --- GALLERY HOVER INFO LOGIC ---
+      const tooltip = document.getElementById('gallery-tooltip');
+
+      if (tooltip) {
+        galleryItems.forEach(item => {
+          // The special item has no info div, so it will be skipped automatically.
+          // This check is now implicitly handled by infoText being null.
+          const infoText = item.querySelector('.gallery-item-info')?.textContent;
+
+          if (infoText) {
+            item.addEventListener('mouseenter', () => {
+              tooltip.textContent = infoText;
+              tooltip.style.opacity = '1';
+            });
+
+            item.addEventListener('mouseleave', () => {
+              tooltip.style.opacity = '0';
+            });
+
+            item.addEventListener('mousemove', (e) => {
+              const tooltipWidth = tooltip.offsetWidth;
+              const tooltipHeight = tooltip.offsetHeight;
+              const viewportWidth = window.innerWidth;
+              const viewportHeight = window.innerHeight;
+              const offsetX = 15;
+              const offsetY = 15;
+
+              let top = e.clientY + offsetY;
+              let left = e.clientX + offsetX;
+
+              // Check for viewport boundary collision and flip position if needed
+              if (left + tooltipWidth > viewportWidth) {
+                left = e.clientX - tooltipWidth - offsetX;
+              }
+              if (top + tooltipHeight > viewportHeight) {
+                top = e.clientY - tooltipHeight - offsetY;
+              }
+
+              // Prevent tooltip from going off the top/left of the screen
+              if (top < 0) top = 0;
+              if (left < 0) left = 0;
+
+              tooltip.style.top = `${top}px`;
+              tooltip.style.left = `${left}px`;
+            });
+          }
+        });
+      }
+
+      // --- RECIPE DISPLAY LOGIC ---
+      const recipeLinks = document.querySelectorAll('.recipe-link');
+      const allRecipeContents = document.querySelectorAll('.recipe-content');
+      const mainContentView = document.getElementById('main-content-view');
+      const recipeViewer = document.getElementById('recipe-viewer');
+      const titleGroup = document.querySelector('.title-group');
+      const allGalleryItems = document.querySelectorAll('.gallery-item');
+
+      // Function to show the main content and hide all recipes
+      const showMainContent = () => {
+        if (mainContentView) mainContentView.style.visibility = 'visible';
+        if (titleGroup) titleGroup.style.visibility = 'visible';
+        if (recipeViewer) recipeViewer.style.display = 'none';
+        allRecipeContents.forEach(content => content.style.display = 'none');
+        // Also remove selection from all gallery items
+        allGalleryItems.forEach(link => link.classList.remove('selected-recipe'));
+      };
+
+      // Add click listeners to gallery items
+      recipeLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // IMPORTANT: Prevents the document click listener from firing
+
+          const isAlreadySelected = link.classList.contains('selected-recipe');
+
+          // If clicking the same picture again, just close it.
+          if (isAlreadySelected) {
+            showMainContent();
+            return;
+          }
+
+          // Otherwise, show the new recipe
+          const targetId = link.dataset.recipeTarget;
+          const targetRecipe = document.querySelector(targetId);
+
+          if (!targetRecipe || !recipeViewer) return;
+
+          // Hide main content view and title, but keep them in the layout
+          if (mainContentView) mainContentView.style.visibility = 'hidden';
+          if (titleGroup) titleGroup.style.visibility = 'hidden';
+          
+          // Hide all other recipes
+          allRecipeContents.forEach(content => content.style.display = 'none');
+          
+          // Remove selection from all other items
+          allGalleryItems.forEach(item => item.classList.remove('selected-recipe'));
+          
+          // Add selection to the clicked item
+          link.classList.add('selected-recipe');
+
+          // Show the main recipe viewer container
+          recipeViewer.style.display = 'block';
+          // Show the specific target recipe inside it
+          targetRecipe.style.display = 'block';
+        });
+      });
+
+      // Add a global click listener to handle closing the recipe view
+      document.addEventListener('click', (e) => {
+        // If a recipe is visible and the click was NOT on a gallery item...
+        if (recipeViewer.style.display === 'block' && !e.target.closest('.gallery-item')) {
+          showMainContent();
+        }
+      });
+
+      // --- SPECIAL ITEM LOGIC ---
+      const specialItem = document.getElementById('special-item');
+
+      const handleSpecialItem = () => {
+        if (!specialItem || !gallery) return;
+
+        // First, remove the item if it's already in the gallery to reset its state.
+        if (specialItem.parentElement === gallery) {
+          gallery.removeChild(specialItem);
+        }
+
+        // Now, check for the 19% chance to show it.
+        if (Math.random() < 0.19) {
+          // Get only the currently VISIBLE items to determine insertion point.
+          const visibleItems = Array.from(gallery.querySelectorAll('.gallery-item.recipe-link:not([style*="display: none"])'));
+          const randomIndex = Math.floor(Math.random() * (visibleItems.length + 1));
+
+          if (randomIndex >= visibleItems.length) {
+            // If random index is at the end, insert before the spacer.
+            gallery.insertBefore(specialItem, spacer);
+          } else {
+            // Otherwise, insert before the randomly selected visible item.
+            gallery.insertBefore(specialItem, visibleItems[randomIndex]);
+          }
+          specialItem.style.display = 'grid';
+        }
+      };
+
+      // Add the click listener for the special item itself. This only needs to be done once.
+      if (specialItem) {
+        specialItem.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const isAlreadySelected = specialItem.classList.contains('selected-recipe');
+          if (isAlreadySelected) {
+            showMainContent();
+            return;
+          }
+
+          const specialGifContainer = document.getElementById('special-gif-container');
+          if (!specialGifContainer || !recipeViewer) return;
+
+          if (mainContentView) mainContentView.style.visibility = 'hidden';
+          if (titleGroup) titleGroup.style.visibility = 'hidden';
+
+          allRecipeContents.forEach(content => content.style.display = 'none');
+          allGalleryItems.forEach(item => item.classList.remove('selected-recipe'));
+          specialItem.classList.add('selected-recipe');
+
+          recipeViewer.style.display = 'block';
+          specialGifContainer.style.display = 'block';
+        });
+      }
+
+      // Initial check on page load.
+      handleSpecialItem();
+    });
+  </script>
+
+</body>
+</html>

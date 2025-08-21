@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mukbang</title>
+  <style>
+    /* Basic setup */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; width: 100%; font-family: sans-serif; background: transparent; }
+    a { cursor: default; }
+
+    /* Video background styling */
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Main container for the view */
+    #mukbang-view {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    #mukbang-image {
+      height: 60vh;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transform: translateX(-11.15cm);
+    }
+
+    #mukbang-right-panel {
+      position: absolute;
+      left: calc(50% + 6cm);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #youtube-player {
+      width: 448px;
+      height: 252px;
+      border-radius: 10px;
+      border: 2px solid #444;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transform: translate(-21.85cm, 14.7cm);
+    }
+
+    .mukbang-gif {
+      width: 250px;
+      height: auto;
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    #mukbang-gif-30 {
+      width: 300px;
+      transform: translate(-22.9cm, -1.0cm);
+    }
+
+    #mukbang-gif-5 {
+      width: 1300px;
+      transform: translate(-8.5cm, -0.2cm);
+    }
+
+    #mukbang-gif-23 {
+      transform: translate(-27.8cm, -6.8cm);
+    }
+
+    #mukbang-gif-99 {
+      width: 120px;
+      transform: translate(-10.9cm, -5.0cm);
+    }
+
+    #mukbang-gif-container {
+      display: contents;
+    }
+
+    /* Go back button */
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #222;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 101;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Navigation Arrows */
+    #btn-next, #btn-prev {
+      display: inline-block;
+      position: fixed;
+      top: 50%;
+      z-index: 101;
+    }
+    #btn-next {
+      right: 5vw;
+      transform: translateY(-50%) translateX(-20.9cm);
+    }
+    #btn-prev {
+      left: 5vw;
+      transform: translateX(-1.6cm) translateY(-50%);
+    }
+    #btn-next img, #btn-prev img {
+      width: 60px;
+      height: auto;
+    }
+    #btn-next:active {
+      transform: translateY(-50%) translateX(-20.9cm) translate(2px, 2px);
+    }
+    #btn-prev:active {
+      transform: translateX(-1.6cm) translateY(-50%) translate(2px, 2px);
+    }
+  </style>
+</head>
+<body>
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="bgstuff.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div id="mukbang-view">
+    <img src="" alt="Mukbang View" id="mukbang-image">
+    <div id="mukbang-right-panel">
+      <iframe id="youtube-player" width="448" height="252" src="https://www.youtube.com/embed/BksBNbTIoPE?autoplay=1&mute=0&loop=1&playlist=BksBNbTIoPE&controls=1&iv_load_policy=3&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <div id="mukbang-gif-container">
+          <img src="food30.gif" alt="Food animation" id="mukbang-gif-30" class="mukbang-gif">
+          <img src="food99.gif" alt="Food animation" id="mukbang-gif-99" class="mukbang-gif">
+          <img src="food5.gif" alt="Food animation" id="mukbang-gif-5" class="mukbang-gif">
+          <img src="food23.gif" alt="Food animation" id="mukbang-gif-23" class="mukbang-gif">
+      </div>
+    </div>
+  </div>
+
+  <a href="food.html" class="btn">&larr; Go Back</a>
+  <a href="#" id="btn-next"><img src="arrow4.gif" alt="Next food pic"></a>
+  <a href="#" id="btn-prev"><img src="arrow3.gif" alt="Move to previous pic"></a>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mukbangImage = document.getElementById('mukbang-image');
+      const btnNext = document.getElementById('btn-next');
+      const btnPrev = document.getElementById('btn-prev');
+
+      // Hardcoded list of image sources from the main page's gallery
+      const galleryImageSources = [
+        's3.jpg', 'fo1.jpg', 'b2.jpg', 'fo9.jpg', 'fo10.jpg', 'b5.jpg', 's1.jpg',
+        'fo3.jfif', 'b1.jpg', 'fo8.jpg', 's5.jpg', 'b4.jpg', 'fo2.jpg', 'fo6.jpg',
+        'b3.jpg', 's2.jpg', 'fo5.jfif', 'b6.jpg', 'b7.jpg', 'fo4.jpg', 's4.jpg', 'fo7.jpg'
+      ];
+
+      let mukbangHistory = [];
+      let currentHistoryIndex = -1;
+
+      const showImageAtIndex = (index) => {
+        if (index >= 0 && index < mukbangHistory.length) {
+          mukbangImage.src = mukbangHistory[index];
+          currentHistoryIndex = index;
+        }
+      };
+
+      const addNewRandomImageToHistory = () => {
+        const randomIndex = Math.floor(Math.random() * galleryImageSources.length);
+        const newImageUrl = galleryImageSources[randomIndex];
+
+        if (currentHistoryIndex < mukbangHistory.length - 1) {
+          mukbangHistory = mukbangHistory.slice(0, currentHistoryIndex + 1);
+        }
+
+        mukbangHistory.push(newImageUrl);
+        showImageAtIndex(mukbangHistory.length - 1);
+      };
+
+      // Show the first image on page load
+      addNewRandomImageToHistory();
+
+      btnNext.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentHistoryIndex < mukbangHistory.length - 1) {
+          showImageAtIndex(currentHistoryIndex + 1);
+        } else {
+          addNewRandomImageToHistory();
+        }
+      });
+
+      btnPrev.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentHistoryIndex > 0) {
+          showImageAtIndex(currentHistoryIndex - 1);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+<!--
+[PROMPT_SUGGESTION]Can you make this page responsive so it looks good on mobile devices?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Add a fade-in/fade-out transition effect when the main image changes.[/PROMPT_SUGGESTION]
+-->

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>It's B-Day time</title>
+    <style>  
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000;  
+        }
+
+        video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            transform-origin: center;
+            height: auto;
+            z-index: -1;
+            transform: translateX(-50%) translateY(-50%) scale(0.5);
+            object-fit: contain;
+        }
+
+        .enter-button {
+            position: absolute;
+            bottom: 50px; /* Adjust this value to move the button vertically */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 40px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-family: "Arial", sans-serif;
+            font-size: 3em;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>It's B-Day time</h1>
+    <video autoplay loop muted>
+        <source src="bdayvent.mp4" type="video/mp4">
+    </video>
+    <button class="enter-button" onclick="window.location.href='trip.html'">Enter</button>
+</body>
+</html>

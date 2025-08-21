@@ -42,6 +42,15 @@
       font-display: swap;
     }
 
+    /* Font for the description paragraph */
+    @font-face {
+      font-family: 'PollFont';
+      src: url('fontpoll.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -142,8 +151,16 @@
       z-index: 5;
     }
 
+    #panel-2 .panel-specific-gif {
+      transform: translateX(calc(-50% - 5.1cm)) translateY(2.0cm);
+    }
+
+    #panel-3 .panel-specific-gif {
+      transform: translateX(calc(-50% - 5.0cm)) translateY(2.3cm);
+    }
+
     #panel-4 .panel-specific-gif {
-      transform: translateX(calc(-50% - 4.7cm)) translateY(2.5cm); /* Moved 4mm left */
+      transform: translateX(calc(-50% - 5.07cm)) translateY(2.5cm);
     }
 
     /* --- Enter Text Styles --- */
@@ -235,7 +252,7 @@
     .bottom-left-gif {
       position: absolute;
       bottom: 20px;
-      left: calc(20px + 0.5cm + 8.5mm); /* Moved 2mm to the right */
+      left: calc(20px + 0.5cm + 10.5mm); /* Moved 2mm further to the right */
       width: 310px;
       transform: rotate(0) scaleX(1.15); /* Made fatter by stretching horizontally */
       z-index: 6; /* Brought to the front layer */
@@ -375,13 +392,13 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     }
 
-    /* New Dropdown Styles */
+    /* Dropdown Styles */
     .site-chooser {
       margin-top: 40px;
       text-align: center;
       color: #333;
       z-index: 5;
-      position: relative; /* To ensure z-index works */
+      position: relative; /* Crucial for positioning the absolute child */
       left: 3.8cm;
       top: -3.7cm; /* Moved 7mm up */
     }
@@ -405,12 +422,79 @@
       cursor: pointer;
       outline: none; /* Remove default browser outline on focus */
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      /* The line below is a common fix for a browser rendering bug where elements inside a transformed container (like our sliding panels) are not drawn correctly. */
       transform: translateZ(0);
     }
 
     .site-chooser select:focus {
       box-shadow: 0 0 8px rgba(194, 24, 91, 0.5); /* Add a glow effect on focus */
+    }
+    
+    /* Site Description Styles */
+    .site-description {
+      /* Position absolutely to prevent layout shifts */
+      position: absolute;
+      top: 100%; /* Place it directly below the parent's content flow (the select box) */
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 15px; /* Space below the dropdown */
+      width: 400px; /* Set a fixed width to control wrapping */
+      
+      /* Apply new font and styling */
+      font-family: 'PollFont', 'DetailFont', sans-serif;
+      font-size: 1.1rem;
+      color: #333;
+      text-align: left;
+      line-height: 1.5;
+      
+      visibility: hidden; /* Initially hidden */
+    }
+
+    .site-description.visible {
+      visibility: visible;
+    }
+
+    .site-description strong {
+      color: #C2185B;
+      font-weight: bold;
+      display: block; /* Puts the title on its own line */
+      margin-bottom: 10px; /* Adds space below the title */
+    }
+
+    .site-description strong a {
+      color: inherit; /* Inherit the pink color from the strong tag */
+      display: inline-block; /* Allows border-bottom to act as a clean underline */
+      text-decoration: none; /* Remove default underline */
+      cursor: pointer;
+      border-bottom: 2px solid transparent; /* Placeholder for the hover effect */
+      transition: border-color 0.2s ease;
+    }
+
+    .site-description strong a:hover {
+      border-bottom-color: #C2185B; /* Use border-bottom for a more reliable underline */
+    }
+
+    .site-description span {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(1em);
+      font-weight: 100;
+      animation: grow-up-letter 0.2s ease-out forwards;
+    }
+
+    .site-description p {
+      margin-bottom: 1em; /* Adds space between paragraphs */
+    }
+
+    .site-description p:last-of-type {
+      margin-bottom: 0; /* Removes margin from the last paragraph */
+    }
+
+    @keyframes grow-up-letter {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        font-weight: normal;
+      }
     }
   </style>
 </head>
@@ -455,7 +539,7 @@
           <span class="move-right" data-text="FL">FL</span><span data-text="YING SITES FOR THE 2025">YING SITES FOR THE 2025</span>
         </div>
       </div>
-      <a href="stuff.html" class="btn">← Go Back</a>
+      <a href="stuff.html" class="btn">&larr; Go Back</a>
     </div>
 
     <!-- Panel 2: New Content -->
@@ -477,10 +561,12 @@
 
         <div class="site-chooser">
           <select name="sites" class="site-select">
-            <option value="" selected>Choose ur option</option>
+            <option value="" selected>Choose ur site</option>
             <option value="useless">useless</option>
             <option value="silly-cat">silly cat</option>
           </select>
+          <!-- The description is now INSIDE the chooser div -->
+          <div class="site-description"></div>
         </div>
       </div>
     </div>
@@ -493,19 +579,21 @@
         <div class="box-visual-background"></div>
         <img src="site2.gif" alt="Site 2 animation" class="panel-specific-gif" />
         <div class="title-text font-1">
-          <span class="move-right" data-text="KNOWLEDGE">KNOWLEDGE</span><span data-text=" TIME"> TIME</span>
+          <span class="move-right" data-text="WISDOM">WISDOM</span>
         </div>
         <div class="title-text font-2">
-          <span class="move-right" data-text="KNOWLEDGE">KNOWLEDGE</span><span data-text=" TIME"> TIME</span>
+          <span class="move-right" data-text="WISDOM">WISDOM</span>
         </div>
 
         <div class="site-chooser">
           <select name="sites" class="site-select">
-            <option value="" selected>Choose ur option</option>
+            <option value="" selected>Choose ur site</option>
             <option value="fact">fact</option>
             <option value="factos">factos</option>
             <option value="factosos">factosos</option>
           </select>
+          <!-- Description container for this panel -->
+          <div class="site-description"></div>
         </div>
       </div>
     </div>
@@ -525,9 +613,10 @@
 
         <div class="site-chooser">
           <select name="sites" class="site-select">
-            <option value="" selected>Choose ur option</option>
+            <option value="" selected>Choose ur site</option>
             <option value="pisukeru">pisukeru</option>
           </select>
+          <div class="site-description"></div>
         </div>
       </div>
     </div>
@@ -576,6 +665,109 @@
     forwardArrows.forEach(arrow => {
       arrow.addEventListener('click', () => {
         goToPanel(currentPanelIndex + 1);
+      });
+    });
+
+    // --- Refactored Description Logic ---
+
+    // Central data store for all site descriptions
+    const siteDescriptions = {
+      'useless': {
+        title: 'theuselessweb.com',
+        url: 'https://theuselessweb.com/',
+        paragraphs: [
+          "A single button that whisks you away to random, absurd, and often hilarious websites, from dancing cats to quirky animations.",
+          "It’s unpredictable and perfect for discovering weird corners of the internet. You might stumble upon something playfully naughty, like a site with silly innuendos or bizarre humor.",
+          "The randomness might lead to cheeky animations or quirky games that feel a bit mischievous without being explicit."
+        ]
+      },
+      'silly-cat': {
+        title: 'procatinator.com',
+        url: 'https://procatinator.com/',
+        paragraphs: [
+          "Random cat videos paired with catchy music tracks, creating a hilariously absurd experience.",
+          "It’s pure, silly entertainment that’s oddly satisfying.",
+          "The naughtiness here is in the playful absurdity—like you’re indulging in something delightfully pointless. Perfect for a cheeky break."
+        ]
+      },
+      'fact': {
+        title: 'gapminder.org',
+        url: 'https://www.gapminder.org/',
+        paragraphs: [
+          "This site turns global data into a visual playground. The interactive charts and “Dollar Street” photo explorer let you click through stats and real-world images (e.g what kitchens look like worldwide), making dry facts feel alive and engaging. Educational, calming and surprisingly addictive.",
+          "<strong>Interactive highlights:</strong> Click on charts, drag sliders, filter by country, or explore photos with clickable categories to uncover data-driven insights."
+        ]
+      },
+      'factos': {
+        title: 'mentalfloss.com',
+        url: 'https://www.mentalfloss.com/',
+        paragraphs: [
+          "This site is a gem for its mix of quirky facts and interactive fun. The “Amazing Fact Generator” button delivers random tidbits—like why octopuses change color or bizarre historical anecdotes—with a single click, making it addictive and playful.",
+          "The quizzes (e.g., “Guess the Movie by Its Tagline”) are clickable challenges that test your knowledge while keeping things light and cheeky."
+        ]
+      },
+      'factosos': {
+        title: 'thefactsite.com',
+        url: 'https://www.thefactsite.com/',
+        paragraphs: [
+          "It’s like a candy store for trivia lovers, with facts on everything from weird laws to space mysteries. The clickable categories (e.g., “Animals,” “History”) and search bar make it easy to explore, and the trivia quizzes add a game-like twist. It’s perfect for diving into random knowledge with a fun, accessible interface.",
+          "Playful and diverse, ideal for curious minds who want quick facts with a side of fun."
+        ]
+      },
+      'pisukeru': {
+        title: 'piskelapp.com',
+        url: 'https://www.piskelapp.com/',
+        paragraphs: [
+          "Very beginner-friendly for pixel art.",
+          "Supports sprite animation.",
+          "Works offline if you download the desktop app.",
+          "You can export PNG or GIF directly."
+        ]
+      }
+    };
+
+    // A single, reusable function to create and display the description
+    function displayDescription(container, data) {
+      // Clear previous content and hide
+      container.innerHTML = '';
+      container.classList.remove('visible');
+
+      if (!data) return; // Exit if no data for the selected option
+
+      // Use a timeout to allow the element to be hidden before re-populating
+      // This ensures the animation restarts correctly every time.
+      setTimeout(() => {
+        let charIndex = 0;
+        const createSpans = (text) => {
+          // This regex preserves the strong tags while splitting by space
+          const parts = text.split(/ (?!<strong>|<\/strong>)/g);
+          return parts.map(word => {
+            // Don't animate the tags themselves
+            if (word.startsWith('<')) return word;
+            const chars = word.split('').map(char => {
+              const delay = charIndex++ * 0.01;
+              return `<span style="animation-delay: ${delay}s">${char}</span>`;
+            }).join('');
+            return `<span style="display: inline-block">${chars}</span>`;
+          }).join(' ');
+        };
+
+        const titleHTML = createSpans(data.title);
+        const paragraphsHTML = data.paragraphs.map(p => `<p>${createSpans(p)}</p>`).join('');
+
+        container.innerHTML = `<strong><a href="${data.url}" target="_blank" rel="noopener noreferrer">${titleHTML}</a></strong>${paragraphsHTML}`;
+        container.classList.add('visible');
+      }, 10);
+    }
+
+    // Attach the event listener to all dropdowns
+    siteSelects.forEach(select => {
+      select.addEventListener('change', (event) => {
+        const selectedValue = event.target.value;
+        const data = siteDescriptions[selectedValue];
+        // Find the description container that is a sibling to the select element
+        const descriptionContainer = event.target.nextElementSibling;
+        displayDescription(descriptionContainer, data);
       });
     });
   </script>

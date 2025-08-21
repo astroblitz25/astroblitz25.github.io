@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Confetti Natural</title>
+  <style>
+    @font-face {
+      font-family: 'Font6';
+      /* Make sure you have font6.ttf in the same directory */
+      src: url('font6.ttf') format('truetype');
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #fcd4de; /* Light Rose Pastel */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Lato', sans-serif;
+    }
+
+    /* New styles for the first display */
+    #firstDisplay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    #chooseItemText {
+      font-size: 2.5em;
+      color: #e91e63;
+      margin-bottom: 40px;
+      font-weight: bold;
+    }
+
+    .item-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 80px;
+    }
+
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .item img {
+      width: 150px;
+      height: 150px;
+      object-fit: contain;
+    }
+
+    .claim-text {
+      font-family: 'Font6', sans-serif;
+      cursor: pointer;
+      font-size: 1.8em;
+      margin-top: 15px;
+      color: #e91e63;
+      user-select: none; /* Prevent text selection on click */
+    }
+
+    .continue-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 1em;
+    }
+
+    /* Animations for the first display */
+    .bounce-animation {
+      animation: bounce 2s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .shake-animation {
+      animation: shake 0.5s linear;
+      text-shadow: 0 0 15px rgba(255, 0, 0, 0.9);
+      color: red;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+      20%, 40%, 60%, 80% { transform: translateX(8px); }
+    }
+
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      perspective: 1000px;
+    }
+
+    .confetto {
+      position: absolute;
+      top: -20px;
+      opacity: 0.9;
+      will-change: transform;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) translateX(var(--drift)) rotateZ(var(--rz));
+        opacity: 0.85;
+      }
+    }
+
+    /* Cake Styles from Code 1, converted and integrated */
+    .cake-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* shiny sparkle ones */
+    .shiny {
+      transform-style: preserve-3d;
+      animation: fall linear forwards, shimmer 1.8s infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.5); }
+    }
+
+    .blow-button {
+      padding: 10px 20px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* ============================================== POSITION
+    */
+    .cake{
+      position:relative;
+      width:300px; height:300px;
+      margin-top: -50px; /* Adjust position */
+    }
+
+    /* ============================================== BASE
+    */
+    .cake:after{
+      background:rgba(255,255,255,1);
+      border-radius:300px;
+      content:"";
+      position:absolute;
+      bottom:0; left:0;
+      width:300px; height:6px;
+    }
+
+    /* ============================================== Candle
+    */
+    .velas{
+      background:rgba(255,255,255,1);
+      border-radius:100%;
+      position:absolute;
+      top:50%; left:50%;
+      margin-left:-7.5px;
+      margin-top:-25px;
+      width:15px; height:50px;
+    }
+
+    .velas:after,
+    .velas:before{
+      background:rgba(255,0,0,0.4);
+      content:"";
+      position:absolute;
+      width:100%; height:6.67px;
+    }
+
+    .velas:after{
+      top:25%; left:0;
+    }
+
+    .velas:before{
+      top:45%; left:0;
+    }
+
+    /* ============================================== Fire
+    */
+    .fuego{
+      display:block; /* Make flame visible */
+      border-radius:100%;
+      box-shadow:0 0 40px 10px rgba(248,233,209,0.2);
+      position:absolute;
+      top:-12px; left:50%;
+      margin-left:-10px;
+      width:20px; height:37.5px;
+    }
+
+    .fuego:nth-child(1){
+      -webkit-animation:fuego 2s infinite;
+      -moz-animation:fuego 2s infinite;
+      -o-animation:fuego 2s infinite;
+      -ms-animation:fuego 2s infinite;
+      animation:fuego 2s infinite;
+    }
+
+    .fuego:nth-child(2){
+      -webkit-animation:fuego 1.5s infinite;
+      -moz-animation:fuego 1.5s infinite;
+      -o-animation:fuego 1.5s infinite;
+      -ms-animation:fuego 1.5s infinite;
+      animation:fuego 1.5s infinite;
+    }
+
+    .fuego:nth-child(3){
+      -webkit-animation:fuego 1s infinite;
+      -moz-animation:fuego 1s infinite;
+      -o-animation:fuego 1s infinite;
+      -ms-animation:fuego 1s infinite;
+      animation:fuego 1s infinite;
+    }
+
+    .fuego:nth-child(4){
+      -webkit-animation:fuego 0.5s infinite;
+      -moz-animation:fuego 0.5s infinite;
+      -o-animation:fuego 0.5s infinite;
+      -ms-animation:fuego 0.5s infinite;
+      animation:fuego 0.5s infinite;
+    }
+
+    .fuego:nth-child(5){
+      -webkit-animation:fuego 0.2s infinite;
+      -moz-animation:fuego 0.2s infinite;
+      -o-animation:fuego 0.2s infinite;
+      -ms-animation:fuego 0.2s infinite;
+      animation:fuego 0.2s infinite;
+    }
+
+    /* ============================================== Animation Fire
+    */
+    @-webkit-keyframes fuego{
+      0%{ background:rgba(254,248,97,0.5); -webkit-transform:translateY(0) scale(1); }
+      50%{ background:rgba(255,50,0,0.1); -webkit-transform:translateY(-60px) scale(0); }
+      100%{ background:rgba(254,248,97,0.5); -webkit-transform:translateY(0) scale(1); }
+    }
+    @-moz-keyframes fuego{
+      0%{ background:rgba(254,248,97,0.5); -moz-transform:translateY(0) scale(1); }
+      50%{ background:rgba(255,50,0,0.1); -moz-transform:translateY(-60px) scale(0); }
+      100%{ background:rgba(254,248,97,0.5); -moz-transform:translateY(0) scale(1); }
+    }
+    @-o-keyframes fuego{
+      0%{ background:rgba(254,248,97,0.5); -o-transform:translateY(0) scale(1); }
+      50%{ background:rgba(255,50,0,0.1); -o-transform:translateY(-60px) scale(0); }
+      100%{ background:rgba(254,248,97,0.5); -o-transform:translateY(0) scale(1); }
+    }
+    @-ms-keyframes fuego{
+      0%{ background:rgba(254,248,97,0.5); -ms-transform:translateY(0) scale(1); }
+      50%{ background:rgba(255,50,0,0.1); -ms-transform:translateY(-60px) scale(0); }
+      100%{ background:rgba(254,248,97,0.5); -ms-transform:translateY(0) scale(1); }
+    }
+    @keyframes fuego{
+      0%{ background:rgba(254,248,97,0.5); transform:translateY(0) scale(1); }
+      50%{ background:rgba(255,50,0,0.1); transform:translateY(-60px) scale(0); }
+      100%{ background:rgba(254,248,97,0.5); transform:translateY(0) scale(1); }
+    }
+
+    /* ============================================== Frosting
+    */
+    .cobertura{
+      background:rgba(236,231,227,1);
+      border-radius:150px;
+      position:absolute;
+      top:60%; left:50%;
+      margin-left:-83.33px;
+      margin-top:-15px;
+      width:166.67px; height:37.5px;
+      z-index:10;
+    }
+
+    .cobertura:after,
+    .cobertura:before{
+      background:rgba(236,231,227,1);
+      border-radius:300px;
+      content:"";
+      position:absolute;
+      width:15px; height:30px;
+    }
+
+    .cobertura:after{
+      top:20px; right:42.86px;
+    }
+
+    .cobertura:before{
+      top:30px; right:27.27px;
+    }
+
+    /* ============================================== BIZCOCHO
+    */
+    .bizcocho{
+      background:#F0A1B1; /* Made the pink lighter */
+      position:absolute;
+      bottom:0; left:50%;
+      margin-left:-75px;
+      width:150px; height:100px;
+    }
+
+    .bizcocho:after,
+    .bizcocho:before{
+      background:#8B4513; /* Changed to chocolate brown */
+      content:"";
+      position:absolute;
+      width:100%; height:15px;
+    }
+
+    .bizcocho:after{
+      top:30%; left:0;
+    }
+
+    .bizcocho:before{
+      top:60%; left:0;
+    }
+
+    /* New styles for jar and related elements */
+    .jar-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .jar-gif {
+      width: 220px;
+      height: 294px;
+    }
+
+    .pick-button {
+      padding: 10px 20px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .paper-message {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 100px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+      animation: bubbleAppear 1s ease-out forwards;
+      z-index: 100;
+      --size: 20px;
+      --angle: 60deg;
+      mask:
+        conic-gradient(
+          from calc(90deg - var(--angle)/2) at left,
+          #0000, #000 1deg calc(var(--angle) - 1deg), #0000 var(--angle)
+        ) left/51% var(--size) repeat-y,
+        conic-gradient(
+          from calc(-90deg - var(--angle)/2) at right,
+          #0000, #000 1deg calc(var(--angle) - 1deg), #0000 var(--angle)
+        ) right/51% var(--size) repeat-y;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transform-style: preserve-3d;
+      perspective: 500px;
+    }
+
+    @keyframes bubbleAppear {
+      0% {
+        transform: translate(-50%, -50%) scale(0.1);
+        opacity: 0;
+      }
+      20% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
+      40% {
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+      60% {
+        transform: translate(-50%, -50%) scale(1.05);
+      }
+      80% {
+        transform: translate(-50%, -50%) scale(0.98);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .star-gif {
+      display: none;
+      position: fixed;
+      z-index: 99;
+      width: 50px;
+      height: 50px;
+      transition: left 2s ease-out, top 2s ease-out, transform 2s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+<!-- New First Display -->
+<div id="firstDisplay">
+  <h2 id="chooseItemText">Choose your item</h2>
+  <div class="item-container">
+    <div class="item">
+      <img src="crown.gif" alt="Crown" class="bounce-animation">
+      <p class="claim-text" id="claimCrown">Claim crown</p>
+    </div>
+    <div class="item">
+      <img src="bouquet.gif" alt="Bouquet">
+      <p class="claim-text" id="claimBouquet">Claim bouquet</p>
+    </div>
+  </div>
+</div>
+<button class="continue-button" id="continueButton">Continue</button>
+
+<div class="confetti-layer" id="confetti"></div>
+
+<div class="cake-container" id="cakeContainer" style="display: none;">
+  <div class="cake">
+    <div class="velas">
+      <div class="fuego"></div>
+      <div class="fuego"></div>
+      <div class="fuego"></div>
+      <div class="fuego"></div>
+      <div class="fuego"></div>
+    </div>
+    <div class="cobertura"></div>
+    <div class="bizcocho"></div>
+  </div>
+  <button class="blow-button" id="blowButton">Blow Candle</button>
+</div>
+
+<div class="jar-container" id="jarContainer" style="display: none;">
+  <img src="jar1.gif" class="jar-gif">
+  <button class="pick-button" id="pickButton">Pick a star</button>
+</div>
+
+<div class="paper-message" id="paperMessage"></div>
+<img id="starGif" class="star-gif" src="star.gif">
+
+<script>
+  (function() {
+    // --- NEW: Elements for the first display ---
+    const firstDisplay = document.getElementById('firstDisplay');
+    const continueButton = document.getElementById('continueButton');
+    const claimCrown = document.getElementById('claimCrown');
+    const claimBouquet = document.getElementById('claimBouquet');
+    const chooseItemText = document.getElementById('chooseItemText');
+
+    // --- ORIGINAL: Elements for the second display ---
+    const layer = document.getElementById('confetti');
+    const cakeContainer = document.getElementById('cakeContainer');
+    const blowButton = document.getElementById('blowButton');
+    const jarContainer = document.getElementById('jarContainer');
+    const pickButton = document.getElementById('pickButton');
+    const paperMessage = document.getElementById('paperMessage');
+    const starGif = document.getElementById('starGif');
+
+    // --- ORIGINAL: Constants ---
+    const confettiColors = ["#ffcccc", "#ffb6c1", "#ffdde1", "#f08080", "#e6e6fa", "#A7DBD8", "#E0E4CC", "#F38630", "#FA6900", "#FFE066", "#B4F8C8", "#A0E7E5", "#FDA7DF"];
+    const shapes = ['circle', 'square', 'rectangle', 'triangle', 'star', 'planet', 'moon', 'cloud', 'sun', 'spring'];
+
+    // --- NEW: Logic for the first display ---
+    let crownClaimed = false;
+    let bouquetClaimed = false;
+
+    function checkBothClaimed() {
+      if (crownClaimed && bouquetClaimed) {
+        chooseItemText.textContent = "Claim both items";
+        chooseItemText.style.fontFamily = "'Font6', sans-serif";
+      }
+    }
+
+    claimCrown.addEventListener('click', () => {
+      if (crownClaimed) return;
+      crownClaimed = true;
+      claimCrown.classList.add('shake-animation');
+      claimCrown.addEventListener('animationend', () => {
+        claimCrown.style.display = 'none';
+        checkBothClaimed();
+      }, { once: true });
+    });
+
+    claimBouquet.addEventListener('click', () => {
+      if (bouquetClaimed) return;
+      bouquetClaimed = true;
+      claimBouquet.classList.add('shake-animation');
+      claimBouquet.addEventListener('animationend', () => {
+        claimBouquet.style.display = 'none';
+        checkBothClaimed();
+      }, { once: true });
+    });
+
+    continueButton.addEventListener('click', () => {
+      firstDisplay.style.display = 'none';
+      continueButton.style.display = 'none';
+      startSecondDisplay();
+    });
+
+    // --- ORIGINAL: Functions (definitions are kept here) ---
+    function makeConfetto() {
+      const el = document.createElement('div');
+      el.className = 'confetto';
+      const w = 5 + Math.random() * 10;
+      const h = 5 + Math.random() * 15;
+      el.style.width = w + 'px';
+      el.style.height = h + 'px';
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      el.style.backgroundColor = color;
+
+      switch (shape) {
+        case 'circle':
+          el.style.borderRadius = '50%';
+          break;
+        case 'square':
+          break;
+        case 'rectangle':
+          el.style.borderRadius = Math.random() * 2 + 'px';
+          break;
+        case 'triangle':
+          el.style.width = 0;
+          el.style.height = 0;
+          el.style.borderLeft = `${w / 2}px solid transparent`;
+          el.style.borderRight = `${w / 2}px solid transparent`;
+          el.style.borderBottom = `${h}px solid ${color}`;
+          el.style.backgroundColor = 'transparent';
+          break;
+        case 'star':
+          el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+          break;
+        case 'planet':
+          el.style.borderRadius = '50%';
+          break;
+        case 'moon':
+          el.style.clipPath = 'circle(50% at 80% 50%)';
+          break;
+        case 'cloud':
+          el.style.borderRadius = '40% 60% 60% 40% / 50% 50% 50% 50%';
+          break;
+        case 'sun':
+          el.style.borderRadius = '50%';
+          el.style.background = `radial-gradient(circle, white, ${color})`;
+          break;
+        case 'spring':
+          el.style.background = `repeating-linear-gradient(45deg, ${color}, ${color} 2px, transparent 2px, transparent 4px)`;
+          break;
+        default:
+          el.style.borderRadius = Math.random() * 50 + "%";
+      }
+      el.style.transform = `skew(${(Math.random() * 20 - 10)}deg, ${(Math.random() * 20 - 10)}deg) rotateZ(${(Math.random() * 360)}deg)`;
+      el.style.left = Math.random() * 100 + 'vw';
+      const dur = 4 + Math.random() * 3;
+      el.style.animationDuration = dur + 's';
+      el.style.setProperty('--drift', (Math.random() * 300 - 150) + 'px');
+      el.style.setProperty('--rz', (Math.random() * 720 - 360) + 'deg');
+      if (Math.random() < 0.2) {
+        el.classList.add('shiny');
+      }
+      el.style.animation = `fall ${dur}s linear forwards`;
+      layer.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    // --- NEW: Function to start the second display's animations ---
+    function startSecondDisplay() {
+      let count = 0;
+      const maxPieces = 300;
+      const spawnRate = 10;
+
+      const interval = setInterval(() => {
+        for (let i = 0; i < spawnRate; i++) {
+          if (count >= maxPieces) {
+            clearInterval(interval);
+            break;
+          }
+          makeConfetto();
+          count++;
+        }
+      }, 120);
+
+      // Show cake after confetti
+      setTimeout(() => {
+        cakeContainer.style.display = 'flex';
+      }, 11000);
+    }
+
+    // Blow out candle functionality
+    blowButton.addEventListener('click', () => {
+      document.querySelectorAll('.fuego').forEach(fuego => {
+        fuego.style.display = 'none';
+      });
+      setTimeout(() => {
+        cakeContainer.style.display = 'none';
+        jarContainer.style.display = 'flex';
+      }, 3000);
+    });
+
+    // Pick a paper functionality
+    const wishes = [
+      "I hope u never expire",
+      "May your code always run without bugs",
+      "Wishing you endless creativity",
+      "Happy Birthday! Stay awesome",
+      "May all your wishes come true"
+    ];
+
+    function createBubbles() {
+      for (let i = 0; i < 10; i++) {
+        const bubble = document.createElement('div');
+        bubble.style.position = 'fixed';
+        bubble.style.width = '10px';
+        bubble.style.height = '10px';
+        bubble.style.borderRadius = '50%';
+        bubble.style.background = 'rgba(255,255,255,0.5)';
+        bubble.style.border = '1px solid #fff';
+        bubble.style.left = '50%';
+        bubble.style.top = '50%';
+        bubble.style.transform = 'translate(-50%, -50%)';
+        document.body.appendChild(bubble);
+
+        const angle = Math.random() * 360 * (Math.PI / 180);
+        const dist = 50 + Math.random() * 50;
+
+        setTimeout(() => {
+          bubble.style.transition = 'all 1s ease-out';
+          bubble.style.left = `calc(50% + ${Math.cos(angle) * dist}px)`;
+          bubble.style.top = `calc(50% + ${Math.sin(angle) * dist}px)`;
+          bubble.style.opacity = 0;
+          bubble.style.transform = 'scale(0.5)';
+        }, 10);
+
+        setTimeout(() => bubble.remove(), 1100);
+      }
+    }
+
+    pickButton.addEventListener('click', () => {
+      const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+      paperMessage.textContent = randomWish;
+
+      const jarElem = document.querySelector('.jar-gif');
+      const jarRect = jarElem.getBoundingClientRect();
+      starGif.style.left = (jarRect.left + jarRect.width / 2 - 25) + 'px';
+      starGif.style.top = (jarRect.top + jarRect.height / 2 - 25) + 'px';
+      starGif.style.transform = 'scale(0) rotate(360deg)';
+      starGif.style.display = 'block';
+
+      setTimeout(() => {
+        starGif.style.left = (window.innerWidth / 2 - 25) + 'px';
+        starGif.style.top = (window.innerHeight / 2 - 25) + 'px';
+        starGif.style.transform = 'scale(1) rotate(0deg)';
+      }, 10);
+
+      starGif.addEventListener('transitionend', () => {
+        starGif.style.display = 'none';
+        createBubbles();
+        paperMessage.style.display = 'block';
+        setTimeout(() => {
+          paperMessage.style.display = 'none';
+        }, 5000);
+      }, {once: true});
+    });
+  })();
+</script>
+</body>
+</html>
