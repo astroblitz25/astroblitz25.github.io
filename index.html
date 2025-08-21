@@ -584,6 +584,36 @@ button .sparkle {
       0 0 35px #ff66cc;
   }
 }
+@keyframes titleGlow {
+  0% {
+    text-shadow:
+      2px 0 0 currentColor,
+      -2px 0 0 currentColor,
+      0 2px 0 currentColor,
+      0 -2px 0 currentColor,
+      2px 2px 0 currentColor,
+      -2px -2px 0 currentColor,
+      2px -2px 0 currentColor,
+      -2px 2px 0 currentColor,
+      0 0 10px currentColor,
+      0 0 20px #ff66cc,
+      0 0 30px #ff66cc;
+  }
+  100% {
+    text-shadow:
+      3px 0 0 currentColor,
+      -3px 0 0 currentColor,
+      0 3px 0 currentColor,
+      0 -3px 0 currentColor,
+      3px 3px 0 currentColor,
+      -3px -3px 0 currentColor,
+      3px -3px 0 currentColor,
+      -3px 3px 0 currentColor,
+      0 0 15px currentColor,
+      0 0 25px #ff66cc,
+      0 0 35px #ff66cc;
+  }
+}
 @keyframes sparkleTwinkle {
   0%, 100% {
     transform: scale(1) translateY(0);
@@ -1018,29 +1048,80 @@ label,
   pointer-events: none;
 }
 .music-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transform: translateY(-0.60cm);
+}
+.music-player-container {
   position: absolute;
-  top: 870px;
+  top: 830px;
   left: 30px;
   z-index: 1001;
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+.song-title-container {
+  width: 180px;
+  height: 50px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+#song-title {
+  position: absolute;
+  white-space: nowrap;
+  font-family: 'PixelFont', sans-serif;
+  font-size: 28px;
+  color: #caa0ff;
+  text-shadow: 3px 2px 0 black, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  animation: marquee 12s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(180px); }
+  100% { transform: translateX(-100%); }
 }
 .music-controls button {
-  font-size: 22px;
-  background-color: #fff0f8;
-  border: 2px solid #ff66cc;
-  border-radius: 12px;
-  color: #ff66cc;
-  padding: 8px 12px;
-  font-family: 'PollFont', sans-serif;
-  text-shadow: 1px 1px 0 white;
-  box-shadow: 0 4px 8px rgba(255, 102, 204, 0.2);
-  transition: all 0.3s ease;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: none;
   cursor: none;
+  color: #000000;
+  font-family: 'PollFont', sans-serif;
+  text-shadow: none;
+  box-shadow: none;
 }
 .music-controls button:hover {
-  background-color: #ffe6f2;
-  transform: translateY(-2px);
+  background-color: transparent;
+  transform: none;
+}
+.music-controls button svg {
+  width: 100%;
+  height: 100%;
+  filter: url(#nostalgic-bevel);
+  transition: filter 0.1s, transform 0.1s;
+}
+.music-controls button svg path {
+  fill: #e75480;
+}
+.music-controls button:active svg {
+  filter: none;
+  transform: translate(2.5px, 2.5px);
+}
+#play-pause-btn {
+  width: 60px;
+  height: 60px;
 }
 .section-link[data-jp="ホーム"] .section-icon {
   margin-left: -10px;
@@ -1053,6 +1134,25 @@ label,
 </style>
 </head>
 <body>
+<svg style="position:absolute; width:0; height:0;">
+  <defs>
+    <filter id="nostalgic-bevel" x="-20%" y="-20%" width="140%" height="140%">
+      <feOffset in="SourceAlpha" dx="-2.5" dy="-2.5" result="offset-highlight"/>
+      <feFlood flood-color="white" result="color-highlight"/>
+      <feComposite in="color-highlight" in2="offset-highlight" operator="in" result="highlight"/>
+
+      <feOffset in="SourceAlpha" dx="2.5" dy="2.5" result="offset-shadow"/>
+      <feFlood flood-color="#555555" result="color-shadow"/>
+      <feComposite in="color-shadow" in2="offset-shadow" operator="in" result="shadow"/>
+
+      <feMerge>
+        <feMergeNode in="highlight"/>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
 <img src="gifdecoframe8.gif" alt="corner deco" class="poll-top-left-deco">
 <div id="custom-cursor">
   <div class="cursor-cat-inner"></div>
@@ -1062,16 +1162,27 @@ label,
 <img src="index2.gif" alt="Right Floating Gif" class="floating-right-gif">
 <img src="gramophone.gif" alt="Gramophone" class="floating-gramophone-gif">
 <div class="title-container">
-  <div class="music-controls">
-    <button onclick="prevSong()">⏮️</button>
-    <button onclick="togglePlay()">⏯️</button>
-    <button onclick="nextSong()">⏭️</button>
+  <div class="music-player-container">
+    <div class="song-title-container">
+      <span id="song-title"></span>
+    </div>
+    <div class="music-controls">
+      <button onclick="prevSong()">
+          <svg height="100%" viewBox="0 0 36 36" width="100%"><path d="M 12,24 V 12 l -1,0 v 12 z M 22,12 v 12 l -10,-6 z" fill="currentColor"></path></svg>
+      </button>
+      <button onclick="togglePlay()" id="play-pause-btn">
+          <svg id="play-icon" height="100%" viewBox="0 0 36 36" width="100%"><path d="M 12,26 18.5,22 18.5,14 12,10 z M 18.5,22 25,18 25,18 18.5,14 z" fill="currentColor"></path></svg>
+          <svg id="pause-icon" height="100%" viewBox="0 0 36 36" width="100%" style="display: none;"><path d="M 12,26 16,26 16,10 12,10 z M 21,26 25,26 25,10 21,10 z" fill="currentColor"></path></svg>
+      </button>
+      <button onclick="nextSong()">
+          <svg height="100%" viewBox="0 0 36 36" width="100%"><path d="M 14,12 v 12 l 10,-6 z M 24,12 v 12 l 1,0 V 12 z" fill="currentColor"></path></svg>
+      </button>
+    </div>
   </div>
   <div class="title-wrapper">
     <div class="title-shadow">YOUR PROSPEROUS UNIVERSE</div>
     <div class="title-main"><span>Y</span><span>O</span><span>U</span><span>R</span><span> </span><span>P</span><span>R</span><span>O</span><span>S</span><span>P</span><span>E</span><span>R</span><span>O</span><span>U</span><span>S</span><span> </span><span>U</span><span>N</span><span>I</span><span>V</span><span>E</span><span>R</span><span>S</span><span>E</span></div>
     <div class="title-sparkles">✨</div>
-    <div class="title-sparkles left-sparkle">✨</div>
     <div class="title-sparkles right-sparkle">✨</div>
     <div class="title-sparkles top-sparkle">✨</div>
     <div class="title-sparkles bottom-sparkle">✨</div>
@@ -1150,7 +1261,7 @@ label,
 <a href="gallery.html" class="section-link" data-jp="ギャラリー">Gallery</a>
 <a href="stuff.html" class="section-link" data-jp="もの">Stuff</a>
       <a href="#" class="section-link" data-jp="について">About</a>
-      <a href="#" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
+<a href="birthdayvent.html" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
       <a href="#" class="section-link" data-jp="安心スペース">Safe Space</a>
       <a href="#" class="section-link" data-jp="かわいいゾーン">Cute Zones</a>
       <a href="#" class="section-link" data-jp="楽しい">Fun</a>
@@ -1189,10 +1300,20 @@ titleLetters.forEach((letter, index) => {
 
 const cursor = document.getElementById('custom-cursor');
 document.addEventListener('mousemove', e => {
-  const offsetX = 26;
-  const offsetY = 20;
-  cursor.style.left = (e.clientX - offsetX) + 'px';
-  cursor.style.top = (e.clientY - offsetY) + 'px';
+  const PIXELS_PER_CM = 37.8;
+
+  // Current offset: 0.04cm left (-0.10cm + 0.06cm). Left is negative.
+  const requestedXOffset = -0.04 * PIXELS_PER_CM;
+  // Current offset: 0.15cm up. Up is negative.
+  const requestedYOffset = -0.15 * PIXELS_PER_CM;
+
+  // The original offsets (26, 20) were to center the cursor image.
+  // We add our requested offsets to the real cursor position.
+  const finalX = e.clientX - 26 + requestedXOffset;
+  const finalY = e.clientY - 20 + requestedYOffset;
+
+  cursor.style.left = finalX + 'px';
+  cursor.style.top = finalY + 'px';
 });
 
 document.querySelector(".gif-belt").innerHTML = [...Array(2)].map(() =>
@@ -1200,32 +1321,59 @@ document.querySelector(".gif-belt").innerHTML = [...Array(2)].map(() =>
 ).join("");
 
 const songs = ['mineshaft.mp3', 'shinjuku.mp3', 'naruto.mp3', 'nop.mp3'];
+const songTitles = [
+  'Mineshaft - Soul Saver Online OST',
+  'Shinjuku - Just Big Hills',
+  '古今無双 - Naruto OST',
+  'Nop - Zephyr Lane'
+];
 let currentSongIndex = 0;
-let audio = loadSong(currentSongIndex);
-audio.volume = 0.1;
-audio.addEventListener('ended', nextSong);
+const songTitleElement = document.getElementById('song-title');
+let audio = null;
 let isPlaying = false;
+let isFirstPlay = true;
+
+songTitleElement.textContent = 'play a song';
+
+const playIcon = document.getElementById('play-icon');
+const pauseIcon = document.getElementById('pause-icon');
 
 function playSong() {
+  if (!audio) return;
   audio.play();
   isPlaying = true;
+  playIcon.style.display = 'none';
+  pauseIcon.style.display = 'block';
 }
 
 function pauseSong() {
+  if (!audio) return;
   audio.pause();
   isPlaying = false;
+  playIcon.style.display = 'block';
+  pauseIcon.style.display = 'none';
 }
 
 function togglePlay() {
-  if (isPlaying) {
-    pauseSong();
-  } else {
+  if (isFirstPlay) {
+    isFirstPlay = false;
+    audio = loadSong(currentSongIndex);
     playSong();
+  } else {
+    if (isPlaying) {
+      pauseSong();
+    } else {
+      playSong();
+    }
   }
 }
 
 function nextSong() {
-  audio.pause();
+  if (audio) {
+    audio.pause();
+    audio.removeEventListener('ended', nextSong);
+  }
+  isFirstPlay = false;
   currentSongIndex = (currentSongIndex + 1) % songs.length;
   audio = loadSong(currentSongIndex);
   playSong();
@@ -1233,22 +1381,37 @@ function nextSong() {
 
 function loadSong(index) {
   const songName = songs[index];
+  const songTitle = songTitles[index];
+  songTitleElement.textContent = songTitle;
+
+  const baseDuration = 12;
+  const baseLength = 'play a song'.length;
+  const newDuration = (songTitle.length / baseLength) * baseDuration;
+
+  songTitleElement.style.animation = 'none';
+  void songTitleElement.offsetWidth;
+  songTitleElement.style.animation = `marquee ${newDuration}s linear infinite`;
+
   const newAudio = new Audio(songName);
   if (songName === 'shinjuku.mp3') {
-    newAudio.volume = 0.217;
+    newAudio.volume = 0.50;
   } else if (songName === 'naruto.mp3') {
-    newAudio.volume = 0.15;
+    newAudio.volume = 0.45;
   } else if (songName === 'nop.mp3') {
-    newAudio.volume = 0.12;
+    newAudio.volume = 0.40;
   } else {
-    newAudio.volume = 0.1;
+    newAudio.volume = 0.20;
   }
   newAudio.addEventListener('ended', nextSong);
   return newAudio;
 }
 
 function prevSong() {
-  audio.pause();
+  if (audio) {
+    audio.pause();
+    audio.removeEventListener('ended', nextSong);
+  }
+  isFirstPlay = false;
   currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
   audio = loadSong(currentSongIndex);
   playSong();
