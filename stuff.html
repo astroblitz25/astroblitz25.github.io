@@ -166,14 +166,7 @@
         </div>
       </div>
 
-      <div class="mindmap-group">
-        <a class="btn main-btn" href="#" role="button" id="recipes-btn">Recipes</a>
-        <div class="sub-buttons">
-          <a class="btn sub-btn" href="food.html" role="button">Food</a>
-          <a class="btn sub-btn" href="beverages.html" role="button">Beverages</a>
-          <a class="btn sub-btn" href="sweets.html" role="button">Sweets</a>
-        </div>
-      </div>
+      <a class="btn" href="food.html">Recipes</a>
     </nav>
   </main>
 
@@ -186,11 +179,6 @@
     }
 
     document.getElementById('recs-btn').addEventListener('click', function(e) {
-      e.preventDefault();
-      toggleDropdown(this);
-    });
-
-    document.getElementById('recipes-btn').addEventListener('click', function(e) {
       e.preventDefault();
       toggleDropdown(this);
     });
