@@ -87,8 +87,8 @@ h1 { display: none; }
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       background: rgba(255,255,255,0.1);
-      padding: 14px; /* increased from 12px */
-      max-width: 720px; /* increased from 680px */
+      padding: 14px;
+      max-width: 1200px;
       margin: 0 auto;
       flex-direction: column;
     }
@@ -98,10 +98,10 @@ h1 { display: none; }
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
-    .gallery-item video {
-      width: 110%; /* increased from 105% */
+    .gallery-item iframe {
+      width: 130%;
       height: auto;
-      max-height: 420px; /* increased from 400px */
+      max-height: 750px;
       object-fit: contain;
     }
 
@@ -126,7 +126,7 @@ h1 { display: none; }
       .gallery-item {
         max-width: 100%;
       }
-      .gallery-item video {
+      .gallery-item iframe {
         width: 100%;
       }
     }
@@ -174,7 +174,7 @@ h1 { display: none; }
 
     document.addEventListener('DOMContentLoaded', () => {
       const gallery = document.getElementById('gallery');
-      const videoCount = 11;
+      const videoCount = 10;
 
       // Create array of video indexes
       let videos = [];
@@ -185,18 +185,17 @@ h1 { display: none; }
       // Shuffle array
       videos.sort(() => Math.random() - 0.5);
 
-      const captionTexts = {
-        1: "Boomers fight for Jerusalem",
-        2: "Happy Child",
-        3: "Breaking Bad in Squid Game",
-        4: "PopCorners",
-        5: "Galileo Scene | Bohemian Rhapsody (2018)",
-        6: "Game of Thrones - Prince Joffrey gets Mauled",
-        7: "How To Cook The PERFECT Steak",
-        8: "President Jokowi reacts to Rich Brian's song \"KIDS\"",
-        9: "The Marías - Baby One More Time",
-        10: "simple K-food: How to make cheese rice",
-        11: "Invitation to Tea Scene | The Great Gatsby (2013)"
+      const videoIds = {
+        1: "XHdb4JdafiI",
+        2: "_AS6CfXrGAA",
+        3: "PzhR81bV0N0",
+        4: "GPeezAty2u4",
+        5: "cPYhj2xTCGc",
+        6: "IzfTf8S86IU",
+        7: "8uyytKlpUnE",
+        8: "ujo2QAZaaU0",
+        9: "YPHn4xSvjNM",
+        10: "np4aKgQ8Ebg"
       };
 
       // Add videos in shuffled order
@@ -204,19 +203,15 @@ h1 { display: none; }
         const item = document.createElement('div');
         item.className = 'gallery-item';
 
-        const video = document.createElement('video');
-        video.src = `videos/v${i}.mp4`;
-        video.controls = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.volume = 0.7;
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${videoIds[i]}`;
+        iframe.title = "YouTube video player";
+        iframe.frameBorder = "0";
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        iframe.allowFullscreen = true;
 
-        item.appendChild(video);
-
-        const caption = document.createElement('div');
-        caption.className = 'caption';
-        caption.textContent = captionTexts[i];
-        item.appendChild(caption);
+        item.appendChild(iframe);
 
         gallery.appendChild(item);
       });
