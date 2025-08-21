@@ -10,6 +10,12 @@
       /* Make sure you have font6.ttf in the same directory */
       src: url('font6.ttf') format('truetype');
     }
+    
+    @font-face {
+      font-family: 'Font11';
+      /* Make sure you have font11.ttf in the same directory */
+      src: url('font11.ttf') format('truetype');
+    }
 
     body {
       margin: 0;
@@ -371,6 +377,9 @@
       transform: translate(-50%, -50%);
       width: 300px;
       height: 100px;
+      /* Added flex properties to center the text */
+      justify-content: center;
+      align-items: center;
       background-color: #fff;
       border: 1px solid #ccc;
       padding: 20px;
@@ -425,6 +434,28 @@
       height: 50px;
       transition: left 2s ease-out, top 2s ease-out, transform 2s ease-out;
     }
+
+    /* New styles for princess display */
+    #princessDisplay {
+      display: none; /* Initially hidden */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #princessImage {
+      width: 300px; /* Increased size */
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    #princessText {
+      font-family: 'Font11', sans-serif;
+      font-size: 2.2em;
+      color: #e91e63;
+    }
+
   </style>
 </head>
 <body>
@@ -443,6 +474,12 @@
     </div>
   </div>
 </div>
+
+<div id="princessDisplay">
+  <img src="prin2.JPEG" alt="Princess" id="princessImage">
+  <p id="princessText">Our pretty princess has officially turned 22!</p>
+</div>
+
 <button class="continue-button" id="continueButton">Continue</button>
 
 <div class="confetti-layer" id="confetti"></div>
@@ -478,6 +515,8 @@
     const claimCrown = document.getElementById('claimCrown');
     const claimBouquet = document.getElementById('claimBouquet');
     const chooseItemText = document.getElementById('chooseItemText');
+    const itemContainer = document.querySelector('.item-container');
+    const princessDisplay = document.getElementById('princessDisplay');
 
     // --- ORIGINAL: Elements for the second display ---
     const layer = document.getElementById('confetti');
@@ -500,6 +539,12 @@
       if (crownClaimed && bouquetClaimed) {
         chooseItemText.textContent = "Claim both items";
         chooseItemText.style.fontFamily = "'Font6', sans-serif";
+        chooseItemText.style.cursor = 'pointer';
+        chooseItemText.addEventListener('click', () => {
+          itemContainer.style.display = 'none';
+          chooseItemText.style.display = 'none';
+          princessDisplay.style.display = 'flex';
+        }, { once: true });
       }
     }
 
@@ -525,6 +570,7 @@
 
     continueButton.addEventListener('click', () => {
       firstDisplay.style.display = 'none';
+      princessDisplay.style.display = 'none'; // Also hide princess display if user continues
       continueButton.style.display = 'none';
       startSecondDisplay();
     });
@@ -614,7 +660,7 @@
       // Show cake after confetti
       setTimeout(() => {
         cakeContainer.style.display = 'flex';
-      }, 11000);
+      }, 4000);
     }
 
     // Blow out candle functionality
@@ -631,10 +677,11 @@
     // Pick a paper functionality
     const wishes = [
       "I hope u never expire",
-      "May your code always run without bugs",
       "Wishing you endless creativity",
       "Happy Birthday! Stay awesome",
-      "May all your wishes come true"
+      "May all your wishes come true",
+      "May u always feel happy",
+      "I wish u the best"
     ];
 
     function createBubbles() {
@@ -686,7 +733,7 @@
       starGif.addEventListener('transitionend', () => {
         starGif.style.display = 'none';
         createBubbles();
-        paperMessage.style.display = 'block';
+        paperMessage.style.display = 'flex'; // Use flex to enable vertical centering
         setTimeout(() => {
           paperMessage.style.display = 'none';
         }, 5000);
