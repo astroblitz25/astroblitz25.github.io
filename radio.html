@@ -71,7 +71,7 @@
 
     /* New: Background element for the purple box */
     .gif-container-bg {
-      position: absolute; top: 160px; left: 320px; width: 865px;
+      position: absolute; top: calc(160px - 0.2cm); left: calc(320px + 0.25cm); width: 865px;
       --translate-x: 0;
       transform: translateX(var(--translate-x));
       background-color: rgba(221,179,255,.3);
@@ -83,7 +83,7 @@
 
     /* Box for GIFs */
     .gif-container {
-      position: absolute; top: 160px; left: 320px; width: 865px;
+      position: absolute; top: calc(160px - 0.2cm); left: calc(320px + 0.25cm); width: 865px;
       --translate-x: 0;
       transform: translateX(var(--translate-x));
       padding: 20px 20px 0; /* Reduced top padding to make box shorter */
@@ -136,6 +136,19 @@
       filter: drop-shadow(3px 3px 0 #000);
       /* Minor vertical adjustment to align with text */
       transform: translateY(calc(3px - 0.5mm - 0.05cm)); /* Moved up 0.05cm */
+    }
+
+    /* New: Message shown temporarily on PSP view */
+    .psp-load-message {
+      position: absolute; /* Take out of layout flow to prevent stretching the container */
+      bottom: 0.8cm; /* Position 0.8cm from the bottom of the parent #psp */
+      left: 50%; /* Start horizontal centering */
+      transform: translateX(-50%); /* Center it horizontally */
+      width: max-content;
+      color: white;
+      font-size: 28px;
+      text-shadow: 3px 3px 0 #000;
+      transition: opacity 0.5s ease-out;
     }
 
     @keyframes slideOutLeft {
@@ -193,7 +206,7 @@
     /* PSP Styles */
     #psp {
       width: 720px; /* Adjust based on your psp.png width */
-      position: relative;
+      position: relative; /* Make it a positioning context for the absolute message */
       margin: 0 auto; /* Centers it */
     }
 
@@ -465,6 +478,8 @@
             <div id="pspstuff">
               <div id="player"></div>
             </div>
+            <!-- Message is now INSIDE #psp and positioned absolutely -->
+            <p id="psp-message" class="psp-load-message">f5 until the psp plays</p>
           </div>
         `;
 
@@ -502,6 +517,16 @@
         container.classList.add('slide-in-right');
         containerBg.classList.add('slide-in-right');
         container.style.minHeight = ''; // Clear min-height
+
+        // Set timer to hide the message
+        setTimeout(() => {
+          const pspMessage = document.getElementById('psp-message');
+          if (pspMessage) {
+            pspMessage.style.opacity = '0';
+            // Use transitionend to remove the element after the fade out is complete
+            pspMessage.addEventListener('transitionend', () => pspMessage.remove());
+          }
+        }, 4000); // 4 seconds
 
         // Load videos and init player if ready
         loadPlaylistVideos(function() {
@@ -581,3 +606,7 @@
 
 </body>
 </html>
+<!--
+[PROMPT_SUGGESTION]How can I make the YouTube video start playing automatically when the PSP view appears?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Can you refactor the JavaScript transition functions to reduce code duplication?[/PROMPT_SUGGESTION]
+-->
