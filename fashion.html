@@ -122,7 +122,7 @@ h1 { display: none; }
 
     /* Sparkle dots (copied from Code B, adjusted for full height) */
     .sparkle {
-      position: absolute;
+      position: fixed;
       width: 5px;
       height: 5px;
       background: pink;
@@ -176,26 +176,14 @@ h1 { display: none; }
   </div>
 
   <script>
-    // Function to get document height
-    function getDocumentHeight() {
-      return Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.offsetHeight,
-        document.body.clientHeight,
-        document.documentElement.clientHeight
-      );
-    }
-
-    // Add flying sparkle dots across the full height
-    const count = 100; // Increased count for better coverage
-    const docHeight = getDocumentHeight();
+    // Add flying sparkle dots
+    const count = 60;
     for (let i = 0; i < count; i++) {
       const sparkle = document.createElement('div');
       sparkle.className = 'sparkle';
       sparkle.style.left = Math.random() * 100 + 'vw';
-      sparkle.style.top = (Math.random() * docHeight) + 'px';
+      // Use vh to position against the viewport height, making them appear everywhere on scroll
+      sparkle.style.top = Math.random() * 100 + 'vh';
       sparkle.style.animationDelay = (Math.random() * 2) + 's';
       document.body.appendChild(sparkle);
     }
@@ -217,7 +205,11 @@ h1 { display: none; }
       const jpegList = [45,46,47];
       const mp4List = [81,70];
       
+      // Generate numbers 1-116, then replace 109 with 117 as requested
       let imageNumbers = Array.from({length: imageCount}, (_, i) => i + 1);
+      imageNumbers = imageNumbers.filter(num => num !== 109);
+      imageNumbers.push(117);
+
       imageNumbers = shuffleArray(imageNumbers);
       
       imageNumbers.forEach(num => {
@@ -257,13 +249,6 @@ h1 { display: none; }
         item.appendChild(media);
         gallery.appendChild(item);
       });
-
-      setTimeout(() => {
-        const newDocHeight = getDocumentHeight();
-        document.querySelectorAll('.sparkle').forEach(sparkle => {
-          sparkle.style.top = (Math.random() * newDocHeight) + 'px';
-        });
-      }, 100);
     });
   </script>
 </body>
