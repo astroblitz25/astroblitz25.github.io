@@ -51,7 +51,7 @@
 
         .back-button-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 12px; /* Moved down */
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
@@ -63,7 +63,7 @@
         }
 
         .back-button-container img {
-            width: 100px;
+            width: 120px; /* Increased size */
             height: auto;
             display: block;
         }
@@ -256,6 +256,7 @@
             ctx.textAlign = 'center';
 
             if (gameState === 'start') {
+                ctx.fillStyle = '#ff85a2'; // Pink color for instruction text
                 ctx.font = '22px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText('Click or press Space to play', canvas.width / 2, canvas.height / 2 + 70);
             } else if (gameState === 'playing') {
@@ -277,6 +278,7 @@
                 ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 - 35);
                 ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 15);
 
+                ctx.fillStyle = '#ff85a2'; // Pink color for instruction text
                 ctx.font = '22px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText('Click or press Space to play', canvas.width / 2, canvas.height / 2 + 70);
             }
