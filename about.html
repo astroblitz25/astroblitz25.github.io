@@ -68,6 +68,17 @@
       text-align: center;
     }
 
+    .page-title {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      font-family: 'fontpixel1', sans-serif;
+      font-size: 72px;
+      color: white;
+      text-shadow: 4px 4px 0 #222;
+      z-index: 10;
+    }
+
     /* Button styling (retained from original) */
     .btn,
     .btn:link,
@@ -106,16 +117,16 @@
       outline-offset: 4px;
     }
 
-    /* --- New Styles for Display 2 --- */
+    /* --- Display 2 Styles --- */
 
     #display2 {
       width: 100%;
       height: 100%;
-      display: none; /* Initially hidden */
+      display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      position: relative;
+      position: relative; /* For absolute positioning of children */
     }
 
     .desktop-window {
@@ -158,7 +169,6 @@
       font-size: 20px; /* Increased size */
       color: #fff;
       user-select: none;
-      cursor: grab;
     }
 
     .window-controls {
@@ -184,9 +194,9 @@
       color: #000;
       cursor: pointer;
     }
-    .control-btn.minus::after { content: '─'; }
-    .control-btn.square::after { content: '□'; font-size: 22px; } /* Increased size */
-    .control-btn.close::after { content: 'X'; }
+    .control-btn.minus::after { content: '─'; line-height: 1; }
+    .control-btn.square::after { content: '❐'; font-size: 20px; line-height: 1; } /* Double square icon */
+    .control-btn.close::after { content: 'X'; line-height: 1; }
 
     .window-body {
       flex-grow: 1;
@@ -196,11 +206,31 @@
       overflow: hidden;
     }
 
+    .desktop-window.is-small .window-body {
+      overflow: auto;
+    }
+    .desktop-window.is-small .window-body::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    .desktop-window.is-small .window-body::-webkit-scrollbar-track {
+      background: #c0c0c0;
+      border-left: 1px solid #404040;
+      border-top: 1px solid #404040;
+    }
+    .desktop-window.is-small .window-body::-webkit-scrollbar-thumb {
+      background: #ff69b4;
+      border: 1px solid;
+      border-top-color: #fff;
+      border-left-color: #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+    }
+
     .running-belt-container {
       width: 100%;
       overflow: hidden;
       margin-top: 11px; /* Approx 0.3cm */
-      border: 1px inset #888;
     }
 
     .belt {
@@ -220,16 +250,40 @@
     }
 
     @keyframes windEffect {
-      from { transform: translate(0, 0) scale(1); }
-      to { transform: translate(2%, 1%) scale(1.05); }
+      from { transform: translate(0, 0) scale(1.05) rotate(-0.5deg); }
+      to { transform: translate(2%, 1%) scale(1.05) rotate(0.5deg); }
     }
 
     @keyframes poof {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(0); opacity: 0; }
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.5;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
     }
     body.poof-bg::before {
       animation: poof 0.5s ease-in forwards;
+    }
+    
+    @keyframes unpoof {
+      from {
+        transform: scale(0);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1.05) rotate(-0.5deg);
+        opacity: 1;
+      }
+    }
+    body.unpoofing::before {
+      animation: unpoof 0.5s ease-out forwards;
     }
 
     .main-pane {
@@ -257,20 +311,25 @@
       gap: 20px;
     }
 
+    #slide1-content > .main-text {
+      transform: translateY(22.7px); /* 41.9px - 0.5cm */
+    }
+
     .main-text {
       font-family: 'fontpixel1', sans-serif;
-      font-size: 28px;
+      font-size: 24px; /* Reduced size */
       color: #000;
-      text-shadow: 1px 1px #fff;      
+      text-shadow: 1px 1px #fff;
+      text-align: center;
     }
 
     .qa-container {
       font-family: 'fontpixel1', sans-serif;
-      font-size: 26px; /* Increased size */
+      font-size: 26px;
       color: #000;
       line-height: 1.8;
       width: 100%;
-      text-align: center;
+      text-align: left; /* Aligned left */
       padding-top: 20px;
     }
     .qa-option {
@@ -282,26 +341,45 @@
       color: #fff;
     }
 
-    .main-gif {
-      max-width: 300px; /* Increased size */
-      max-height: 300px;
+    .main-gif { /* Moved 3cm to the left */
+      max-width: 350px; /* Reduced size a bit */
+      max-height: 350px; /* Reduced size a bit */
       image-rendering: pixelated; /* Preserve pixel quality */
+      transform: translateX(-38.4px);
     }
     .side-img {
-      max-width: 150px;
+      max-width: 400px; /* Increased size a bit more */
       image-rendering: pixelated; /* Preserve pixel quality */
+      transform: translateY(2cm);
     }
 
     .lower-pane {
       flex-grow: 0.7; /* 0.7/4 of the space */
       border-top: 4px solid #ff69b4; /* Thicker pink line */
       display: flex;
-      align-items: center;
+      /* align-items: center; Removed to allow scrolling from top */
       font-family: 'fontpixel1', sans-serif;      
       font-size: 28px;
       color: #000;
       text-shadow: 1px 1px #fff;
       padding: 10px;
+      overflow-y: auto;
+    }
+
+    .lower-pane::-webkit-scrollbar {
+      width: 12px;
+    }
+    .lower-pane::-webkit-scrollbar-track {
+      background: #c0c0c0;
+      border-left: 1px solid #404040;
+    }
+    .lower-pane::-webkit-scrollbar-thumb {
+      background: #ff69b4;
+      border: 1px solid;
+      border-top-color: #fff;
+      border-left-color: #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
     }
 
     /* --- New Styles for Display 3 and Minimized Bar --- */
@@ -322,7 +400,7 @@
       cursor: pointer;
       margin-top: 20px;
       transition: transform 0.2s;
-      width: 90px; /* Increased size */
+      width: 180px; /* Increased size */
       height: auto;
       image-rendering: pixelated;
     }
@@ -356,6 +434,7 @@
 </head>
 <body>
 
+  <h1 class="page-title">About</h1>
   <!-- Display 1: Initial "Enter" button -->
   <main id="display1" class="container" role="main">
     <a href="#" id="enter-btn" class="btn" role="button">Enter</a>
@@ -379,15 +458,12 @@
           </div>
         </div>
         <div id="main-pane" class="main-pane">
+          <img src="hd.gif" alt="Animated pixel art" class="main-gif">
           <div id="slide1-content" class="slide-content">
-            <div class="slide1-images">
-              <img src="hd.gif" alt="Animated pixel art" class="main-gif">
-              <img src="hdd.jpg" alt="Pixel art landscape" class="side-img">
-            </div>
+            <img src="hdd.jpg" alt="Pixel art landscape" class="side-img">
             <p class="main-text">[SPACE] or Click anywhere to begin</p>
           </div>
           <div id="slide2-content" class="slide-content" style="display: none;">
-            <!-- Q&A options injected by JS -->
           </div>
         </div>
         <div id="lower-pane" class="lower-pane" style="justify-content: center; text-align: center;">
@@ -396,7 +472,7 @@
       </div>
     </div>
     <div id="minimized-taskbar-item" class="press-effect">
-      <img src="hd99.gif" alt="Restore Help Desk" height="30">
+      <img src="hd99.gif" alt="Restore Help Desk" height="30" class="press-effect">
       <span>Help Desk</span>
     </div>
   </main>
@@ -410,6 +486,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const pageTitle = document.querySelector('.page-title');
       // --- Display Toggle Logic ---
       const display1 = document.getElementById('display1');
       const display2 = document.getElementById('display2');
@@ -418,6 +495,7 @@
 
       function showDisplay2(e) {
         if (e) e.preventDefault();
+        pageTitle.style.display = 'none';
         display1.style.display = 'none';
         display2.style.display = 'flex';
       }
@@ -438,22 +516,25 @@
 
       // --- State Management ---
       let windowSlide = 'initial'; // 'initial' or 'qa'
-      let qaMode = null; // null, 'about', or 'tips'
+      let qaMode = null; // null, 'about', 'tips', 'who', or 'thanks'
       let aboutIndex = 0;
       let tipsIndex = 0;
 
       const aboutParagraphs = [
-        `This is a special site crafted for an extraordinary 22-year-old girl on her latest birthday.
-One of her deepest passion is nature—and simply losing herself in the refreshing breeze of the cosmos. That's why the creator of this site built this little playground, where she can gaze at twinkling stars, wander through lush jungles, and journey from shimmering seas to towering mountains... all through the gentle lens of Mother Nature in hidden corners of the universe.`,
+        `This is a special site crafted for an extraordinary 22-year-old girl on her latest birthday.`,
+        `One of her deepest passions is nature—and simply losing herself in the refreshing breeze of the cosmos. That's why the creator of this site built this little playground, where she can gaze at twinkling stars, wander through lush jungles, and journey from shimmering seas to towering mountains... all through the gentle lens of Mother Nature in hidden corners of the universe.`,
         `Amidst this endless cosmic wonder, there are also heartfelt glimpses of human life's own beauty.`,
         `It can also be her cozy retreat to unwind when she's feeling worn out or just in need of a fresh escape.`
       ];
 
       const tipsParagraphs = [
-        'The window controls are fully functional!',
-        'Press “q” to go back to the previous displays of the web/boxes',
+        'The window controls (of this box you’re currently interacting with) are fully functional!',
+        'Press “q” to go back to the previous displays of the web/boxes<br><small>(only applied for some)</small>',
         'Turn volume on since there’re some sections with music!'
       ];
+
+      const whoAmIAnswer = "I'm a cool samurai cat drawn in Ghibli style - just like 60% of the theme of this site. I'm here to answer your FAQs - and to make the web looks cooler.";
+      const thanksAnswer = "Thanks for stopping by! Feel free to meet me anytime for further assistance.";
 
       // --- Clicked Effect Listeners ---
       document.addEventListener('mousedown', e => e.target.closest('.press-effect')?.classList.add('clicked'));
@@ -499,10 +580,18 @@ One of her deepest passion is nature—and simply losing herself in the refreshi
       });
 
       returnBtnD3.addEventListener('click', () => {
-        display3.style.display = 'none';
-        // Reset poof effect for next time
-        body.classList.remove('poof-bg');
-        display2.style.display = 'flex';
+          display3.style.display = 'none';
+          display2.style.display = 'flex';
+          
+          // The 'poof-bg' class is still on the body from the close action.
+          // We remove it to stop it from interfering.
+          body.classList.remove('poof-bg');
+          
+          // Add a class to trigger the reverse animation.
+          body.classList.add('unpoofing');
+          
+          // After the animation is done, remove the class so the default windEffect can resume.
+          setTimeout(() => body.classList.remove('unpoofing'), 500); // Must match the animation duration
       });
 
       maximizeBtn.addEventListener('click', (e) => {
@@ -527,7 +616,7 @@ One of her deepest passion is nature—and simply losing herself in the refreshi
         if (slideName === 'initial') {
           slide1.style.display = 'flex';
           slide2.style.display = 'none';
-          lowerPaneText.textContent = 'Welcome to astroblitz25!';
+          lowerPaneText.innerHTML = 'Welcome to astroblitz25!';
           qaMode = null;
         } else if (slideName === 'qa') {
           slide1.style.display = 'none';
@@ -536,9 +625,12 @@ One of her deepest passion is nature—and simply losing herself in the refreshi
           <div class="qa-container">
             <div class="qa-option press-effect" data-question="about">▶ What is this site about?</div>
             <div class="qa-option press-effect" data-question="tips">▶ What are some useful tips for using this sites?</div>
+            <div class="qa-option press-effect" data-question="who">▶ Who are you?</div>
+            <div class="qa-option press-effect" data-question="thanks">▶ I’m good for now. Thanks</div>
           </div>
+          <p class="main-text" style="transform: translateY(0.5cm);">[SPACE] or Click anywhere to continue</p>
           `;
-          lowerPaneText.textContent = 'What do you want help with?';
+          lowerPaneText.innerHTML = 'What do you want help with?';
         }
       }
 
@@ -551,7 +643,7 @@ One of her deepest passion is nature—and simply losing herself in the refreshi
             lowerPaneText.innerHTML = aboutParagraphs[aboutIndex];
           } else if (qaMode === 'tips') {
             tipsIndex = (tipsIndex + 1) % tipsParagraphs.length;
-            lowerPaneText.textContent = tipsParagraphs[tipsIndex];
+            lowerPaneText.innerHTML = tipsParagraphs[tipsIndex];
           }
         }
       }
@@ -587,7 +679,13 @@ One of her deepest passion is nature—and simply losing herself in the refreshi
           } else if (question === 'tips') {
             qaMode = 'tips';
             tipsIndex = 0;
-            lowerPaneText.textContent = tipsParagraphs[tipsIndex];
+            lowerPaneText.innerHTML = tipsParagraphs[tipsIndex];
+          } else if (question === 'who') {
+            qaMode = 'who';
+            lowerPaneText.innerHTML = whoAmIAnswer;
+          } else if (question === 'thanks') {
+            qaMode = 'thanks';
+            lowerPaneText.innerHTML = thanksAnswer;
           }
         }
       });
