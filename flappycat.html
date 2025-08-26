@@ -245,10 +245,27 @@
 
             // Draw cat
             ctx.save();
-            // Translate to the cat's top-right corner, flip the context, and draw
-            ctx.translate(catX + catWidth, catY);
+
+            // Define rotation limits in radians for the cat's tilt
+            const maxUpwardRotation = -25 * Math.PI / 180; // -25 degrees
+            const maxDownwardRotation = 90 * Math.PI / 180;  // 90 degrees
+
+            // Calculate rotation based on vertical velocity to create a dynamic tilt effect.
+            // A multiplier of 0.08 provides a responsive feel to the cat's movement.
+            let rotation = catVelocity * 0.08;
+
+            // Clamp the rotation to prevent the cat from over-rotating.
+            rotation = Math.max(maxUpwardRotation, Math.min(maxDownwardRotation, rotation));
+
+            // Move the canvas origin to the center of the cat for a natural rotation axis.
+            ctx.translate(catX + catWidth / 2, catY + catHeight / 2);
+            // Apply the calculated rotation.
+            ctx.rotate(rotation);
+            // Flip the cat horizontally to make it face left.
             ctx.scale(-1, 1);
-            ctx.drawImage(catImg, 0, 0, catWidth, catHeight);
+            // Draw the image, offsetting by half its width and height to center it on the new origin.
+            ctx.drawImage(catImg, -catWidth / 2, -catHeight / 2, catWidth, catHeight);
+
             ctx.restore();
 
             // Draw text based on the current game state
