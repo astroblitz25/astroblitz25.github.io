@@ -166,7 +166,7 @@
       position: absolute;
       top: calc(18vh + 1cm - 2mm); /* Dragged 1cm down, then 2mm up */
       left: 50%;
-      transform: translateX(calc(-50% - 8.8cm + 0.7mm)); /* Moved 0.05cm to the right */
+      transform: translateX(calc(-50% - 9.35cm + 0.7mm)); /* Moved 0.05cm further left */
       width: 100%;
       max-width: 600px; /* To keep text wrapping consistent with the box */
       text-align: center;
@@ -203,7 +203,7 @@
       margin-top: calc(15px + 12mm); /* Moved 6mm lower */
 
       /* Scale the GIF visually without affecting other elements */
-      transform: scale(1.2); /* Increased size a bit */
+      transform: translateX(-0.3cm) scale(1.2); /* Moved 0.2cm further left & increased size */
     }
 
     /* Style for the new text */
@@ -216,7 +216,7 @@
       z-index: 2;           /* Ensures it appears above the background box */
       width: 160px;         /* Defines a clear width */
       bottom: calc(220px - 1cm + 16mm); /* Moved 4mm up */
-      left: calc(40px + 2mm); /* Moved 2mm to the right */
+      left: calc(40px + 2mm - 0.6cm); /* Moved 0.2cm further left */
     }
 
     /* Style for the duplicated text */
@@ -229,7 +229,7 @@
       z-index: 2;           /* Ensures it appears above the background box */
       width: 200px;         /* Increased width to prevent unwanted wrapping */
       bottom: calc(220px - 1cm - 8mm); /* Moved 2mm up */
-      right: calc(40px - 12mm); /* Moved 3mm to the right */
+      right: calc(40px - 12mm + 0.3cm); /* Moved 0.1cm to the left */
     }
 
     /* Style for the new GIF */
@@ -437,7 +437,7 @@
     }
 
     /* New rules to align and space the recipe's p tags */
-    .recipe-details > p {
+    .recipe-details &gt; p {
       padding-inline-start: 40px; /* Align with list items */
     }
     .recipe-details ol + p {
@@ -538,7 +538,7 @@
               <li>Pour ½ milk box into a pot and add sugar (mixture 1)</li>
               <li>Pour cornstarch to the ½ remaining milk box, mix (mixture 2)</li>
               <li>Cook mixture 1 on medium-low heat for 3-4 mins (mixture 3)</li>
-              <li>Pour mixture 3 in mixture 2 and mix them until they become thick and slightly dense->pour into a container, let it rest in fridge for 1 hour</li>
+              <li>Pour mixture 3 in mixture 2 and mix them until they become thick and slightly dense-&gt;pour into a container, let it rest in fridge for 1 hour</li>
             </ol>
           </div>
           <!-- New hidden container for the tuna rice recipe -->
@@ -557,7 +557,7 @@
               <li>Boil the pork belly cubes for half hour</li>
               <li>Pan fry the pork cubes</li>
               <li>Then transfer them to a pot</li>
-              <li>Add sliced ginger, scallion, brown sugar, soy sauce, hot water -> simmer for 1 hour, then add eggs, simmer the sauce until it turns sticky</li>
+              <li>Add sliced ginger, scallion, brown sugar, soy sauce, hot water -&gt; simmer for 1 hour, then add eggs, simmer the sauce until it turns sticky</li>
               <li>Enjoy</li>
             </ol>
           </div>
@@ -573,7 +573,7 @@
           <!-- New hidden container for the Cucumber Salad recipe -->
           <div class="recipe-details recipe-content" id="cucumber-salad-details-container">
             <ol>
-              <li>Cucumber + red onion + garlic + Greek yogurt (or just yogurt, or cashew, or olive oil) + lemon juice (preferably yellow lemon) + salt + pepper+ chicken breast -> to a bowl with lid, shake it</li>
+              <li>Cucumber + red onion + garlic + Greek yogurt (or just yogurt, or cashew, or olive oil) + lemon juice (preferably yellow lemon) + salt + pepper+ chicken breast -&gt; to a bowl with lid, shake it</li>
               <li>Enjoy</li>
             </ol>
           </div>
@@ -646,7 +646,7 @@
           <!-- New hidden container for the Lemonade recipe -->
           <div class="recipe-details recipe-content" id="lemonade-details-container">
             <ol>
-              <li>Water + sugar in a pot, dissolve -> they’ll become syrup</li>
+              <li>Water + sugar in a pot, dissolve -&gt; they’ll become syrup</li>
               <li>Squeeze lemons (preferably yellow lemons) then pour lemon juice into bottle/glass, then pour syrup, sparkling water, add ice cubes</li>
               <li>Enjoy</li>
             </ol>
@@ -664,9 +664,9 @@
           <!-- New hidden container for the Strawberry Lemonade recipe -->
           <div class="recipe-details recipe-content" id="strawberry-lemonade-details-container">
             <ol>
-              <li>Strawberries to a bowl -> squish to nearly liquid -> add sugar</li>
-              <li>Pour everything into glass -> squish lemon (preferably yellow lemon)</li>
-              <li>Add ice cubes, Sprite -> Mix</li>
+              <li>Strawberries to a bowl -&gt; squish to nearly liquid -&gt; add sugar</li>
+              <li>Pour everything into glass -&gt; squish lemon (preferably yellow lemon)</li>
+              <li>Add ice cubes, Sprite -&gt; Mix</li>
               <li>Enjoy</li>
             </ol>
             <p>Decoration: Lemon piece</p>
@@ -738,7 +738,7 @@
           <!-- New hidden container for the Oreo Milo Ball recipe -->
           <div class="recipe-details recipe-content" id="oreo-milo-ball-details-container">
             <ol>
-              <li>Oreo to zip bag -> smash to powder</li>
+              <li>Oreo to zip bag -&gt; smash to powder</li>
               <li>Add condensed milk, add milo powder</li>
               <li>Use handgloves to ball them into ball shape</li>
               <li>Roll those balls into a bowl of milo powder so theyre covered by milo powder</li>
@@ -899,7 +899,7 @@
     </div>
 
     <div class="bottom-nav-container">
-<a href="stuff.html" class="btn" onclick="history.back(); return false;">← Go Back</a>   
+<a href="stuff.html" class="btn" onclick="history.back(); return false;">← Go Back</a>
       <a href="mukbang.html" class="btn">Mukbang in the rain</a>
     </div>
 

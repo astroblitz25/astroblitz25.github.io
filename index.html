@@ -40,7 +40,7 @@ html, body {
 .poll-top-left-deco {
   position: absolute;
   top: 978px;
-  left: 600px;
+  left: calc(600px + 0.6cm);
   width: 80px;
   z-index: 9999;
   pointer-events: none;
@@ -71,6 +71,8 @@ html, body {
   background: url('cursor-cat.gif') no-repeat center center;
   background-size: contain;
   z-index: 9999;
+  top: 0;
+  left: 0;
 }
 .cursor-cat-inner {
   width: 100%;
@@ -440,6 +442,38 @@ button .sparkle {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+}
+#poll-box::-webkit-scrollbar {
+  width: 16px;
+}
+
+#poll-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#poll-box::-webkit-scrollbar-thumb {
+  background-color: #e75480;
+  border-radius: 20px;
+  border: 5px solid transparent;
+  background-clip: content-box;
+}
+#poll-box::-webkit-scrollbar-thumb:hover {
+  background-color: #ff66cc;
+}
+#poll-result::-webkit-scrollbar {
+  width: 16px;
+}
+#poll-result::-webkit-scrollbar-track {
+  background: transparent;
+}
+#poll-result::-webkit-scrollbar-thumb {
+  background-color: #e75480;
+  border-radius: 20px;
+  border: 5px solid transparent;
+  background-clip: content-box;
+}
+#poll-result::-webkit-scrollbar-thumb:hover {
+  background-color: #ff66cc;
 }
 #poll-result {
   width: 100%;
@@ -1257,7 +1291,10 @@ label,
     <div class="sections">
 <a href="gallery.html" class="section-link" data-jp="ギャラリー">Gallery</a>
 <a href="stuff.html" class="section-link" data-jp="もの">Stuff</a>
+<a href="about.html" class="section-link" data-jp="アバウト">About</a>
 <a href="birthdayvent.html" class="section-link" data-jp="誕生日">Your Birthday Vent</a>
+<a href="safespace.html" class="section-link" data-jp="セーフスペース">Safe Space</a>
+<a href="cutezones.html" class="section-link" data-jp="かわいいゾーン">Cute Zones</a>
     </div>
   </div>
 </div>
@@ -1305,8 +1342,7 @@ document.addEventListener('mousemove', e => {
   const finalX = e.clientX - 26 + requestedXOffset;
   const finalY = e.clientY - 20 + requestedYOffset;
 
-  cursor.style.left = finalX + 'px';
-  cursor.style.top = finalY + 'px';
+  cursor.style.transform = `translate(${finalX}px, ${finalY}px)`;
 });
 
 document.querySelector(".gif-belt").innerHTML = [...Array(2)].map(() =>

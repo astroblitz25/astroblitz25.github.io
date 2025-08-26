@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About</title>
+
+  <style>
+    /* Font declarations */
+    @font-face {
+      font-family: 'PixelFont';
+      src: url('fontpixel.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'fontpixel1';
+      src: url('fontpixel1.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'CandySeason';
+      src: url('candyseason.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Global styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'PixelFont', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background-color: #000; /* Fallback color */
+    }
+
+    /* Wind effect for background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -5%;
+      left: -5%;
+      width: 110%;
+      height: 110%;
+      background: url('bgabout.jpg') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+      animation: windEffect 80s ease-in-out infinite alternate;
+    }
+
+    /* Container for initial view */
+    .container {
+      width: 100%;
+      max-width: 980px;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      text-align: center;
+    }
+
+    /* Button styling (retained from original) */
+    .btn,
+    .btn:link,
+    .btn:visited {
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      border: 0;
+      padding: 14px 22px;
+      min-width: 120px;
+      text-align: center;
+      font-size: 16px;
+      font-family: 'CandySeason', sans-serif;
+      cursor: pointer;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.92);
+      color: #222;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      transition: transform 140ms ease, box-shadow 140ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover,
+    .btn:focus {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.45);
+      outline: none;
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn:focus-visible {
+      outline: 3px solid rgba(255,255,255,0.7);
+      outline-offset: 4px;
+    }
+
+    /* --- New Styles for Display 2 --- */
+
+    #display2 {
+      width: 100%;
+      height: 100%;
+      display: none; /* Initially hidden */
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .desktop-window {
+      width: 100%;
+      max-width: 800px;
+      height: 550px;
+      max-height: 90vh;
+      background: #c0c0c0; /* Old Windows grey */
+      border: 2px solid;
+      border-top-color: #fff;
+      border-left-color: #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.4s ease, height 0.4s ease, transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    }
+    .desktop-window.is-small {
+      width: 600px;
+      height: 450px;
+      max-height: 80vh;
+    }
+    .desktop-window.is-minimized {
+      transform: translateY(100vh) scale(0.5);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .desktop-window.interaction-started {
+      cursor: default;
+    }
+
+    .title-bar {
+      background: linear-gradient(to right, #000080, #1084d0); /* Old Windows blue */
+      padding: 4px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'fontpixel1', sans-serif;
+      font-size: 20px; /* Increased size */
+      color: #fff;
+      user-select: none;
+      cursor: grab;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 3px;
+    }
+
+    .control-btn {
+      width: 20px;
+      height: 20px;
+      background-color: #c0c0c0;
+      border: 1px solid;
+      border-top-color: #fff;
+      border-left-color: #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 16px;
+      color: #000;
+      cursor: pointer;
+    }
+    .control-btn.minus::after { content: '─'; }
+    .control-btn.square::after { content: '□'; font-size: 22px; } /* Increased size */
+    .control-btn.close::after { content: 'X'; }
+
+    .window-body {
+      flex-grow: 1;
+      padding: 3px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .running-belt-container {
+      width: 100%;
+      overflow: hidden;
+      margin-top: 11px; /* Approx 0.3cm */
+      border: 1px inset #888;
+    }
+
+    .belt {
+      display: flex;
+      width: fit-content;
+      animation: scroll 30s linear infinite;
+    }
+
+    .belt-gif {
+      height: 32px; /* Reduced size */
+      margin: 0 6px;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes windEffect {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(2%, 1%) scale(1.05); }
+    }
+
+    @keyframes poof {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    body.poof-bg::before {
+      animation: poof 0.5s ease-in forwards;
+    }
+
+    .main-pane {
+      flex-grow: 3.3; /* 3.3/4 of the space */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 20px;
+    }
+
+    .slide-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between; /* Positions text at bottom */
+      cursor: pointer;
+    }
+    .slide1-images {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .main-text {
+      font-family: 'fontpixel1', sans-serif;
+      font-size: 28px;
+      color: #000;
+      text-shadow: 1px 1px #fff;      
+    }
+
+    .qa-container {
+      font-family: 'fontpixel1', sans-serif;
+      font-size: 26px; /* Increased size */
+      color: #000;
+      line-height: 1.8;
+      width: 100%;
+      text-align: center;
+      padding-top: 20px;
+    }
+    .qa-option {
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .qa-option:hover {
+      background-color: #000080;
+      color: #fff;
+    }
+
+    .main-gif {
+      max-width: 300px; /* Increased size */
+      max-height: 300px;
+      image-rendering: pixelated; /* Preserve pixel quality */
+    }
+    .side-img {
+      max-width: 150px;
+      image-rendering: pixelated; /* Preserve pixel quality */
+    }
+
+    .lower-pane {
+      flex-grow: 0.7; /* 0.7/4 of the space */
+      border-top: 4px solid #ff69b4; /* Thicker pink line */
+      display: flex;
+      align-items: center;
+      font-family: 'fontpixel1', sans-serif;      
+      font-size: 28px;
+      color: #000;
+      text-shadow: 1px 1px #fff;
+      padding: 10px;
+    }
+
+    /* --- New Styles for Display 3 and Minimized Bar --- */
+    #display3 {
+      display: none; /* Initially hidden */
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      font-family: 'fontpixel1', sans-serif;
+      font-size: 32px;
+    }
+    #return-btn-d3 {
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.2s;
+      width: 90px; /* Increased size */
+      height: auto;
+      image-rendering: pixelated;
+    }
+    #return-btn-d3:hover {
+      transform: scale(1.1);
+    }
+
+    #minimized-taskbar-item {
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%); /* Centered */
+      display: none; /* Initially hidden */
+      align-items: center;
+      gap: 8px;
+      background: #c0c0c0;
+      border: 2px outset #fff;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-family: 'fontpixel1', sans-serif;
+    }
+
+    /* Clicked effect */
+    .press-effect:active, .press-effect.clicked {
+      transform: scale(0.95);
+      filter: brightness(0.9);
+      transition: transform 50ms ease, filter 50ms ease;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Display 1: Initial "Enter" button -->
+  <main id="display1" class="container" role="main">
+    <a href="#" id="enter-btn" class="btn" role="button">Enter</a>
+  </main>
+
+  <!-- Display 2: Desktop Window (initially hidden) -->
+  <main id="display2" role="main">
+    <div id="desktop-window" class="desktop-window">
+      <div id="title-bar" class="title-bar">
+        <span id="title-text" class="title-text">Help Desk</span>
+        <div class="window-controls">
+          <div id="minimize-btn" class="control-btn minus press-effect"></div>
+          <div id="maximize-btn" class="control-btn square press-effect"></div>
+          <div id="close-btn" class="control-btn close press-effect"></div>
+        </div>
+      </div>
+      <div id="window-body" class="window-body">
+        <div class="running-belt-container">
+          <div class="belt" id="gif-belt">
+            <!-- GIFs are injected here by JavaScript -->
+          </div>
+        </div>
+        <div id="main-pane" class="main-pane">
+          <div id="slide1-content" class="slide-content">
+            <div class="slide1-images">
+              <img src="hd.gif" alt="Animated pixel art" class="main-gif">
+              <img src="hdd.jpg" alt="Pixel art landscape" class="side-img">
+            </div>
+            <p class="main-text">[SPACE] or Click anywhere to begin</p>
+          </div>
+          <div id="slide2-content" class="slide-content" style="display: none;">
+            <!-- Q&A options injected by JS -->
+          </div>
+        </div>
+        <div id="lower-pane" class="lower-pane" style="justify-content: center; text-align: center;">
+          <p id="dynamic-text">Welcome to astroblitz25!</p>
+        </div>
+      </div>
+    </div>
+    <div id="minimized-taskbar-item" class="press-effect">
+      <img src="hd99.gif" alt="Restore Help Desk" height="30">
+      <span>Help Desk</span>
+    </div>
+  </main>
+
+  <!-- Display 3: Extinguished Screen (initially hidden) -->
+  <main id="display3">
+    <img src="hd98.gif" alt="Extinguished animation">
+    <p>Uh oh... Extinguished!</p>
+    <img src="hd99.gif" alt="Return" id="return-btn-d3" class="press-effect">
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- Display Toggle Logic ---
+      const display1 = document.getElementById('display1');
+      const display2 = document.getElementById('display2');
+      const display3 = document.getElementById('display3');
+      const enterBtn = document.getElementById('enter-btn');
+
+      function showDisplay2(e) {
+        if (e) e.preventDefault();
+        display1.style.display = 'none';
+        display2.style.display = 'flex';
+      }
+      enterBtn.addEventListener('click', showDisplay2);
+
+      // --- Window Elements ---
+      const desktopWindow = document.getElementById('desktop-window');
+      const body = document.body;
+      const mainPane = document.getElementById('main-pane');
+      const lowerPaneText = document.getElementById('dynamic-text');
+      const closeBtn = document.getElementById('close-btn');
+      const maximizeBtn = document.getElementById('maximize-btn');
+      const minimizeBtn = document.getElementById('minimize-btn');
+      const minimizedBar = document.getElementById('minimized-taskbar-item');
+      const returnBtnD3 = document.getElementById('return-btn-d3');
+      const slide1 = document.getElementById('slide1-content');
+      const slide2 = document.getElementById('slide2-content');
+
+      // --- State Management ---
+      let windowSlide = 'initial'; // 'initial' or 'qa'
+      let qaMode = null; // null, 'about', or 'tips'
+      let aboutIndex = 0;
+      let tipsIndex = 0;
+
+      const aboutParagraphs = [
+        `This is a special site crafted for an extraordinary 22-year-old girl on her latest birthday.
+One of her deepest passion is nature—and simply losing herself in the refreshing breeze of the cosmos. That's why the creator of this site built this little playground, where she can gaze at twinkling stars, wander through lush jungles, and journey from shimmering seas to towering mountains... all through the gentle lens of Mother Nature in hidden corners of the universe.`,
+        `Amidst this endless cosmic wonder, there are also heartfelt glimpses of human life's own beauty.`,
+        `It can also be her cozy retreat to unwind when she's feeling worn out or just in need of a fresh escape.`
+      ];
+
+      const tipsParagraphs = [
+        'The window controls are fully functional!',
+        'Press “q” to go back to the previous displays of the web/boxes',
+        'Turn volume on since there’re some sections with music!'
+      ];
+
+      // --- Clicked Effect Listeners ---
+      document.addEventListener('mousedown', e => e.target.closest('.press-effect')?.classList.add('clicked'));
+      document.addEventListener('mouseup', () => document.querySelectorAll('.clicked').forEach(el => el.classList.remove('clicked')));
+      document.addEventListener('mouseleave', e => e.target.closest('.press-effect')?.classList.remove('clicked'), true);
+
+
+      // --- GIF Belt Generation ---
+      const gifBelt = document.getElementById('gif-belt');
+      if (gifBelt) {
+        const baseGifs = [
+          'hd4.gif', 'hd5.gif', 'hd6.gif', 'hd7.gif',
+          'hd8.gif', 'hd9.gif', 'hd10.gif', 'hd11.gif', 'hd12.gif'
+        ];
+        const specialGifs = ['hd1.gif', 'hd2.gif'];
+
+        let allGifs = [...baseGifs];
+
+        // Insert special GIFs into random positions
+        specialGifs.forEach(gif => {
+          const randomIndex = Math.floor(Math.random() * (allGifs.length + 1));
+          allGifs.splice(randomIndex, 0, gif);
+        });
+
+        // Create image elements
+        let beltHTML = '';
+        allGifs.forEach(gifSrc => {
+          beltHTML += `<img src="${gifSrc}" alt="" class="belt-gif">`;
+        });
+
+        // Duplicate the sequence for a seamless scrolling animation loop
+        gifBelt.innerHTML = beltHTML + beltHTML;
+      }
+
+      // --- Window Controls Logic ---
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        body.classList.add('poof-bg');
+        setTimeout(() => {
+          display2.style.display = 'none';
+          display3.style.display = 'flex';
+        }, 500); // Match animation duration
+      });
+
+      returnBtnD3.addEventListener('click', () => {
+        display3.style.display = 'none';
+        // Reset poof effect for next time
+        body.classList.remove('poof-bg');
+        display2.style.display = 'flex';
+      });
+
+      maximizeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        desktopWindow.classList.toggle('is-small');
+      });
+
+      minimizeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        desktopWindow.classList.add('is-minimized');
+        minimizedBar.style.display = 'flex';
+      });
+
+      minimizedBar.addEventListener('click', () => {
+        desktopWindow.classList.remove('is-minimized');
+        minimizedBar.style.display = 'none';
+      });
+
+      // --- Slide and Content Logic ---
+      function setSlide(slideName) {
+        windowSlide = slideName;
+        if (slideName === 'initial') {
+          slide1.style.display = 'flex';
+          slide2.style.display = 'none';
+          lowerPaneText.textContent = 'Welcome to astroblitz25!';
+          qaMode = null;
+        } else if (slideName === 'qa') {
+          slide1.style.display = 'none';
+          slide2.style.display = 'flex';
+          slide2.innerHTML = `
+          <div class="qa-container">
+            <div class="qa-option press-effect" data-question="about">▶ What is this site about?</div>
+            <div class="qa-option press-effect" data-question="tips">▶ What are some useful tips for using this sites?</div>
+          </div>
+          `;
+          lowerPaneText.textContent = 'What do you want help with?';
+        }
+      }
+
+      function handleInteraction() {
+        if (windowSlide === 'initial') {
+          setSlide('qa');
+        } else if (windowSlide === 'qa') {
+          if (qaMode === 'about') {
+            aboutIndex = (aboutIndex + 1) % aboutParagraphs.length;
+            lowerPaneText.innerHTML = aboutParagraphs[aboutIndex];
+          } else if (qaMode === 'tips') {
+            tipsIndex = (tipsIndex + 1) % tipsParagraphs.length;
+            lowerPaneText.textContent = tipsParagraphs[tipsIndex];
+          }
+        }
+      }
+
+      // --- Event Listeners for Main Interaction ---
+      desktopWindow.addEventListener('click', (e) => {
+        // If click is on the window body but not on a specific control
+        if (e.target.closest('.window-body') && !e.target.closest('.qa-option, .control-btn')) {
+          handleInteraction();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (display2.style.display !== 'flex') return;
+
+        if (e.key === ' ') {
+          e.preventDefault();
+          handleInteraction();
+        } else if (e.key.toLowerCase() === 'q') {
+          if (windowSlide === 'qa') {
+            setSlide('initial');
+          }
+        }
+      });
+
+      slide2.addEventListener('click', (e) => {
+        if (e.target.matches('.qa-option')) {
+          const question = e.target.dataset.question;
+          if (question === 'about') {
+            qaMode = 'about';
+            aboutIndex = 0;
+            lowerPaneText.innerHTML = aboutParagraphs[aboutIndex];
+          } else if (question === 'tips') {
+            qaMode = 'tips';
+            tipsIndex = 0;
+            lowerPaneText.textContent = tipsParagraphs[tipsIndex];
+          }
+        }
+      });
+
+      // --- Keyboard Accessibility ---
+      enterBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showDisplay2();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

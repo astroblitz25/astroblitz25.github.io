@@ -3,8 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Confetti Natural</title>
+  <title>Happy Birthday!</title>
   <style>
+    * {
+        cursor: default !important;
+    }
+    
     @font-face {
       font-family: 'Font6';
       /* Make sure you have font6.ttf in the same directory */
@@ -15,6 +19,24 @@
       font-family: 'Font11';
       /* Make sure you have font11.ttf in the same directory */
       src: url('font11.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'FontSpace2';
+      /* Make sure you have fontspace2.ttf in the same directory */
+      src: url('fontspace2.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'FontPixel';
+      /* Make sure you have fontpixel.ttf in the same directory */
+      src: url('fontpixel.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: 'FontPixel3';
+      /* Make sure you have fontpixel3.ttf in the same directory */
+      src: url('fontpixel3.ttf') format('truetype');
     }
 
     body {
@@ -68,25 +90,25 @@
 
     .claim-text {
       font-family: 'Font6', sans-serif;
-      cursor: pointer;
       font-size: 1.8em;
       margin-top: 15px;
       color: #e91e63;
       user-select: none; /* Prevent text selection on click */
     }
 
-    .continue-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background-color: #e91e63;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 1em;
+    /* New gentle bounce animation */
+    .gentle-bounce-animation {
+        animation: gentle-bounce 2s infinite ease-in-out;
+    }
+
+    @keyframes gentle-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes gentle-bounce-flipped {
+      0%, 100% { transform: translateY(0) scaleX(-1); }
+      50% { transform: translateY(-10px) scaleX(-1); }
     }
 
     /* Animations for the first display */
@@ -117,6 +139,7 @@
       pointer-events: none;
       overflow: hidden;
       perspective: 1000px;
+      z-index: 1002; /* To be under balloons and flying cakes */
     }
 
     .confetto {
@@ -140,6 +163,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      transform: translateY(0.15cm); /* Dragged down 0.15cm */
+      opacity: 0;
     }
 
     /* shiny sparkle ones */
@@ -155,12 +180,14 @@
 
     .blow-button {
       padding: 10px 20px;
+      font-family: 'FontSpace2', sans-serif;
       background-color: #e91e63;
       color: white;
       border: none;
       border-radius: 5px;
-      cursor: pointer;
       margin-top: 10px;
+      box-shadow: 0 4px #c0174c; /* Darker pink shadow for 3D effect */
+      transition: transform 0.1s, box-shadow 0.1s;
     }
 
     /* ============================================== POSITION
@@ -348,25 +375,47 @@
 
     /* New styles for jar and related elements */
     .jar-container {
-      display: flex;
+      display: none;
       flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 20px;
+      position: relative;
+      left: 1.8cm; /* Moved right 0.3cm */
     }
 
-    .jar-gif {
-      width: 220px;
-      height: 294px;
+    .jar-with-text {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    #jarText {
+        font-family: 'FontPixel', sans-serif;
+        font-size: 1.6em; /* Increased size significantly */
+        background-color: #ffc0cb; /* Pink */
+        color: #a30036; /* Darker pink for text */
+        padding: 15px; /* Increased padding */
+        border-radius: 8px;
+        margin-top: 15px;
+        max-width: 550px; /* Fatter box */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        transform: translateY(1cm);
     }
 
     .pick-button {
-      padding: 10px 20px;
+      padding: 15px 25px;
+      font-size: 1.2em;
       background-color: #e91e63;
       color: white;
       border: none;
       border-radius: 5px;
-      cursor: pointer;
+      translate: 0 -2.4cm;
+      position: relative; left: -3.4cm; /* Moved left 0.6cm */
+      font-family: 'FontSpace2', sans-serif;
+      box-shadow: 0 4px #c0174c; /* Darker pink shadow for 3D effect */
+      transition: transform 0.1s, box-shadow 0.1s, translate 0.1s;
     }
 
     .paper-message {
@@ -375,8 +424,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 300px;
-      height: 100px;
+      width: 420px; /* Thinner */
+      height: 75px; /* Shorter */
       /* Added flex properties to center the text */
       justify-content: center;
       align-items: center;
@@ -384,7 +433,8 @@
       border: 1px solid #ccc;
       padding: 20px;
       text-align: center;
-      font-size: 18px;
+      font-family: 'FontPixel', sans-serif; /* Same font as jar text */
+      font-size: 32px;
       animation: bubbleAppear 1s ease-out forwards;
       z-index: 100;
       --size: 20px;
@@ -445,15 +495,510 @@
     }
 
     #princessImage {
-      width: 300px; /* Increased size */
+      width: 450px; /* Increased size */
       height: auto;
       margin-bottom: 20px;
+      opacity: 0; /* For gradual appearance */
     }
 
     #princessText {
       font-family: 'Font11', sans-serif;
       font-size: 2.2em;
       color: #e91e63;
+      opacity: 0; /* For gradual appearance */
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* New click effect animation */
+    .clicked-effect {
+        animation: click-anim 0.3s ease-out;
+    }
+
+    @keyframes click-anim {
+        0% { transform: scale(1); }
+        50% { transform: scale(0.92); }
+        100% { transform: scale(1); }
+    }
+
+    /* New styles for fireworks */
+    #fireworksContainer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999; /* On top of everything */
+    }
+
+    .firework-gif {
+      position: absolute;
+      width: 400px; /* Increased size */
+      height: 400px; /* Increased size */
+    }
+
+    /* New class for even larger fireworks */
+    .firework-large {
+        width: 500px;
+        height: 500px;
+    }
+
+    /* New styles for costume display */
+    #costumeDisplay {
+      display: none; /* Initially hidden */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transform: translateY(calc(-1.6cm + 0.5cm + 0.3cm)); /* Dragged down 0.8cm total */
+    }
+
+    #costumeText {
+      font-family: 'Font11', sans-serif;
+      font-size: 2.2em;
+      color: #e91e63;
+      transform: translateY(0.65cm); /* Dragged down 0.5cm more */
+      margin-bottom: 20px;
+      opacity: 0; /* For gradual appearance */
+    }
+
+    .costume-carousel {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      opacity: 0; /* For gradual appearance */
+    }
+
+    #costumeImage {
+      width: 435px; /* Smaller a bit */
+      height: auto;
+      /* border: 5px solid white; */ /* Frame removed */
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    .costume-nav-button {
+      background-color: transparent;
+      border: none;
+      width: 50px;
+      height: 50px;
+      padding: 0;
+    }
+    .costume-nav-button img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .costume-nav-button.clicked-effect {
+        /* Re-uses the click-anim keyframes */
+        animation: click-anim 0.3s ease-out;
+    }
+
+    .continue-prompt {
+      position: fixed;
+      bottom: calc(20px - 0.5cm);
+      left: 50%;
+      transform: translateX(-50%);
+      color: #e91e63;
+      z-index: 1000;
+      font-style: italic;
+      user-select: none;
+      font-family: 'FontSpace2', sans-serif;
+      display: none; /* Hidden by default, controlled by JS */
+    }
+    
+    .continue-prompt.rotated {
+      bottom: auto; /* unset bottom */
+      left: 30px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: left center;
+    }
+
+    /* Display 3 Result Styles */
+    #costumeResult {
+        text-align: center;
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        transform: translateX(1cm);
+    }
+    #costumeResultImage {
+      width: 520px; /* a bit smaller */
+      height: auto;
+      transform: translateY(0.2cm); /* Moved down 0.2cm */
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      opacity: 0;
+    }
+    #costumeResultText {
+      font-family: 'Font11', sans-serif;
+      font-size: 2.2em;
+      color: #e91e63; /* Moved right 0.2cm and down 0.2cm */
+      opacity: 0;
+      margin: 0; /* reset margins */
+      max-width: 550px; /* fatter */
+      transform: translate(1.14cm, 0.2cm);
+    }
+    .heart-icon {
+      color: #e91e63;
+    }
+
+    /* Display 4 Intro */
+    #display4Intro {
+        position: fixed;
+        inset: 0;
+        background-color: black;
+        z-index: 10000; /* on top of everything */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: 'FontSpace2', sans-serif;
+        font-style: italic;
+        font-size: 1.3em; /* Reduced size */
+        transition: opacity 1.5s ease-out;
+    }
+    #display4IntroText {
+        transform: translateY(8.6cm); /* Dragged down 8cm */
+    }
+
+    /* Display 4 Extras */
+    #cake2Gif {
+      position: fixed;
+      bottom: calc(20px - 0.2cm);
+      right: calc(20px - 0.2cm);
+      width: 200px;
+      z-index: 1002;
+      opacity: 1;
+    }
+    #cake12Gif {
+      position: fixed;
+      top: calc(10px + 1cm); /* Dragged up 0.5cm */
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px; /* Increased size */
+      z-index: 1002;
+      opacity: 0;
+    }
+    #cake11Gif {
+      position: fixed;
+      top: calc(10px + 0.2cm);
+      left: calc(50% - 200px - 200px - 10px + 1cm); /* Position left of cake12 (400px wide), moved right 1cm */
+      width: 200px;
+      z-index: 1002;
+      opacity: 0;
+    }
+    #cake11FlippedGif {
+        position: fixed;
+        top: calc(10px + 0.2cm);
+        left: calc(50% + 200px + 10px - 1cm); /* Right of cake12, moved left 1cm */
+        width: 200px;
+        z-index: 1002;
+        opacity: 0;
+        transform: scaleX(-1); /* Flipped horizontally */
+    }
+    #cake3Gif {
+      position: fixed;
+      top: 50%;
+      /* Position left of main cake. Main cake is 300px wide, centered. */
+      left: calc(50% - 150px - 200px - 10px);
+      transform: translateY(calc(-50% + 2cm)); /* Dragged down 2cm */
+      width: 200px;
+      z-index: 1002;
+      opacity: 0;
+    }
+    #bl2LeftGif {
+      position: fixed;
+      left: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 320px; /* Increased size */
+      z-index: 1002;
+      opacity: 0;
+    }
+    #bl2RightGif {
+      position: fixed;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 320px; /* Increased size */
+      z-index: 1002;
+      opacity: 0;
+    }
+    .bday10-gif {
+      position: fixed;
+      bottom: 0.2cm;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60vw; /* Significantly larger */
+      z-index: 1000;
+      opacity: 1;
+    }
+
+    #bulbLeftTop {
+        position: fixed;
+        top: calc(10px - 0.3cm);
+        left: calc(10px - 0.3cm);
+        width: 420px; /* Increased size */
+        z-index: 1002;
+        opacity: 1;
+    }
+    #bulbRightTop {
+        position: fixed;
+        top: calc(10px - 0.3cm);
+        right: calc(10px - 0.3cm);
+        width: 420px; /* Increased size */
+        z-index: 1002;
+        transform: scaleX(-1); /* Flipped horizontally */
+        opacity: 1;
+    }
+
+    /* Balloon styles */
+    #balloonContainer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 1003; /* On top of other display 4 elements */
+    }
+    .balloon-gif {
+        position: absolute;
+        bottom: -200px; /* Start from below screen */
+        animation: flyUp linear forwards;
+    }
+    @keyframes flyUp {
+        to {
+            transform: translateY(-130vh); /* Fly to above screen */
+        }
+    }
+
+    #flyingCakeContainer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 1004; /* On top of balloons */
+    }
+
+    /* Jar styles */
+    .jar-gif {
+      width: 280px; /* Increased size */
+      height: auto;
+      transform: translate(0.2cm, 0.3cm); /* moved right and down */
+    }
+
+    /* Display 5 Extras */
+    #jar2Left {
+        position: fixed;
+        top: calc(20% + 1.2cm);
+        left: calc(25% + 2.7cm); /* Right 1.2cm total */
+        transform: translateX(-50%);
+        width: 200px;
+    }
+    #jar2Right {
+        position: fixed;
+        top: calc(20% + 5.3cm); /* up 0.1cm */
+        right: calc(25% + 2.9cm); /* Left 0.8cm */
+        transform: translateX(50%);
+        width: 200px;
+    }
+    #cloudTop {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 350px;
+    }
+    #cake4Gif {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 150px;
+        z-index: 1002;
+    }
+    #stamp5Gif {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 120px; /* Reduced size */
+        z-index: 1002;
+    }
+    #jar3Cloud {
+        position: fixed;
+        top: calc(100px - 2cm);
+        right: calc(50% + 175px + 10px); /* 175px is half of cloud width */
+        width: 120px;
+        z-index: 1001;
+    }
+    #jar4Cloud {
+        position: fixed;
+        top: calc(100px - 2cm); /* Vertical position corrected */
+        left: calc(50% + 175px + 10px + 0.3cm); /* Right 0.3cm */
+        width: 120px;
+        z-index: 1001;
+    }
+
+    /* Display 6 Styles */
+    #display6 {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        align-items: center;
+        justify-content: center;
+    }
+    #bedGif {
+        width: 25%; /* Increased size */
+        position: absolute;
+        top: calc(50% - 1cm); /* Moved up 1cm */
+        left: calc(48% - 7cm); /* Moved left */
+        transform: translate(-50%, -50%);
+    }
+    #bedText {
+        color: #e91e63;
+        font-family: 'Font11', sans-serif;
+        font-size: 1.6em; /* Increased size */
+        position: absolute;
+        top: calc(50% + 10vh + 3cm - 1cm); /* Moved up 1cm */
+        left: calc(48% - 6.8cm); /* Moved right 0.2cm */
+        transform: translateX(-50%);
+        width: 500px; /* Fatter box */
+        text-align: center;
+    }
+    #cake13Png {
+        width: 25%;
+        position: absolute;
+        top: 40%;
+        left: calc(50% + 5.9cm); /* Moved right 1cm */
+        transform: translate(-50%, -50%);
+    }
+    #cardContainer {
+        position: fixed;
+        right: 20px; /* Moved right */
+        bottom: calc(30px - 0.7cm);
+        text-align: center;
+    }
+    #bdayCardGif {
+        width: 180px;
+    }
+    #cardText {
+        color: #e91e63;
+        font-family: 'Font11', sans-serif;
+        margin-top: 5px;
+        font-size: 1.2em; /* Increased size */
+    }
+    #finalMessage {
+        color: #e91e63;
+        font-family: 'Font11', sans-serif;
+        font-size: 1.2em;
+        position: absolute;
+        bottom: calc(30px + 7.9cm); /* up 0.7cm */
+        right: calc(220px + 4.74cm); /* right 0.3cm more, then right another 0.06cm */
+        width: calc(340px - 1.37cm); /* Thinner box */
+        text-align: center;
+    }
+    #stamp6Gif {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        width: 150px; /* Increased size */
+    }
+
+    /* New Display 7 Styles */
+    #display7 {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform: translateY(0.1cm); /* Moved down 0.1cm */
+    }
+    #endImage {
+        width: 530px; /* Increased size */
+        height: auto;
+        opacity: 0;
+        margin-bottom: 20px;
+    }
+    #endText {
+        font-family: 'Font11', sans-serif;
+        font-size: 1.8em;
+        color: #e91e63;
+        text-align: center;
+        max-width: 1050px; /* Fatter box */
+        margin-left: auto;
+        margin-right: auto;
+        transform: translateY(-0.85cm); /* Moved up */
+    }
+
+    /* New Display 8 Styles */
+    #display8 {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        transform: translateY(-2cm); /* Dragged up 2cm */
+        height: 100%;
+    }
+    #countdownContainer {
+        text-align: center;
+        background: transparent;
+        padding: 0;
+        border-radius: 20px;
+        box-shadow: none;
+    }
+    #countdownEndText {
+        font-family: 'Font11', sans-serif;
+        font-size: 4em; /* Increased size */
+        color: #e91e63;
+        margin-bottom: 20px;
+    }
+    #countdownWrapper {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-family: 'FontPixel3', sans-serif;
+    }
+    .countdown-box {
+        background: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 100px;
+    }
+    .countdown-value {
+        font-size: 3em;
+        color: #e91e63;
+        line-height: 1;
+    }
+    .countdown-label {
+        font-size: 1.4em;
+        color: black;
+        margin-top: 5px;
+    }
+    #countdownFooter {
+        font-family: 'FontPixel3', sans-serif;
+        font-size: 1.4em; /* Increased size */
+        margin-top: 20px;
+        background: white;
+        padding: 10px 20px;
+        border-radius: 10px;
+        display: flex; /* Changed to flex */
+        align-items: center;
+        justify-content: center; /* Center items */
+        gap: 10px; /* Add gap between items */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: calc(676px - 0.19cm); /* Shorter box */
+        box-sizing: border-box; /* Include padding in width */
     }
 
   </style>
@@ -476,12 +1021,25 @@
 </div>
 
 <div id="princessDisplay">
-  <img src="prin2.JPEG" alt="Princess" id="princessImage">
+  <img src="22.gif" alt="Princess turning 22" id="princessImage">
   <p id="princessText">Our pretty princess has officially turned 22!</p>
 </div>
 
-<button class="continue-button" id="continueButton">Continue</button>
+<!-- New Display 3: Costume Selection -->
+<div id="costumeDisplay">
+  <p id="costumeText">Choose your costume for the party</p>
+  <div class="costume-carousel">
+    <button id="prevCostume" class="costume-nav-button"><img src="arrow3.gif" alt="Previous"></button>
+    <img src="prin1.JPEG" alt="Costume" id="costumeImage">
+    <button id="nextCostume" class="costume-nav-button"><img src="arrow4.gif" alt="Next"></button>
+  </div>
+  <div id="costumeResult" style="display: none;">
+      <img src="" alt="Chosen Costume" id="costumeResultImage">
+      <p id="costumeResultText">The costume caught the king’s attention and he approached the princess to exclusively take her to the party <span class="heart-icon">♡</span></p>
+  </div>
+</div>
 
+<div id="fireworksContainer"></div>
 <div class="confetti-layer" id="confetti"></div>
 
 <div class="cake-container" id="cakeContainer" style="display: none;">
@@ -500,25 +1058,122 @@
 </div>
 
 <div class="jar-container" id="jarContainer" style="display: none;">
-  <img src="jar1.gif" class="jar-gif">
+  <div class="jar-with-text">
+    <img src="jar1.gif" class="jar-gif">
+    <p id="jarText">A sparkling jar holding the universe’s cosmo wonders has arrived, ready to bestow upon you radiant blessings</p>
+  </div>
   <button class="pick-button" id="pickButton">Pick a star</button>
 </div>
 
 <div class="paper-message" id="paperMessage"></div>
 <img id="starGif" class="star-gif" src="star.gif">
 
+<!-- New elements for Display 4 Intro -->
+<div id="display4Intro" style="display: none;">
+  <p id="display4IntroText">[SPACE] or Click anywhere to turn on the lights</p>
+</div>
+
+<!-- New elements for Display 4 -->
+<div id="display4Extras" style="display: none;">
+  <!-- NOTE: The two cake11 gifs below have a gentle bouncing animation applied via the 'gentle-bounce-animation' class -->
+  <img src="cake11.gif" id="cake11Gif" class="gentle-bounce-animation">
+  <img src="cake11.gif" id="cake11FlippedGif" class="gentle-bounce-animation">
+  <img src="cake3.gif" id="cake3Gif">
+  <img src="cake12.gif" id="cake12Gif">
+  <img src="cake2.gif" id="cake2Gif">
+  <img src="bl2.gif" id="bl2LeftGif">
+  <img src="bl2.gif" id="bl2RightGif">
+  <img src="bday10.gif" class="bday10-gif">
+  <img src="bulb2.gif" id="bulbLeftTop">
+  <img src="bulb2.gif" id="bulbRightTop">
+</div>
+<div id="balloonContainer"></div>
+<div id="flyingCakeContainer"></div>
+
+<!-- New elements for Display 5 -->
+<div id="display5Extras" style="display: none;">
+  <img src="jar2.gif" id="jar2Left">
+  <img src="jar2.gif" id="jar2Right">
+  <img src="cloud.png" id="cloudTop">
+  <img src="jar3.gif" id="jar3Cloud">
+  <img src="jar4.gif" id="jar4Cloud">
+  <img src="cake4.gif" id="cake4Gif">
+  <img src="stamp5.gif" id="stamp5Gif">
+</div>
+
+<p id="continuePrompt" class="continue-prompt"><i>[SPACE] or Click anywhere to continue</i></p>
+
+<!-- New Display 6 -->
+<div id="display6">
+    <img src="bed.gif" id="bedGif" />
+    <p id="bedText">The only type of sick bed u can lie on</p>
+    <img src="cake13.png" id="cake13Png" />
+    <div id="cardContainer">
+        <img src="bdaycard.gif" id="bdayCardGif" />
+        <p id="cardText">Click to read card</p>
+    </div>
+    <p id="finalMessage">The only visitor of this site's 22nd birthday's virgin has officially be taken by the creator of this site!</p>
+    <img src="stamp6.gif" id="stamp6Gif" />
+</div>
+
+
+<!-- New Display 7 -->
+<div id="display7" style="display: none;">
+    <img src="" id="endImage" />
+    <p id="endText"></p>
+    <img src="bday10.gif" class="bday10-gif" id="bday10GifDisplay7" style="display: none;">
+</div>
+
+<!-- New Display 8 -->
+<div id="display8" style="display: none;">
+    <div id="countdownContainer">
+        <p id="countdownEndText"><span class="heart-icon">♡</span> The end <span class="heart-icon">♡</span></p>
+        <div id="countdownWrapper">
+            <div class="countdown-box">
+                <span class="countdown-value" id="days">0</span>
+                <span class="countdown-label">DAYS</span>
+            </div>
+            <div class="countdown-box">
+                <span class="countdown-value" id="hours">0</span>
+                <span class="countdown-label">HOURS</span>
+            </div>
+            <div class="countdown-box">
+                <span class="countdown-value" id="minutes">0</span>
+                <span class="countdown-label">MINS</span>
+            </div>
+            <div class="countdown-box">
+                <span class="countdown-value" id="seconds">0</span>
+                <span class="countdown-label">SECS</span>
+            </div>
+        </div>
+        <div id="countdownFooter">
+            <span class="footer-icon">🎂</span>
+            <span id="countdownFooterText"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Audio Element -->
+<audio id="ruuAudio" src="ruu.mp3"></audio>
+
 <script>
   (function() {
-    // --- NEW: Elements for the first display ---
+    // --- State ---
+    let currentDisplay = 1;
+
+    // --- Elements ---
     const firstDisplay = document.getElementById('firstDisplay');
-    const continueButton = document.getElementById('continueButton');
     const claimCrown = document.getElementById('claimCrown');
     const claimBouquet = document.getElementById('claimBouquet');
     const chooseItemText = document.getElementById('chooseItemText');
     const itemContainer = document.querySelector('.item-container');
-    const princessDisplay = document.getElementById('princessDisplay');
 
-    // --- ORIGINAL: Elements for the second display ---
+    const princessImage = document.getElementById('princessImage');
+    const princessText = document.getElementById('princessText');
+    const fireworksContainer = document.getElementById('fireworksContainer');
+    const continuePrompt = document.getElementById('continuePrompt');
+
+    const princessDisplay = document.getElementById('princessDisplay');
     const layer = document.getElementById('confetti');
     const cakeContainer = document.getElementById('cakeContainer');
     const blowButton = document.getElementById('blowButton');
@@ -527,11 +1182,113 @@
     const paperMessage = document.getElementById('paperMessage');
     const starGif = document.getElementById('starGif');
 
-    // --- ORIGINAL: Constants ---
+    const costumeDisplay = document.getElementById('costumeDisplay');
+    const costumeText = document.getElementById('costumeText');
+    const costumeImage = document.getElementById('costumeImage');
+    const prevCostume = document.getElementById('prevCostume');
+    const nextCostume = document.getElementById('nextCostume');
+    const costumeResult = document.getElementById('costumeResult');
+    const costumeResultImage = document.getElementById('costumeResultImage');
+    const costumeResultText = document.getElementById('costumeResultText');
+
+    // Display 4 elements
+    const display4Intro = document.getElementById('display4Intro');
+    const display4Extras = document.getElementById('display4Extras');
+    const cake3Gif = document.getElementById('cake3Gif');
+    const bl2LeftGif = document.getElementById('bl2LeftGif');
+    const bl2RightGif = document.getElementById('bl2RightGif');
+    const balloonContainer = document.getElementById('balloonContainer');
+    const flyingCakeContainer = document.getElementById('flyingCakeContainer');
+    let confettiInterval;
+    let cakeAppearTimeout;
+    let blowCandleTimeout;
+    let paperMessageTimeout;
+
+    // Display 5 elements
+    const display5Extras = document.getElementById('display5Extras');
+
+    // Display 6 elements
+    const display6 = document.getElementById('display6');
+    const bdayCardGif = document.getElementById('bdayCardGif');
+
+    // Display 7 elements
+    const display7 = document.getElementById('display7');
+    const endImage = document.getElementById('endImage');
+    const endText = document.getElementById('endText');
+    const bday10GifDisplay7 = document.getElementById('bday10GifDisplay7');
+
+    // Display 8 elements
+    const display8 = document.getElementById('display8');
+    let countdownInterval;
+    const audio = document.getElementById('ruuAudio');
+    if (audio) {
+        audio.volume = 0.6; // Set volume a bit lower
+    }
+
+
+    // --- Constants ---
     const confettiColors = ["#ffcccc", "#ffb6c1", "#ffdde1", "#f08080", "#e6e6fa", "#A7DBD8", "#E0E4CC", "#F38630", "#FA6900", "#FFE066", "#B4F8C8", "#A0E7E5", "#FDA7DF"];
     const shapes = ['circle', 'square', 'rectangle', 'triangle', 'star', 'planet', 'moon', 'cloud', 'sun', 'spring'];
+    const costumes = ['prin1.JPEG', 'prin3.JPEG', 'prin5.JPEG'];
+    const fireworkGifs = ['firework1.gif', 'firework2.gif', 'firework3.gif', 'firework4.gif', 'firework5.gif'];
+    const fireworkPositions = [
+        { top: '10vh', left: '10vw' },
+        { top: '15vh', left: '70vw' },
+        { top: '60vh', left: '5vw' },
+        { top: '65vh', left: '80vw' },
+        { top: '40vh', left: '40vw' }
+    ];
+    const balloonGifs = ['balloon1.gif', 'balloon2.gif', 'balloon3.gif', 'balloon4.gif', 'balloon5.gif'];
+    let currentCostumeIndex = 0;
+    let costumeChosen = false;
+    const costumeResults = {
+        'prin1.JPEG': 'prin2.JPEG',
+        'prin3.JPEG': 'prin4.JPEG',
+        'prin5.JPEG': 'prin6.JPEG'
+    };
+    let hasPlayedInRange456 = false;
+    let display7State = 0; // 0 = initial, 1 = end2 shown
 
-    // --- NEW: Logic for the first display ---
+
+    // --- Central Cleanup and Hide Function ---
+    function hideAllDisplaysAndCleanUp() {
+        // Hide all main display containers
+        firstDisplay.style.display = 'none';
+        princessDisplay.style.display = 'none';
+        costumeDisplay.style.display = 'none';
+        cakeContainer.style.display = 'none';
+        jarContainer.style.display = 'none';
+        display6.style.display = 'none';
+        display7.style.display = 'none';
+        display8.style.display = 'none';
+        display4Intro.style.display = 'none';
+        if (bday10GifDisplay7) bday10GifDisplay7.style.display = 'none';
+
+        // Hide extra element containers
+        display4Extras.style.display = 'none';
+        display5Extras.style.display = 'none';
+
+        // Clear dynamic content
+        paperMessage.style.display = 'none'; // Ensure wish note is hidden
+        fireworksContainer.innerHTML = '';
+        balloonContainer.innerHTML = '';
+        flyingCakeContainer.innerHTML = '';
+        layer.innerHTML = ''; // Confetti
+
+        // Stop intervals
+        if (confettiInterval) clearInterval(confettiInterval);
+        if (countdownInterval) clearInterval(countdownInterval);
+        // Don't pause audio here, handle it in navigation logic
+        if (cakeAppearTimeout) clearTimeout(cakeAppearTimeout);
+        if (blowCandleTimeout) clearTimeout(blowCandleTimeout);
+        if (paperMessageTimeout) clearTimeout(paperMessageTimeout);
+
+        // Reset elements that might have inline styles from animations
+        cakeContainer.style.animation = 'none';
+        cakeContainer.style.opacity = 0;
+    }
+
+    // --- Display 1 Logic ---
     let crownClaimed = false;
     let bouquetClaimed = false;
 
@@ -539,44 +1296,44 @@
       if (crownClaimed && bouquetClaimed) {
         chooseItemText.textContent = "Claim both items";
         chooseItemText.style.fontFamily = "'Font6', sans-serif";
-        chooseItemText.style.cursor = 'pointer';
-        chooseItemText.addEventListener('click', () => {
-          itemContainer.style.display = 'none';
-          chooseItemText.style.display = 'none';
-          princessDisplay.style.display = 'flex';
-        }, { once: true });
+
+        // Increase size of crown and bouquet without moving them
+        const crownImg = document.querySelector('.item img[src="crown.gif"]');
+        const bouquetImg = document.querySelector('.item img[src="bouquet.gif"]');
+        if (crownImg) {
+            crownImg.style.transform = 'scale(1.3)';
+            crownImg.style.transition = 'transform 0.5s ease-in-out';
+        }
+        if (bouquetImg) {
+            bouquetImg.style.transform = 'scale(1.3)';
+            bouquetImg.style.transition = 'transform 0.5s ease-in-out';
+        }
       }
     }
 
-    claimCrown.addEventListener('click', () => {
+    claimCrown.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (crownClaimed) return;
       crownClaimed = true;
       claimCrown.classList.add('shake-animation');
       claimCrown.addEventListener('animationend', () => {
-        claimCrown.style.display = 'none';
+        claimCrown.style.visibility = 'hidden'; // Use visibility to prevent layout shift
         checkBothClaimed();
       }, { once: true });
     });
 
-    claimBouquet.addEventListener('click', () => {
+    claimBouquet.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (bouquetClaimed) return;
       bouquetClaimed = true;
       claimBouquet.classList.add('shake-animation');
       claimBouquet.addEventListener('animationend', () => {
-        claimBouquet.style.display = 'none';
+        claimBouquet.style.visibility = 'hidden'; // Use visibility to prevent layout shift
         checkBothClaimed();
       }, { once: true });
     });
 
-    continueButton.addEventListener('click', () => {
-      firstDisplay.style.display = 'none';
-      princessDisplay.style.display = 'none'; // Also hide princess display if user continues
-      continueButton.style.display = 'none';
-      startSecondDisplay();
-    });
-
-    // --- ORIGINAL: Functions (definitions are kept here) ---
-    function makeConfetto() {
+     function makeConfetto() {
       const el = document.createElement('div');
       el.className = 'confetto';
       const w = 5 + Math.random() * 10;
@@ -640,16 +1397,92 @@
       el.addEventListener('animationend', () => el.remove());
     }
 
-    // --- NEW: Function to start the second display's animations ---
-    function startSecondDisplay() {
+    // --- New Balloon Logic ---
+    function spawnBalloons() {
+        const balloonCount = 40; // Multiplied quantity
+        for (let i = 0; i < balloonCount; i++) {
+            const balloon = document.createElement('img');
+            balloon.src = balloonGifs[i % balloonGifs.length];
+            balloon.className = 'balloon-gif';
+            balloon.style.left = `${Math.random() * 100}vw`;
+            balloon.style.width = `${60 + Math.random() * 80}px`;
+            const duration = 2 + Math.random() * 2; // Even faster
+            balloon.style.animationDuration = `${duration}s`;
+            balloon.style.animationDelay = `${Math.random() * 2}s`;
+            balloonContainer.appendChild(balloon);
+            balloon.addEventListener('animationend', () => {
+                balloon.remove();
+            });
+        }
+    }
+
+    function spawnFlyingCakes() {
+        const cakeCount = 2;
+        for (let i = 0; i < cakeCount; i++) {
+            const cake = document.createElement('img');
+            cake.src = 'cake10.gif';
+            cake.className = 'balloon-gif'; // Reuse balloon style
+            let leftPos = i === 0 ? 'calc(20vw + 1cm)' : 'calc(80vw - 5cm - 4cm - 1.3cm)'; // Adjusted positions
+            if (i === 0) { // The left cake
+                leftPos = 'calc(20vw + 1cm)'; // Moved right 1cm
+            }
+            cake.style.left = leftPos;
+            cake.style.width = '350px'; // Increased size
+            const duration = 4 + Math.random() * 2; // Slower speed
+            cake.style.animationDuration = `${duration}s`;
+            cake.style.animationDelay = `${Math.random() * 2}s`;
+            flyingCakeContainer.appendChild(cake);
+            cake.addEventListener('animationend', () => {
+                cake.remove();
+            });
+        }
+    }
+
+    // --- Display 4 Logic (Cake & Jar) ---
+    function startDisplay4() {
+      // Reset element styles before re-animating
+      document.querySelectorAll('#cake12Gif, #cake3Gif, #bl2LeftGif, #bl2RightGif, #cake11Gif, #cake11FlippedGif').forEach(el => {
+          el.style.animation = 'none';
+          el.style.opacity = '0';
+      });
+      void document.getElementById('display4Extras').offsetWidth; // Force reflow
+
+      // Start audio for display 4
+      if (audio && !hasPlayedInRange456) {
+          audio.currentTime = 0;
+          audio.play();
+          hasPlayedInRange456 = true;
+      }
+      // Reset candle flames
+      document.querySelectorAll('.fuego').forEach(fuego => {
+        fuego.style.display = 'block';
+      });
+
+      // Show the container for the scene
+      display4Extras.style.display = 'block';
+
+      // Per the user's request, only specific elements should fade in.
+      // The rest (cake2, bday10, bulbs) should appear immediately.
+      document.querySelectorAll('#cake12Gif, #cake3Gif, #bl2LeftGif, #bl2RightGif').forEach(el => {
+          el.style.animation = 'fadeIn 2s forwards';
+      });
+
+      // The two special cakes get both bounce and fade.
+      document.getElementById('cake11Gif').style.animation = 'gentle-bounce 2s infinite ease-in-out, fadeIn 2s forwards';
+      document.getElementById('cake11FlippedGif').style.animation = 'gentle-bounce-flipped 2s infinite ease-in-out, fadeIn 2s forwards';
+
+
+      spawnBalloons(); // Start balloons flying up
+      spawnFlyingCakes(); // Start cakes flying up
+
       let count = 0;
       const maxPieces = 300;
       const spawnRate = 10;
 
-      const interval = setInterval(() => {
+      confettiInterval = setInterval(() => {
         for (let i = 0; i < spawnRate; i++) {
           if (count >= maxPieces) {
-            clearInterval(interval);
+            clearInterval(confettiInterval);
             break;
           }
           makeConfetto();
@@ -657,24 +1490,41 @@
         }
       }, 120);
 
-      // Show cake after confetti
-      setTimeout(() => {
+      // Show cake and related gifs after confetti
+      if (cakeAppearTimeout) clearTimeout(cakeAppearTimeout);
+      cakeAppearTimeout = setTimeout(() => {
         cakeContainer.style.display = 'flex';
-      }, 4000);
+        cakeContainer.style.animation = 'fadeIn 2s forwards';
+      }, 2500);
     }
 
-    // Blow out candle functionality
+    function startDisplay4Proper() {
+        display4Intro.style.opacity = '0';
+        display4Intro.addEventListener('transitionend', () => {
+            display4Intro.style.display = 'none';
+            startDisplay4(); // The original function
+        }, { once: true });
+    }
+    display4Intro.addEventListener('click', startDisplay4Proper);
+
+
     blowButton.addEventListener('click', () => {
+      applyClickEffect(blowButton);
       document.querySelectorAll('.fuego').forEach(fuego => {
         fuego.style.display = 'none';
       });
-      setTimeout(() => {
-        cakeContainer.style.display = 'none';
+      if (blowCandleTimeout) clearTimeout(blowCandleTimeout);
+      blowCandleTimeout = setTimeout(() => {
+        // Audio continues playing
+        hideAllDisplaysAndCleanUp(); // Use central cleanup
         jarContainer.style.display = 'flex';
-      }, 3000);
+        display5Extras.style.display = 'block';
+        currentDisplay = 5;
+        pickButton.disabled = false;
+        updatePromptVisibility();
+      }, 2000);
     });
 
-    // Pick a paper functionality
     const wishes = [
       "I hope u never expire",
       "Wishing you endless creativity",
@@ -714,6 +1564,10 @@
     }
 
     pickButton.addEventListener('click', () => {
+      if (pickButton.disabled) return; // Prevent clicking while a wish is showing
+      applyClickEffect(pickButton);
+      pickButton.disabled = true; // Disable the button
+
       const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
       paperMessage.textContent = randomWish;
 
@@ -734,11 +1588,510 @@
         starGif.style.display = 'none';
         createBubbles();
         paperMessage.style.display = 'flex'; // Use flex to enable vertical centering
-        setTimeout(() => {
+        if (paperMessageTimeout) clearTimeout(paperMessageTimeout);
+        paperMessageTimeout = setTimeout(() => {
           paperMessage.style.display = 'none';
-        }, 5000);
+          pickButton.disabled = false; // Re-enable the button
+        }, 3000); // Shortened duration
       }, {once: true});
     });
+
+    // --- New Countdown Logic (Display 8) ---
+    function startCountdown() {
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const footerTextEl = document.getElementById('countdownFooterText');
+        const targetDate = new Date('2026-06-25T00:00:00').getTime();
+
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        countdownInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('countdownWrapper').innerHTML = "<h1 style=\"color: #e91e63; font-family: 'FontPixel3', sans-serif;\">Happy Birthday!</h1>";
+                footerTextEl.textContent = "It's your birthday!";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            daysEl.textContent = days;
+            hoursEl.textContent = hours;
+            minutesEl.textContent = minutes;
+            secondsEl.textContent = seconds;
+            footerTextEl.textContent = `${days} days until your next birthday`;
+        }, 1000);
+    }
+
+    // --- New Costume Carousel Logic (Display 3) ---
+    function updateCostume() {
+      costumeImage.src = costumes[currentCostumeIndex];
+    }
+
+    function applyClickEffect(element) {
+        if (element.classList.contains('clicked-effect')) return;
+        element.classList.add('clicked-effect');
+        element.addEventListener('animationend', () => {
+            element.classList.remove('clicked-effect');
+        }, { once: true });
+    }
+
+    nextCostume.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent triggering the main navigation
+      applyClickEffect(nextCostume);
+      currentCostumeIndex = (currentCostumeIndex + 1) % costumes.length;
+      updateCostume();
+    });
+
+    prevCostume.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent triggering the main navigation
+      applyClickEffect(prevCostume);
+      currentCostumeIndex = (currentCostumeIndex - 1 + costumes.length) % costumes.length;
+      updateCostume();
+    });
+
+    costumeImage.addEventListener('click', (e) => {
+        if (costumeChosen) return; // Prevent re-choosing
+        e.stopPropagation(); // Prevent click from bubbling to document and triggering navigation
+
+        const currentSrc = costumes[currentCostumeIndex];
+        const resultSrc = costumeResults[currentSrc];
+
+        if (resultSrc) {
+            costumeChosen = true;
+
+            // Hide selection UI
+            document.querySelector('#costumeDisplay .costume-carousel').style.display = 'none';
+            costumeText.style.display = 'none';
+
+            // Show result UI
+            costumeResultImage.src = resultSrc;
+            costumeResult.style.display = 'flex';
+            costumeResultImage.style.animation = 'fadeIn 2s ease-out forwards';
+            costumeResultText.style.animation = 'fadeIn 2s ease-out 0.5s forwards';
+
+            setTimeout(updatePromptVisibility, 2000); // Show prompt after animation
+        }
+    });
+
+    // --- New Fireworks Logic (Display 2) ---
+    function spawnFireworks() {
+      fireworksContainer.innerHTML = ''; // Clear previous
+      fireworkGifs.forEach((gifSrc, index) => {
+        const firework = document.createElement('img');
+        firework.src = gifSrc;
+        firework.className = 'firework-gif';
+        // Indices 1, 2, 3 correspond to firework2, firework3, firework4
+        if ([1, 2, 3].includes(index)) {
+            firework.classList.add('firework-large');
+        }
+        // Use fixed positions
+        const pos = fireworkPositions[index % fireworkPositions.length];
+        firework.style.top = pos.top;
+        firework.style.left = pos.left;
+        fireworksContainer.appendChild(firework);
+      });
+    }
+
+    // --- New Main Navigation Logic ---
+    function handleNavigation() {
+      updatePromptVisibility(); // Hide prompt before transition
+
+      const fromDisplay = currentDisplay;
+      let toDisplay = fromDisplay;
+
+      switch (fromDisplay) {
+        case 1:
+          // This is handled by the specific 'claim both' click listener
+          break;
+        case 2:
+          toDisplay = 3;
+          break;
+        case 3:
+          if (costumeChosen) toDisplay = 4;
+          break;
+        case 5:
+            toDisplay = 6;
+            break;
+        case 7:
+            if (display7State === 0) {
+                // First space press: transition to end2
+                endImage.style.transform = 'translateY(0.45cm)'; // Drag end2 image down
+                endImage.src = 'end2.jfif';
+                endText.textContent = 'Enough making out for today. I’ll take u shopping';
+                endText.style.transform = 'translateY(0.1cm)'; // Dragged up from original
+                bday10GifDisplay7.style.display = 'block';
+                // Re-apply fade in effect
+                endImage.style.opacity = 0; // reset for animation
+                endImage.style.animation = 'none'; // Reset animation
+                void endImage.offsetWidth; // Trigger reflow
+                endImage.style.animation = 'fadeIn 2s ease-out forwards';
+                endText.style.opacity = 0;
+                endText.style.animation = 'none';
+                void endText.offsetWidth;
+                endText.style.animation = 'fadeIn 2s ease-out forwards';
+                display7State = 1;
+                updatePromptVisibility(); // Keep prompt visible
+                return; // Stay on display 7, don't run full cleanup
+            } else if (display7State === 1) {
+                // Second space press: transition to display 8
+                toDisplay = 8;
+            }
+            break;
+      }
+
+      if (toDisplay === fromDisplay) return; // No navigation happened
+
+      hideAllDisplaysAndCleanUp();
+      currentDisplay = toDisplay;
+
+      // --- Audio Logic ---
+      // Display 4 audio is handled in startDisplay4(). Display 5 continues playing.
+      const isInRange456 = [4, 5, 6].includes(toDisplay);
+      const wasInRange456 = [4, 5, 6].includes(fromDisplay);
+
+      if (toDisplay === 6 && fromDisplay !== 6) {
+          // Entered display 6
+          if (audio && !hasPlayedInRange456) {
+              audio.currentTime = 0;
+              audio.play();
+              hasPlayedInRange456 = true;
+          }
+      } else if (wasInRange456 && !isInRange456) {
+        // Left the 4-5-6 range
+        if (audio) {
+          audio.pause();
+          hasPlayedInRange456 = false; // Reset the flag
+        }
+      }
+
+      // Setup the new display
+      switch (toDisplay) {
+          case 2:
+              princessDisplay.style.display = 'flex';
+              spawnFireworks();
+              princessImage.style.animation = 'fadeIn 2s ease-out forwards';
+              princessText.style.animation = 'fadeIn 2s ease-out 0.5s forwards';
+              break;
+          case 3:
+                costumeDisplay.style.display = 'flex';
+                costumeChosen = false; // reset state
+                costumeText.style.display = 'block';
+                costumeText.style.opacity = '0';
+                document.querySelector('#costumeDisplay .costume-carousel').style.display = 'flex';
+                document.querySelector('#costumeDisplay .costume-carousel').style.opacity = '0';
+                costumeResult.style.display = 'none';
+                
+                costumeText.style.animation = 'fadeIn 2s ease-out forwards';
+                document.querySelector('#costumeDisplay .costume-carousel').style.animation = 'fadeIn 2s ease-out forwards';
+                break;
+          case 4:
+              display4Intro.style.display = 'flex';
+              display4Intro.style.opacity = '1';
+              break;
+          case 6:
+              display6.style.display = 'flex';
+              break;
+          case 8:
+              display8.style.display = 'flex';
+              startCountdown();
+              break;
+      }
+      updatePromptVisibility(); // Show prompt if needed on new display
+    }
+    
+    function handleBackwardNavigation() {
+        updatePromptVisibility(); // Hide prompt before transition
+
+        const fromDisplay = currentDisplay;
+        let toDisplay = fromDisplay;
+
+        if (fromDisplay === 3 && costumeChosen) {
+            // Special case: go from result back to selection on same display
+            costumeChosen = false;
+            costumeText.style.display = 'block';
+            document.querySelector('#costumeDisplay .costume-carousel').style.display = 'flex';
+            costumeResult.style.display = 'none';
+            // Reset animations
+            costumeText.style.animation = 'none'; void costumeText.offsetWidth;
+            document.querySelector('#costumeDisplay .costume-carousel').style.animation = 'none'; void document.querySelector('#costumeDisplay .costume-carousel').offsetWidth;
+            // Fade them in again
+            costumeText.style.animation = 'fadeIn 2s ease-out forwards';
+            document.querySelector('#costumeDisplay .costume-carousel').style.animation = 'fadeIn 2s ease-out forwards';
+            updatePromptVisibility();
+            return; // Stay on display 3, don't do full navigation
+        }
+
+        if (fromDisplay === 7 && display7State === 1) {
+            // Special case: from end2 back to end1
+            display7State = 0;
+            bday10GifDisplay7.style.display = 'none';
+            endImage.style.transform = 'translateY(0.1cm)'; // Moved down 0.1cm
+            endImage.src = 'end1.jfif';
+            endImage.style.width = '505px'; // Slightly smaller
+            endText.textContent = 'No words or cards needed. My hand cards are the only thing you need.';
+            endText.style.transform = 'translateY(-0.75cm)'; // Moved down 0.1cm
+            // Re-apply fade in effect
+            endImage.style.opacity = 0;
+            endText.style.opacity = 0;
+            endText.style.animation = 'none';
+            void endText.offsetWidth;
+            endImage.style.animation = 'none';
+            void endImage.offsetWidth;
+            endImage.style.animation = 'fadeIn 2s ease-out forwards';
+            endText.style.animation = 'fadeIn 2s ease-out forwards';
+            updatePromptVisibility(); // update prompt
+            return; // Stay on display 7
+        }
+
+        switch (fromDisplay) {
+            case 2: toDisplay = 1; break;
+            case 3: toDisplay = 2; break;
+            case 4: toDisplay = 3; break;
+            case 5: toDisplay = 4; break;
+            case 6: toDisplay = 5; break;
+            case 7: toDisplay = 6; break;
+            case 8: toDisplay = 7; break;
+        }
+
+        if (toDisplay === fromDisplay) return;
+
+        hideAllDisplaysAndCleanUp();
+        currentDisplay = toDisplay;
+
+        // --- Audio Logic ---
+        const wasInRange456 = [4, 5, 6].includes(fromDisplay);
+        const isInRange456 = [4, 5, 6].includes(toDisplay);
+        // Special case: if we navigate to display 4's intro, music should be off.
+        const goingToIntro = (toDisplay === 4 && fromDisplay !== 5);
+
+        if (goingToIntro) {
+            if (audio) audio.pause();
+            hasPlayedInRange456 = false;
+        } else if (isInRange456 && !wasInRange456) {
+            // Entered the 4-5-6 range going backwards
+            if (audio && !hasPlayedInRange456) {
+                audio.currentTime = 0;
+                audio.play();
+                hasPlayedInRange456 = true;
+            }
+        } else if (wasInRange456 && !isInRange456) {
+          // Left the 4-5-6 range
+          if (audio) {
+            audio.pause();
+            hasPlayedInRange456 = false; // Reset the flag
+          }
+        }
+        // Setup the new display
+        switch (toDisplay) {
+            case 1:
+                firstDisplay.style.display = 'flex';
+                chooseItemText.classList.remove('clicked-effect');
+                break;
+            case 2:
+                princessDisplay.style.display = 'flex';
+                spawnFireworks();
+                princessImage.style.animation = 'fadeIn 2s ease-out forwards';
+                princessText.style.animation = 'fadeIn 2s ease-out 0.5s forwards';
+                break;
+            case 3:
+                costumeDisplay.style.display = 'flex';
+                if (fromDisplay === 4) {
+                    // Coming back from display 4, show the result screen
+                    costumeChosen = true;
+                    costumeText.style.display = 'none';
+                    document.querySelector('#costumeDisplay .costume-carousel').style.display = 'none';
+                    costumeResult.style.display = 'flex';
+
+                    const lastChosenCostume = costumes[currentCostumeIndex];
+                    const resultSrc = costumeResults[lastChosenCostume];
+                    costumeResultImage.src = resultSrc;
+
+                    costumeResultImage.style.animation = 'fadeIn 2s ease-out forwards';
+                    costumeResultText.style.animation = 'fadeIn 2s ease-out 0.5s forwards';
+                } else {
+                    // Normal entry from display 2
+                    costumeChosen = false;
+                    costumeText.style.display = 'block';
+                    document.querySelector('#costumeDisplay .costume-carousel').style.display = 'flex';
+                    costumeResult.style.display = 'none';
+                    // Reset animations
+                    costumeText.style.animation = 'none'; void costumeText.offsetWidth;
+                    document.querySelector('#costumeDisplay .costume-carousel').style.animation = 'none'; void document.querySelector('#costumeDisplay .costume-carousel').offsetWidth;
+                    costumeResultImage.style.animation = 'none'; costumeResultImage.style.opacity = 0;
+                    costumeResultText.style.animation = 'none'; costumeResultText.style.opacity = 0;
+                    // Show display 3
+                    costumeText.style.animation = 'fadeIn 2s ease-out forwards';
+                    document.querySelector('#costumeDisplay .costume-carousel').style.animation = 'fadeIn 2s ease-out forwards';
+                }
+                break;
+            case 4:
+                if (fromDisplay === 5) {
+                    // Special case: coming back from the jar.
+                    // Skip the intro and go straight to the cake scene.
+                    display4Extras.style.display = 'block';
+                    cakeContainer.style.display = 'flex';
+
+                    // Make all elements visible immediately
+                    document.querySelectorAll('#display4Extras > img, #cakeContainer').forEach(el => {
+                        el.style.opacity = '1';
+                        el.style.animation = 'none'; // Stop any fade-in animations
+                    });
+
+                    // Restore bounce animations for the two cakes
+                    document.getElementById('cake11Gif').style.animation = 'gentle-bounce 2s infinite ease-in-out';
+                    document.getElementById('cake11FlippedGif').style.animation = 'gentle-bounce-flipped 2s infinite ease-in-out';
+
+                    // Reset candle flames
+                    document.querySelectorAll('.fuego').forEach(fuego => {
+                        fuego.style.display = 'block';
+                    });
+                } else {
+                    // Always reset to the intro screen, like the first time.
+                    display4Intro.style.display = 'flex';
+                    display4Intro.style.opacity = '1';
+                }
+                break;
+            case 5:
+                jarContainer.style.display = 'flex';
+                display5Extras.style.display = 'block';
+                pickButton.disabled = false;
+                break;
+            case 6:
+                display6.style.display = 'flex';
+                break;
+            case 7:
+                display7.style.display = 'flex';
+                if (fromDisplay === 8) {
+                    // Coming back from countdown, show end2
+                    display7State = 1;
+                    bday10GifDisplay7.style.display = 'block';
+                    endImage.style.transform = 'translateY(0.45cm)'; // Drag end2 image down
+                    endImage.src = 'end2.jfif';
+                    endImage.style.width = '530px'; // Reset size
+                    endText.textContent = 'Enough making out for today. I’ll take u shopping';
+                    endText.style.transform = 'translateY(0.1cm)'; // Dragged up from original
+                } else {
+                    // Normal entry from display 6, show end1 (or any other case)
+                    display7State = 0;
+                    bday10GifDisplay7.style.display = 'none';
+                    endImage.style.transform = 'translateY(0.1cm)'; // Moved down 0.1cm
+                    endImage.src = 'end1.jfif';
+                    endImage.style.width = '505px'; // Slightly smaller
+                    endText.textContent = 'No words or cards needed. My hand cards are the only thing you need.';
+                    endText.style.transform = 'translateY(-0.75cm)'; // Moved down 0.1cm
+                }
+                endImage.style.opacity = 0; // reset for animation
+                endText.style.opacity = 0;
+                endImage.style.animation = 'none';
+                void endImage.offsetWidth;
+                endImage.style.animation = 'fadeIn 2s ease-out forwards';
+                endText.style.animation = 'none';
+                void endText.offsetWidth;
+                endText.style.animation = 'fadeIn 2s ease-out forwards';
+                break;
+        }
+        updatePromptVisibility(); // Show prompt if needed on new display
+    }
+
+    function updatePromptVisibility() {
+        continuePrompt.classList.remove('rotated'); // Reset first
+        // Show prompt on displays 2, 3 (after choice), 5 and 7
+        if (currentDisplay === 2 || currentDisplay === 5 || (currentDisplay === 3 && costumeChosen) || currentDisplay === 7) {
+            if (currentDisplay === 7) {
+                continuePrompt.classList.add('rotated');
+            }
+            continuePrompt.style.display = 'block';
+        } else {
+            continuePrompt.style.display = 'none';
+        }
+    }
+
+    function navigationHandler(e) {
+        // This function is now just a trigger for the main logic
+        // It needs to check if navigation is allowed from the current display
+        if (currentDisplay === 1 || currentDisplay === 4 || currentDisplay === 6 || currentDisplay === 8) {
+            // Displays where general click/space does not navigate forward
+            return;
+        }
+        handleNavigation();
+    }
+
+    bdayCardGif.addEventListener('click', () => {
+        if (currentDisplay !== 6) return;
+
+        if (audio) audio.pause(); // Manually handle leaving the 4-5-6 range
+        hasPlayedInRange456 = false; // Reset the flag
+        hideAllDisplaysAndCleanUp();
+        currentDisplay = 7;
+        display7.style.display = 'flex';
+
+        // Setup initial state for display 7
+        display7State = 0;
+        bday10GifDisplay7.style.display = 'none';
+        endImage.style.transform = 'translateY(0.1cm)'; // Moved down 0.1cm
+        endImage.src = 'end1.jfif';
+        endImage.style.width = '505px'; // Slightly smaller
+        endText.textContent = 'No words or cards needed. My hand cards are the only thing you need.';
+        endText.style.transform = 'translateY(-0.75cm)'; // Moved down 0.1cm
+        endImage.style.opacity = 0; // reset for animation
+        endText.style.opacity = 0;
+        endImage.style.animation = 'fadeIn 2s ease-out forwards';
+        endText.style.animation = 'none'; void endText.offsetWidth;
+        endText.style.animation = 'fadeIn 2s ease-out forwards';
+
+        updatePromptVisibility();
+    });
+
+    // Add click listener for "Claim both items" to navigate
+    chooseItemText.addEventListener('click', () => {
+        if (crownClaimed && bouquetClaimed) {
+            if (chooseItemText.classList.contains('clicked-effect')) return;
+            chooseItemText.classList.add('clicked-effect');
+            chooseItemText.addEventListener('animationend', () => {
+                chooseItemText.classList.remove('clicked-effect');
+            }, { once: true });
+            
+            setTimeout(() => {
+                hideAllDisplaysAndCleanUp();
+                currentDisplay = 2;
+                princessDisplay.style.display = 'flex';
+                spawnFireworks();
+                princessImage.style.animation = 'fadeIn 2s ease-out forwards';
+                princessText.style.animation = 'fadeIn 2s ease-out 0.5s forwards';
+                updatePromptVisibility();
+            }, 250);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        // Let specific element handlers do their job without triggering general navigation
+        if (e.target.closest('.claim-text, #chooseItemText, .costume-nav-button, #costumeImage, #pickButton, #blowButton, #bdayCardGif, #display4Intro')) {
+            return;
+        }
+        navigationHandler(e);
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyQ') {
+            handleBackwardNavigation();
+        } else if (e.code === 'Space') {
+            if (display4Intro.style.display === 'flex') {
+                startDisplay4Proper();
+                return;
+            }
+            navigationHandler(e);
+        }
+    });
+
+    updatePromptVisibility(); // Set initial state
   })();
 </script>
 </body>
