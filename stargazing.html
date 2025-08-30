@@ -34,6 +34,13 @@
       font-style: normal;
       font-display: swap;
     }
+    @font-face {
+      font-family: 'FontPoll';
+      src: url('fontpoll.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -223,7 +230,7 @@
     #box-b p:last-child { margin-bottom: 0; }
 
     .gif-container {
-      flex: 0.4; /* Made noticeably shorter */
+      flex: 0 0 100px; /* Made shorter */
       display: flex;
       gap: 10px;
       align-items: flex-end;
@@ -232,7 +239,7 @@
       background: rgba(255,255,255,0.2);
       border-radius: 12px;
     }
-    .gif-container img { height: 80%; max-height: 70px; width: auto; border-radius: 8px; }
+    .gif-container img { height: 90%; max-height: 90px; width: auto; border-radius: 8px; } /* Made smaller */
 
     .bottom-gif-container {
       display: flex;
@@ -241,10 +248,11 @@
       padding-top: 10px;
     }
     .bottom-gif-container img {
-      max-height: 1500px; /* Doubled size */
+      width: 450px; /* Increased size significantly */
+      height: auto;
       border-radius: 10px;
       position: relative;
-      top: 0.8cm; /* Dragged down further */
+      top: 0.7cm; /* Moved up 0.1cm */
     }
 
     /* Styles for planet view */
@@ -261,7 +269,7 @@
       position: relative; /* Changed from absolute */
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
-      max-width: 220px; /* Increased image size */
+      max-width: 260px; /* Increased image size */
       height: auto; /* Maintain aspect ratio */
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -299,32 +307,37 @@
     }
 
     #box-c, #box-d, #box-e {
-      flex: 1; /* Equal height distribution */
       background: rgba(255,255,255,0.3);
       border-radius: 12px;
     }
-    #box-c, #box-d {
-      flex: initial; /* Let them size to content */
-    }
-
+    
     #box-c {
-      padding: 4px;
+      flex: 0 0 120px; /* Set a fixed height */
+      padding: 8px; /* Control space inside the box */
       display: flex;
       align-items: center;
       justify-content: center;
     }
     #box-c img {
       width: 100%;
-      max-height: 70%; /* Reduced size */
+      height: 100%; /* Fill the container */
       object-fit: contain; /* Preserves aspect ratio */
       border-radius: 8px;
     }
 
     #box-d {
+      flex: initial; /* Let it size to content */
       display: flex;
       flex-direction: column;
       gap: 8px;
       padding: 8px;
+      justify-content: center;
+    }
+    
+    #box-e {
+      flex: 1; /* Let it fill remaining space */
+      display: flex;
+      align-items: center;
       justify-content: center;
     }
 
@@ -365,12 +378,6 @@
       background-color: #fca3b5; /* Darker pink */
     }
 
-    #box-e {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     /* --- Global Back Button --- */
     #global-back-btn {
       position: fixed;
@@ -386,14 +393,15 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      /* background: rgba(0, 0, 0, 0.6); REMOVED */
       z-index: 100;
+      pointer-events: none; /* Allow clicks to pass through */
     }
 
     #starry-night-box {
       position: fixed;
-      top: 50%;
-      left: 50%;
+      top: calc(50% - 4.7cm);
+      left: calc(50% - 6.2cm);
       transform: translate(-50%, -50%);
       width: 90%;
       max-width: 450px;
@@ -420,6 +428,8 @@
     }
 
     #stellarium-link {
+      font-family: 'FontPoll', sans-serif;
+      font-style: italic;
       color: #0000ff; /* Blue */
       text-decoration: underline;
       font-weight: bold;
@@ -503,11 +513,6 @@
                 <tr>
                   <td align="center">
                     <a href="https://www.moonconnection.com" target="mc_moon_ph"><img src="https://www.moonmodule.com/cs/dm/hn.gif" width="212" height="136" border="0" alt="Current Moon Phase" /></a>
-                    <div style="position:relative;width:128px;">
-                      <div style="position:absolute;top:-20px;left:6px;background:#000000;width:116px;text-align:center;">
-                        <a href="https://www.moonconnection.com/" target="mc_moon_ph"><font color="#7F7F7F" size="1" face="arial,helvetica,sans-serif"><span style="color:#7F7F7F;font-family:arial,helvetica,sans-serif;font-size:10px;">moon info</span></font></a>
-                      </div>
-                    </div>
                   </td>
                 </tr>
               </table><!-- // end moon phase HTML // -->
@@ -524,7 +529,7 @@
   <div id="modal-overlay" style="display: none;"></div>
   <div id="starry-night-box" style="display: none;" class="">
       <p>To view ur current place's cosmos, <a href="https://stellarium-web.org" target="_blank" id="stellarium-link">click here</a></p>
-      <p>Or get the apps from Appstore/CH Play</p>
+      <p>Or get the app from Appstore/CH Play</p>
       <img src="stellar.JPEG" alt="Stellarium App">
   </div>
 
@@ -654,7 +659,7 @@
         const startY = Math.random() * 100;
         particle.style.left = `${startX}vw`;
         particle.style.top = `${startY}vh`;
-        if (Math.random() < 0.4) { // Increased chance to 40%
+        if (Math.random() < 0.5) { // Increased chance to 50%
           particle.style.zIndex = '2';
         }
         particleContainer.appendChild(particle);
@@ -689,7 +694,6 @@
       const boxX = document.getElementById('box-x');
       const boxB = document.getElementById('box-b');
       const originalBoxBContent = document.getElementById('box-b-original-content').innerHTML;
-      let boxBState = 'initial'; // 'initial', 'planets', 'details', 'index'
       
       // New elements
       const globalBackBtn = document.getElementById('global-back-btn');
@@ -705,58 +709,71 @@
       const indexNavBtn = document.getElementById('index-nav-btn');
 
       let currentView = 'home'; // 'home', 'planets', 'modal'
+      let currentBoxBState = { view: 'initial' };
+      let boxBHistory = [];
 
-      // --- Refactored Go Back to Home Logic ---
-      const goBackToHome = () => {
-          const returnToHome = () => {
-              // Hide all non-home views
-              secondDisplay.style.display = 'none';
-              modalOverlay.style.display = 'none';
-              starryNightBox.style.display = 'none';
-              globalBackBtn.style.display = 'none';
+      // --- Core Navigation Functions ---
 
-              // Show the home screen
-              firstDisplay.style.display = 'flex';
+      const returnToHomeScreen = () => {
+          // Hide all non-home views
+          secondDisplay.style.display = 'none';
+          modalOverlay.style.display = 'none';
+          starryNightBox.style.display = 'none';
+          globalBackBtn.style.display = 'none';
 
-              // Reset animation classes so they can run again
-              title.classList.remove('disappearing');
-              buttonsContainer.classList.remove('disappearing');
-              boxX.classList.remove('appearing', 'disappearing');
-              starryNightBox.classList.remove('appearing', 'disappearing');
+          // Reset animation classes so they can run again
+          [title, buttonsContainer, boxX, starryNightBox].forEach(el => {
+            el.classList.remove('disappearing', 'appearing');
+          });
 
-              // Reset planets view state
-              boxB.innerHTML = originalBoxBContent;
-              boxB.className = '';
-              boxBState = 'initial';
-              if (planetTooltip && planetTooltip.parentNode) {
-                  planetTooltip.parentNode.removeChild(planetTooltip);
-              }
+          // Show the home screen and animate it in
+          firstDisplay.style.display = 'flex';
 
-              // Reset state
-              currentView = 'home';
-          };
+          // Force a reflow to ensure the 'appearing' animation will play
+          void title.offsetWidth;
+          void buttonsContainer.offsetWidth;
 
+          title.classList.add('appearing'); 
+          buttonsContainer.classList.add('appearing');
+
+          // Reset planets view state
+          boxBHistory = [];
+          currentBoxBState = { view: 'initial' };
+          renderBoxBState(currentBoxBState);
+          if (planetTooltip && planetTooltip.parentNode) {
+              planetTooltip.parentNode.removeChild(planetTooltip);
+          }
+          currentView = 'home';
+      };
+
+      const triggerReturnToHome = () => {
           if (currentView === 'planets') {
+              boxX.classList.remove('appearing');
               boxX.classList.add('disappearing');
-              boxX.addEventListener('animationend', returnToHome, { once: true });
+              boxX.addEventListener('animationend', returnToHomeScreen, { once: true });
           } else if (currentView === 'modal') {
+              starryNightBox.classList.remove('appearing');
               starryNightBox.classList.add('disappearing');
-              starryNightBox.addEventListener('animationend', returnToHome, { once: true });
+              starryNightBox.addEventListener('animationend', returnToHomeScreen, { once: true });
           }
       };
 
       // --- Go to Second Display ---
       mainPlanetsBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (currentView !== 'home') return;
         currentView = 'planets'; // Set state early
 
+        // Clear any lingering animation classes
+        title.classList.remove('appearing');
+        buttonsContainer.classList.remove('appearing');
         title.classList.add('disappearing');
         buttonsContainer.classList.add('disappearing');
 
         buttonsContainer.addEventListener('animationend', () => {
           firstDisplay.style.display = 'none';
           secondDisplay.style.display = 'flex';
-          boxX.classList.add('appearing');
+          boxX.classList.add('appearing'); 
           globalBackBtn.style.display = 'inline-flex'; // Show global back button
         }, { once: true });
       });
@@ -764,14 +781,18 @@
       // --- "Starry Night" button logic ---
       starryNightBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (currentView !== 'home') return;
         currentView = 'modal'; // Set state early
 
+        // Clear any lingering animation classes
+        title.classList.remove('appearing');
+        buttonsContainer.classList.remove('appearing');
         title.classList.add('disappearing');
         buttonsContainer.classList.add('disappearing');
 
         buttonsContainer.addEventListener('animationend', () => {
           firstDisplay.style.display = 'none';
-          // modalOverlay.style.display = 'block'; // REMOVED to prevent background dimming
+          modalOverlay.style.display = 'block';
           starryNightBox.style.display = 'block';
           starryNightBox.classList.add('appearing');
           globalBackBtn.style.display = 'inline-flex';
@@ -781,31 +802,7 @@
       // --- Global "Go back" button logic ---
       globalBackBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        goBackToHome();
-      });
-
-      // --- "Home" button logic ---
-      homeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Instantly reset the content of box B to its original state
-        // This brings the view back to the initial state of the second display.
-        boxB.innerHTML = originalBoxBContent;
-        boxB.className = '';
-        boxBState = 'initial';
-      });
-
-      // --- "Go Back" button logic (local) ---
-      goBackBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (boxBState === 'details') {
-          displayPlanets();
-        } else if (boxBState === 'planets' || boxBState === 'index') {
-          boxB.innerHTML = originalBoxBContent;
-          boxB.className = '';
-          boxBState = 'initial';
-        } else if (boxBState === 'initial') { // NEW LOGIC
-          goBackToHome();
-        }
+        triggerReturnToHome();
       });
 
       // --- Tooltip star animation ---
@@ -835,18 +832,49 @@
         tooltip.querySelectorAll('.tooltip-star').forEach(s => s.remove());
       }
 
-      // --- "Planets" navigation button ---
-      const displayPlanets = () => {
+      // --- Box B (Left Panel) Navigation Logic ---
+
+      const renderBoxBState = (stateData) => {
+        // Clean up tooltip if it exists from a previous view
+        if (planetTooltip && planetTooltip.parentNode) {
+            planetTooltip.parentNode.removeChild(planetTooltip);
+            planetTooltip = null;
+        }
+
+        switch (stateData.view) {
+            case 'initial':
+                boxB.innerHTML = originalBoxBContent;
+                boxB.className = '';
+                break;
+            case 'planets':
+                displayPlanetSelection();
+                break;
+            case 'index':
+                boxB.innerHTML = indexText;
+                boxB.className = 'text-view';
+                break;
+            case 'details':
+                boxB.innerHTML = planetInfo[stateData.planet];
+                boxB.className = 'text-view';
+                break;
+        }
+      };
+
+      const navigateTo = (newStateData) => {
+        boxBHistory.push(currentBoxBState);
+        currentBoxBState = newStateData;
+        renderBoxBState(currentBoxBState);
+      };
+
+      const displayPlanetSelection = () => {
         boxB.innerHTML = ''; // Clear previous content
         
         // Create and append the single tooltip element for this view
         planetTooltip = document.createElement('div');
         planetTooltip.className = 'planet-tooltip';
-        // Append to body to avoid clipping issues within the scrollable box
         document.body.appendChild(planetTooltip);
 
         boxB.className = 'planets-view';
-        boxBState = 'planets';
         let planets = ['mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus'];
         
         planets.forEach(planetName => {
@@ -856,7 +884,7 @@
             img.className = 'planet-img';
             img.dataset.planet = planetName;
             
-            img.addEventListener('click', handlePlanetClick);
+            img.addEventListener('click', () => navigateTo({ view: 'details', planet: planetName }));
 
             // Tooltip event listeners
             img.addEventListener('mouseenter', (e) => { 
@@ -878,33 +906,32 @@
         });
       };
 
-      planetsNavBtn.addEventListener('click', (e) => {
+      // --- Right-side button event listeners ---
+
+      homeBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        displayPlanets();
+        boxBHistory = []; // Clear history
+        currentBoxBState = { view: 'initial' };
+        renderBoxBState(currentBoxBState);
       });
 
-      // --- Handle clicking on a planet image ---
-      const handlePlanetClick = (e) => {
-        // Remove the tooltip from the body when we navigate away
-        if (planetTooltip && planetTooltip.parentNode) {
-            planetTooltip.parentNode.removeChild(planetTooltip);
+      goBackBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (boxBHistory.length > 0) {
+            const prevState = boxBHistory.pop();
+            currentBoxBState = prevState;
+            renderBoxBState(currentBoxBState);
         }
-        const planetName = e.target.dataset.planet;
-        boxB.innerHTML = planetInfo[planetName];
-        boxB.className = 'text-view'; // Set class for left-alignment
-        boxBState = 'details';
-      };
+      });
 
-      // --- "Index" navigation button ---
+      planetsNavBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo({ view: 'planets' });
+      });
+
       indexNavBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        // Remove the tooltip from the body when we navigate away
-        if (planetTooltip && planetTooltip.parentNode) {
-            planetTooltip.parentNode.removeChild(planetTooltip);
-        }
-        boxB.innerHTML = indexText;
-        boxB.className = 'text-view'; // Set class for left-alignment
-        boxBState = 'index';
+        navigateTo({ view: 'index' });
       });
       
       // Create the initial set of particles
