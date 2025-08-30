@@ -37,13 +37,14 @@ h1 { display: none; }
       text-align: center;
       position: relative;
       padding: 20px;
+      box-sizing: border-box;
     }
 
     .content {
       position: relative;
       z-index: 1;
       width: 100%;
-      max-width: 1250px;
+      max-width: 640px; /* A bit smaller again */
       margin: 0 auto;
     }
 
@@ -88,9 +89,9 @@ h1 { display: none; }
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       background: rgba(255,255,255,0.1);
       padding: 14px;
-      max-width: 1200px;
       margin: 0 auto;
       flex-direction: column;
+      width: 100%; /* Ensure it fills the content area */
     }
 
     .gallery-item:hover {
@@ -99,10 +100,8 @@ h1 { display: none; }
     }
 
     .gallery-item iframe {
-      width: 130%;
-      height: auto;
-      max-height: 750px;
-      object-fit: contain;
+      width: 100%;
+      aspect-ratio: 16 / 9;
     }
 
     .sparkle {
@@ -125,9 +124,6 @@ h1 { display: none; }
     @media (max-width: 768px) {
       .gallery-item {
         max-width: 100%;
-      }
-      .gallery-item iframe {
-        width: 100%;
       }
     }
 
@@ -209,3 +205,7 @@ h1 { display: none; }
   </script>
 </body>
 </html>
+<!--
+[PROMPT_SUGGESTION]Can you add captions below each video with a unique description?[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]How can I make the sparkle animation more varied?[/PROMPT_SUGGESTION]
+-->

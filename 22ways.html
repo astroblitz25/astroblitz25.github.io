@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>22 Ways to be Cute</title>
+  <style>
+    /* --- Font Definitions --- */
+    @font-face {
+      font-family: 'FontSpace2';
+      src: url('fontspace2.ttf') format('truetype');
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Font11';
+      src: url('font11.ttf') format('truetype');
+      font-display: swap;
+    }
+
+    /* --- Basic Setup & Background --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* --- Main Container Box --- */
+    .box {
+      background: rgba(255, 192, 203, 0.92); /* Pastel Pink with transparency */
+      padding: 25px 35px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      max-width: 90vw;
+      width: 600px;
+      border: 3px solid rgba(255, 255, 255, 0.5);
+    }
+
+    /* --- Intro Screen Styling --- */
+    #intro-box img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    #intro-box h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 15px;
+      font-family: 'Font11', cursive;
+    }
+    #intro-box .instruction {
+      font-family: 'FontSpace2', monospace;
+      font-style: italic;
+      font-size: 18px;
+      color: #444;
+    }
+
+    /* --- Main Content Styling --- */
+    #main-content {
+      position: relative; /* For positioning the hint box */
+    }
+    #way-text {
+      font-family: 'Font11', cursive;
+      font-size: clamp(22px, 4vw, 32px);
+      margin-bottom: 15px;
+      color: #222;
+      min-height: 40px; /* Prevent layout shift */
+    }
+    #way-image {
+      width: 100%;
+      max-height: 50vh;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* --- Number Navigation --- */
+    #number-nav {
+      line-height: 1.8;
+      user-select: none;
+    }
+    #number-nav a {
+      color: blue;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 0 4px;
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+    #number-nav a:hover {
+      text-decoration: underline;
+      transform: scale(1.1);
+    }
+    #number-nav a.current {
+      color: purple;
+      text-decoration: underline;
+      transform: scale(1.1);
+      cursor: default;
+    }
+    #number-nav .separator {
+      color: #555;
+      padding: 0 5px;
+    }
+
+    /* --- Hint Box --- */
+    #hint-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(80, 80, 80, 0.9);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 25px;
+      font-size: 14px;
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    #hint-box.fade-out {
+      opacity: 0;
+    }
+    .arrow-icon {
+      font-size: 20px;
+      vertical-align: middle;
+    }
+
+    /* --- Back Link --- */
+    .back-link {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 100;
+    }
+    .back-link img {
+      width: 160px;
+      height: auto;
+      transition: transform 0.2s ease;
+    }
+    .back-link:hover img {
+      transform: scale(1.1);
+    }
+
+    /* --- Utility Class --- */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="bgcutezones2.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div id="intro-box" class="box">
+    <img src="22ways.jpg" alt="Cute collage">
+    <h1>22 Ways to be cute</h1>
+    <p class="instruction">[SPACE] or Click anywhere to continue</p>
+  </div>
+
+  <div id="main-content" class="box hidden">
+    <div id="hint-box">
+      Hint: use <span class="arrow-icon">←</span> <span class="arrow-icon">→</span> <span class="arrow-icon">↑</span> <span class="arrow-icon">↓</span> to move between numbers
+    </div>
+    <h2 id="way-text"></h2>
+    <img id="way-image" src="" alt="A cute way">
+    <nav id="number-nav"></nav>
+  </div>
+
+  <a href="cutezones.html" class="back-link">
+    <img src="hd99.gif" alt="Back to Cute Zones">
+  </a>
+
+  <script>
+    // --- Data for all 22 ways ---
+    const ways = [
+      { id: 1, text: "keep a consistent sleep schedule", image: "w1.jfif" },
+      { id: 2, text: "spend time outdoor/nature", image: "w2.jfif" },
+      { id: 3, text: "drink tea or other cozy drinks", image: "w3.jfif" },
+      { id: 4, text: "use cute makeup looks", image: "w4.jfif" },
+      { id: 5, text: "try cute nail arts", image: "w5.jfif" },
+      { id: 6, text: "decorate your bag (with keychains, stuffed animals...)", image: "w6.jfif" },
+      { id: 7, text: "use cute phone cases", image: "w7.jfif" },
+      { id: 8, text: "journal in a cute style", image: "w8.jfif" },
+      { id: 9, text: "bake/cook cute foods", image: "w9.jfif" },
+      { id: 10, text: "dance playfully or learn cute moves", image: "w10.jfif" },
+      { id: 11, text: "take photos in a cute aesthetic", image: "w11.jfif" },
+      { id: 12, text: "collect stickers", image: "w12.jfif" },
+      { id: 13, text: "collect washi tapes", image: "w13.jfif" },
+      { id: 14, text: "use cute pens and supplies", image: "w14.jfif" },
+      { id: 15, text: "smile more", image: "w15.jfif" },
+      { id: 16, "text": "Wear hair bows, clips, or accessories", image: "w16.jfif" },
+      { id: 17, text: "wear cozy/cute socks", image: "w17.jfif" },
+      { id: 18, text: "try cute hairstyles (pigtails, braids, etc.)", image: "w18.jfif" },
+      { id: 19, text: "make crafts (cross-stitch, crochet, knitting)", image: "w19.jfif" },
+      { id: 20, text: "be kind to others", image: "w20.jfif" },
+      { id: 21, text: "make origami animals", image: "w21.jfif" },
+      { id: 22, text: "give cute nicknames", image: "w22.jfif" },
+    ];
+
+    // --- DOM Element References ---
+    const introBox = document.getElementById('intro-box');
+    const mainContent = document.getElementById('main-content');
+    const hintBox = document.getElementById('hint-box');
+    const wayText = document.getElementById('way-text');
+    const wayImage = document.getElementById('way-image');
+    const numberNav = document.getElementById('number-nav');
+
+    let currentIndex = 0;
+
+    // --- Core Functions ---
+
+    function updateContent(index) {
+      currentIndex = index;
+      const way = ways[index];
+
+      // Update text and image
+      wayText.textContent = way.text;
+      wayImage.src = way.image;
+      wayImage.alt = way.text;
+
+      // Update the 'current' number in the navigation
+      document.querySelectorAll('#number-nav a').forEach(link => {
+        link.classList.remove('current');
+      });
+      const currentLink = document.querySelector(`#number-nav a[data-index='${index}']`);
+      if (currentLink) {
+        currentLink.classList.add('current');
+      }
+    }
+
+    function generateNumberNav() {
+      ways.forEach((way, index) => {
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = way.id;
+        link.dataset.index = index;
+
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          updateContent(index);
+        });
+
+        numberNav.appendChild(link);
+
+        // Add separators and line breaks
+        if (index < ways.length - 1) {
+          const separator = document.createElement('span');
+          separator.className = 'separator';
+          separator.textContent = '|';
+          numberNav.appendChild(separator);
+
+          if (way.id === 7 || way.id === 15) {
+            numberNav.appendChild(document.createElement('br'));
+          }
+        }
+      });
+    }
+
+    function startMainExperience() {
+      // Hide intro, show main content
+      introBox.classList.add('hidden');
+      mainContent.classList.remove('hidden');
+
+      // Set up the main view
+      generateNumberNav();
+      updateContent(0); // Show the first item
+
+      // Show hint for 5 seconds
+      setTimeout(() => {
+        hintBox.classList.add('fade-out');
+      }, 5000);
+
+      // Add keyboard navigation for arrows
+      document.addEventListener('keydown', handleArrowKeys);
+    }
+
+    // --- Event Handlers ---
+
+    function handleIntro(event) {
+      if (event.type === 'click' || event.code === 'Space') {
+        startMainExperience();
+        // Remove these listeners so they don't fire again
+        document.removeEventListener('click', handleIntro);
+        document.removeEventListener('keydown', handleIntro);
+      }
+    }
+
+    function handleArrowKeys(e) {
+      let newIndex = currentIndex;
+      const totalWays = ways.length;
+
+      switch (e.key) {
+        case 'ArrowRight':
+          newIndex = (currentIndex + 1) % totalWays;
+          break;
+        case 'ArrowLeft':
+          newIndex = (currentIndex - 1 + totalWays) % totalWays;
+          break;
+        case 'ArrowDown':
+          // From Row 1 (indices 0-6) to Row 2
+          if (currentIndex >= 0 && currentIndex <= 6) {
+            newIndex = currentIndex + 7;
+          } 
+          // From Row 2 (indices 7-14) to Row 3
+          else if (currentIndex >= 7 && currentIndex <= 14) {
+            const offset = currentIndex - 7;
+            newIndex = 15 + offset;
+            if (newIndex >= totalWays) {
+              newIndex = totalWays - 1; // Go to the last item if out of bounds
+            }
+          } 
+          // From Row 3 (indices 15-21) to Row 1 (wrap)
+          else if (currentIndex >= 15 && currentIndex <= 21) {
+            newIndex = currentIndex - 15;
+          }
+          break;
+        case 'ArrowUp':
+          // From Row 1 (indices 0-6) to Row 3 (wrap)
+          if (currentIndex >= 0 && currentIndex <= 6) {
+            newIndex = currentIndex + 15;
+          }
+          // From Row 2 (indices 7-14) to Row 1
+          else if (currentIndex >= 7 && currentIndex <= 14) {
+            newIndex = currentIndex - 7;
+            if (newIndex > 6) newIndex = 6; // Cap at last item of row 1
+          }
+          // From Row 3 (indices 15-21) to Row 2
+          else if (currentIndex >= 15 && currentIndex <= 21) {
+            newIndex = currentIndex - 8;
+          }
+          break;
+      }
+
+      if (newIndex !== currentIndex) {
+        updateContent(newIndex);
+      }
+    }
+
+    // --- Initial Setup ---
+    document.addEventListener('click', handleIntro);
+    document.addEventListener('keydown', handleIntro);
+
+  </script>
+</body>
+</html>

@@ -51,7 +51,7 @@
 
         .back-button-container {
             position: fixed;
-            bottom: 12px; /* Moved down */
+            bottom: 8px; /* Moved down 0.1cm */
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
@@ -99,14 +99,26 @@
         const ctx = canvas.getContext('2d');
 
         // Game variables
-        let catY, catVelocity, score, highScore, frame;
+        let catY, catVelocity, score, highScore, frame, giftPipe, lastBirdScore, skyProgress;
         let pipes = [];
+        let animals = [];
+        let isDay = true;
+        let sceneryBehind = [], sceneryFront = [];
+        let backgroundPowerUpLayer = { draw: () => {} };
+        let gift = null;
+        let hint = { text: '', alpha: 0, timer: 0 };
+        let birds = [];
+        let stars = [];
+        let activeParticles = [];
+        let screenShake = { duration: 0, intensity: 5 };
         let gameState = 'start'; // 'start', 'playing', 'over'
+        let activePowerUp = { type: 'none', duration: 0, data: {} };
+        let powerUpCooldown = 0;
 
-        // Game constants adjusted for new size
+        // Game constants
         const catX = 80;
-        const catWidth = 45;
-        const catHeight = 35;
+        const catWidth = 45; // Reduced size
+        const catHeight = 36; // Reduced size
         const gravity = 0.35;
         const flapStrength = -6;
         const pipeWidth = 60;
@@ -114,24 +126,137 @@
         const pipeInterval = 100; // frames between new pipes
         const pipeSpeed = 2.5;
 
-        // Load cat image
+        // Load images
         const catImg = new Image();
         catImg.src = 'flappycat.gif';
+        const giftImg = new Image();
+        giftImg.src = 'gift.gif';
+        const fb1Img = new Image();
+        fb1Img.src = 'fb1.JPEG';
+        const fb2Img = new Image();
+        fb2Img.src = 'fb2.JPEG';
 
-        // Pipe colors
-        const pipeColor = "#ff85a2"; // Main pipe color
-        const pipeBorderColor = "#ff6b8f"; // Pipe outline color
+
+        // Building and window data
+        const buildingData = [
+            { x: 40, width: 80, height: 180, clouds: { x: 50, y: 100, scale: 1, initialX: 50, initialY: 100 } },
+            { x: 150, width: 60, height: 250, clouds: { x: 250, y: 150, scale: 0.8, initialX: 250, initialY: 150 } },
+            { x: 280, width: 100, height: 210, clouds: { x: 150, y: 220, scale: 1.2, initialX: 150, initialY: 220 } }
+        ];
+        const windowSize = 7;
+        const windowSpacing = 5;
+
+        buildingData.forEach(b => {
+            b.windows = [];
+            const buildingY = 600 - b.height;
+            for (let y = buildingY + windowSpacing; y < 600 - windowSize - windowSpacing; y += windowSize + windowSpacing) {
+                let row = [];
+                for (let x = b.x + windowSpacing; x < b.x + b.width - windowSize; x += windowSize + windowSpacing) {
+                    row.push(Math.random() > 0.1);
+                }
+                b.windows.push(row);
+            }
+        });
+
+        // Original scenery data
+        const scenerySource = {
+            bushes: [{x: 80, r: 20}, {x: 250, r: 25}, {x: 350, r: 18}],
+            flowers: [
+                {x: 120, type: 'daisy'}, {x: 310, type: 'tulip'},
+                {x: 45, type: 'daisy'}, {x: 200, type: 'tulip'},
+                {x: 380, type: 'original'}
+            ],
+            trees: [{x: 180, type: 3}, {x: 30, type: 2}, {x: 390, type: 1}]
+        };
+
+        // --- HELPER FUNCTIONS ---
+
+        function getHillY(x) {
+            const h = canvas.height;
+            if (x >= 0 && x <= 200) {
+                const t = x / 200;
+                const y0 = h - 80, y1 = h - 120, y2 = h - 70;
+                return (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * y1 + t * t * y2;
+            } else if (x > 200 && x <= 400) {
+                const t = (x - 200) / 200;
+                const y0 = h - 70, y1 = h - 40, y2 = h - 90;
+                return (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * y1 + t * t * y2;
+            }
+            return h - 80;
+        }
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function hexToRgb(hex) {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+        }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+        function lerpColor(hex1, hex2, factor) {
+            const rgb1 = hexToRgb(hex1);
+            const rgb2 = hexToRgb(hex2);
+            if (!rgb1 || !rgb2) return hex1;
+            const r = Math.round(lerp(rgb1.r, rgb2.r, factor));
+            const g = Math.round(lerp(rgb1.g, rgb2.g, factor));
+            const b = Math.round(lerp(rgb1.b, rgb2.b, factor));
+            return `rgb(${r},${g},${b})`;
+        }
+
+        // --- CORE GAME FUNCTIONS ---
 
         function initialize() {
             catY = canvas.height / 2;
             catVelocity = 0;
             score = 0;
-            // Use sessionStorage to keep score only for the current browser tab session
+            skyProgress = 0;
             highScore = sessionStorage.getItem('flappyCatHighScore') || 0;
             pipes = [];
             frame = 0;
             gameState = 'start';
-            draw(); // Draw the initial start screen
+            gift = null;
+            giftPipe = -1; // Used to ensure gift only appears once in the 1-8 score range
+            lastBirdScore = -30;
+            hint = { text: '', alpha: 0, timer: 0 };
+            birds = [];
+            activeParticles = [];
+            screenShake.duration = 0;
+            activePowerUp = { type: 'none', duration: 0, data: {} };
+            powerUpCooldown = 0;
+            backgroundPowerUpLayer.draw = () => {};
+
+            animals = [
+                { type: 'bear', x: -60, speed: 0.3, },
+                { type: 'rabbit', x: -150, speed: 0.7, state: 'running', state_timer: 120, jump_timer: 0, carrot: null }
+            ];
+
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                const shapeType = Math.random();
+                let shape = 'circle';
+                if (shapeType > 0.9) {
+                    shape = 'plus';
+                } else if (shapeType > 0.7) {
+                    shape = 'diamond';
+                }
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height * 0.6, // top 60%
+                    radius: Math.random() * 1.5 + 0.5,
+                    alpha: Math.random(),
+                    shape: shape
+                });
+            }
+
+            // Distribute scenery for layering
+            sceneryBehind = [];
+            sceneryFront = [];
+            scenerySource.trees.forEach(t => (Math.random() < 0.5 ? sceneryBehind : sceneryFront).push({ ...t, draw: 'tree' }));
+            scenerySource.bushes.forEach(b => (Math.random() < 0.5 ? sceneryBehind : sceneryFront).push({ ...b, draw: 'bush' }));
+            scenerySource.flowers.forEach(f => (Math.random() < 0.5 ? sceneryBehind : sceneryFront).push({ ...f, draw: 'flower' }));
+
+            draw();
         }
 
         function handleInput() {
@@ -145,77 +270,314 @@
                     catVelocity = flapStrength;
                     break;
                 case 'over':
-                    initialize(); // Resets the game to the start screen
+                    initialize();
                     break;
             }
         }
 
-        // Event listeners
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault(); // Prevent page from scrolling
-                handleInput();
-            }
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space') { e.preventDefault(); handleInput(); } });
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.back-button-container')) return;
+            handleInput();
         });
-        canvas.addEventListener('mousedown', handleInput);
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // Prevent click event from firing as well
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.back-button-container')) return;
+            e.preventDefault();
             handleInput();
         });
 
         function gameLoop() {
             if (gameState !== 'playing') return;
-
             update();
             draw();
-
             requestAnimationFrame(gameLoop);
         }
 
+        function spawnBirds() {
+            const startY = Math.random() * canvas.height * 0.4;
+            const birdCount = Math.floor(Math.random() * 3) + 1; // 1-3 birds
+            for (let i = 0; i < birdCount; i++) {
+                birds.push({
+                    x: -20 - i * 30,
+                    y: startY + (Math.random() - 0.5) * 40,
+                    speed: Math.random() * 1 + 1.5,
+                    state: 'flying', // flying, falling, dead
+                    ghost: null
+                });
+            }
+        }
+
         function update() {
-            // Cat physics
             catVelocity += gravity;
             catY += catVelocity;
             frame++;
+            skyProgress += (score - skyProgress) * 0.01;
+            if (powerUpCooldown > 0) powerUpCooldown--;
+            updatePowerUp();
 
-            // Check for game over (collision with top/bottom)
+            animals.forEach(animal => {
+                if (animal.state === 'ash') {
+                    if (animal.ash_particles) {
+                        for (let i = animal.ash_particles.length - 1; i >= 0; i--) {
+                            let p = animal.ash_particles[i];
+                            p.x += p.vx; p.y += p.vy; p.alpha -= 0.01;
+                            if (p.alpha <= 0) animal.ash_particles.splice(i, 1);
+                        }
+                    }
+                    return;
+                }
+
+                if (animal.on_fire) { // 7 seconds total burn time
+                    if (animal.on_fire_timer > 0) { // 4s on fire + 3s bonus
+                        animal.on_fire_timer--;
+                        animal.burn_progress = 1 - (animal.on_fire_timer / 420);
+                        if (Math.random() < 0.5) {
+                            animal.fire_particles.push({
+                                x: (Math.random() - 0.5) * 30, y: (Math.random() - 0.5) * 20,
+                                vx: (Math.random() - 0.5) * 0.5, vy: -Math.random() * 1.5,
+                                life: 1, size: Math.random() * 5 + 3
+                            });
+                        }
+                        for (let i = animal.fire_particles.length - 1; i >= 0; i--) {
+                            let p = animal.fire_particles[i];
+                            p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+                            if (p.life <= 0) animal.fire_particles.splice(i, 1);
+                        }
+                    } else {
+                        animal.state = 'ash';
+                        animal.on_fire = false;
+                        animal.ash_particles = [];
+                        const groundY = getHillY(animal.x);
+                        for (let i = 0; i < 50; i++) {
+                            animal.ash_particles.push({
+                                x: animal.x + (Math.random() - 0.5) * 20, y: groundY - Math.random() * 10,
+                                vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.5,
+                                alpha: 1, size: Math.random() * 2 + 1
+                            });
+                        }
+                        return;
+                    }
+                }
+
+                if (activePowerUp.type === 'fire' && animal.state !== 'panicked' && !animal.on_fire) {
+                    animal.state = 'panicked';
+                    animal.panicTarget = { x: 0, y: 0 };
+                } else if (activePowerUp.type !== 'fire' && animal.state === 'panicked') {
+                    animal.state = 'running';
+                }
+
+                if (animal.state === 'panicked') {
+                    if (!animal.panicTarget || Math.hypot(animal.x - animal.panicTarget.x, animal.y - animal.panicTarget.y) < 10) {
+                        const hillY = getHillY(animal.x);
+                        animal.panicTarget = {
+                            x: Math.random() * canvas.width,
+                            y: hillY - Math.random() * (hillY - (canvas.height - 250)) // Run anywhere on the hill
+                        };
+                    }
+                    const angle = Math.atan2(animal.panicTarget.y - animal.y, animal.panicTarget.x - animal.x);
+                    const panicSpeed = animal.type === 'rabbit' ? 2.5 : 1.5;
+                    animal.x += Math.cos(angle) * panicSpeed;
+                    animal.y = (animal.y || getHillY(animal.x)) + Math.sin(angle) * panicSpeed;
+
+                } else if (animal.type === 'rabbit') {
+                    animal.y = getHillY(animal.x);
+                    animal.state_timer--;
+                    if (animal.state === 'running') {
+                        animal.x += animal.speed;
+                        if (animal.state_timer <= 0) {
+                            const nearbyBush = sceneryFront.find(s => s.draw === 'bush' && Math.abs(s.x - animal.x) < 20) || sceneryBehind.find(s => s.draw === 'bush' && Math.abs(s.x - animal.x) < 20);
+                            if (nearbyBush && Math.random() < 0.35) {
+                                animal.state = 'eating';
+                                animal.state_timer = 360 + 162; // 8.7 seconds
+                                animal.carrot = { progress: 0, crumbs: [], totalTime: 360 + 162 };
+                            } else {
+                                animal.state = 'jumping';
+                                animal.jump_timer = 60;
+                            }
+                        }
+                    } else if (animal.state === 'jumping') {
+                        animal.x += animal.speed * 1.2;
+                        animal.jump_timer--;
+                        if (animal.jump_timer <= 0) {
+                            animal.state = 'running';
+                            animal.state_timer = Math.random() * 120 + 60;
+                        }
+                    } else if (animal.state === 'eating') {
+                        if (animal.carrot) {
+                            animal.carrot.progress += 1 / animal.carrot.totalTime;
+                            if (animal.carrot.progress >= 1) {
+                                animal.carrot = null;
+                                animal.state = 'running';
+                                animal.state_timer = Math.random() * 120 + 60;
+                            } else { // crumb logic
+                                if ((animal.carrot.totalTime - animal.state_timer) % 72 === 0 && animal.state_timer < animal.carrot.totalTime) {
+                                    for (let i = 0; i < Math.floor(Math.random() * 2) + 1; i++) {
+                                        animal.carrot.crumbs.push({
+                                            x: animal.x + 15, y: getHillY(animal.x) - 22,
+                                            vx: (Math.random() - 0.5) * 1, vy: Math.random() * 1 + 0.5,
+                                            alpha: 1, size: Math.random() * 2 + 1
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        if (animal.carrot && animal.carrot.crumbs) {
+                            for (let i = animal.carrot.crumbs.length - 1; i >= 0; i--) {
+                                let crumb = animal.carrot.crumbs[i];
+                                crumb.x += crumb.vx; crumb.y += crumb.vy; crumb.alpha -= 0.02;
+                                if (crumb.alpha <= 0) animal.carrot.crumbs.splice(i, 1);
+                            }
+                        }
+                    }
+                    if (animal.x > canvas.width + 60) { animal.x = -60; }
+                } else { // Bear
+                    animal.y = getHillY(animal.x);
+                    animal.x += animal.speed;
+                    if (animal.x > canvas.width + 60) { animal.x = -60; }
+                }
+            });
+
+            if (hint.timer > 0) {
+                hint.timer--;
+                if (hint.timer < 60) { hint.alpha = hint.timer / 60; }
+            }
+
+            if (gift && gift.active) {
+                gift.x -= pipeSpeed;
+                const catRect = { x: catX, y: catY, w: catWidth, h: catHeight };
+                const giftRect = { x: gift.x - gift.width / 2, y: gift.y - gift.height / 2, w: gift.width, h: gift.height };
+                if (catRect.x < giftRect.x + giftRect.w && catRect.x + catRect.w > giftRect.x &&
+                    catRect.y < giftRect.y + giftRect.h && catRect.y + catRect.h > giftRect.y) {
+                    
+                    let particleEffect = { particles: [], color: 'rgba(255, 105, 180,' };
+                    for (let i = 0; i < 30; i++) {
+                        particleEffect.particles.push({
+                            x: gift.x, y: gift.y,
+                            vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
+                            radius: Math.random() * 5 + 2, alpha: 1
+                        });
+                    }
+                    activeParticles.push(particleEffect);
+                    
+                    hint.text = "Reach 15 points to activate night effect";
+                    hint.timer = 4 * 60;
+                    hint.alpha = 1;
+                    gift = null; // Remove gift
+                } else if (gift.x < -gift.width) {
+                    gift = null;
+                }
+            }
+
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                let effect = activeParticles[i];
+                let allFaded = true;
+                effect.particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.alpha -= 0.03;
+                    if (p.alpha > 0) allFaded = false;
+                });
+                if (allFaded) activeParticles.splice(i, 1);
+            }
+
             if (catY + catHeight > canvas.height || catY < 0) {
                 gameState = 'over';
                 updateHighScore();
-                return; // Stop the update loop
+                return;
             }
 
-            // Generate pipes
             if (frame % pipeInterval === 0) {
                 const pipeY = Math.floor(Math.random() * (canvas.height - pipeGap - 150)) + 75;
-                pipes.push({ x: canvas.width, y: pipeY, passed: false });
+                const canSpawnQuestionMark = activePowerUp.type === 'none' && powerUpCooldown <= 0;
+                let canThisPipeHaveQM = canSpawnQuestionMark && Math.random() < 0.5;
+
+                // Prevent two '?' from being consecutive
+                if (pipes.length > 0 && pipes[pipes.length - 1].hasQuestionMark) {
+                    canThisPipeHaveQM = false;
+                }
+
+                let newPipe = {
+                    x: canvas.width, y: pipeY, passed: false,
+                    hasQuestionMark: canThisPipeHaveQM
+                };
+                
+                if (activePowerUp.type === 'break_pipe' && activePowerUp.data.targetFrame === frame) {
+                    newPipe.isBreakable = true;
+                }
+
+                pipes.push(newPipe);
+
+                if (giftPipe === -1 && score < 8) {
+                    giftPipe = Math.floor(Math.random() * 8) + 1;
+                }
+
+                // Prevent '?' and gift on the same pipe
+                if (!gift && score > 0 && score === giftPipe && !newPipe.hasQuestionMark) {
+                    giftPipe = -2;
+                    gift = {
+                        x: canvas.width + pipeWidth / 2, y: pipeY + pipeGap / 2,
+                        width: 40, height: 40, active: true
+                    };
+                }
             }
 
-            // Move and check pipes
             for (let i = pipes.length - 1; i >= 0; i--) {
                 let p = pipes[i];
+                if (p.isFalling) continue;
                 p.x -= pipeSpeed;
 
-                // Collision detection
-                if (catX < p.x + pipeWidth &&
-                    catX + catWidth > p.x &&
+                if (p.hasQuestionMark) {
+                    const qMarkX = p.x + pipeWidth / 2;
+                    const qMarkY = p.y + pipeGap / 2;
+                    const catRect = { x: catX, y: catY, w: catWidth, h: catHeight };
+                    const dist = Math.hypot(catRect.x + catRect.w/2 - qMarkX, catRect.y + catRect.h/2 - qMarkY);
+                    if (dist < (catWidth/2 + 25)) {
+                        p.hasQuestionMark = false;
+                        triggerPowerUp();
+
+                        let particleEffect = { particles: [], color: 'rgba(251, 192, 45,' };
+                        for (let j = 0; j < 30; j++) {
+                            particleEffect.particles.push({
+                                x: qMarkX, y: qMarkY,
+                                vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
+                                radius: Math.random() * 5 + 2, alpha: 1
+                            });
+                        }
+                        activeParticles.push(particleEffect);
+                    }
+                }
+
+                if (catX < p.x + pipeWidth && catX + catWidth > p.x &&
                     (catY < p.y || catY + catHeight > p.y + pipeGap)) {
                     gameState = 'over';
                     updateHighScore();
-                    return; // Stop the update loop
+                    return;
                 }
 
-                // Score
                 if (p.x + pipeWidth < catX && !p.passed) {
                     score++;
                     p.passed = true;
+                    if (score > 0 && score % 30 === 0 && score !== lastBirdScore) {
+                        spawnBirds();
+                        lastBirdScore = score;
+                    }
                 }
 
-                // Remove pipes that are off-screen
-                if (p.x + pipeWidth < 0) {
-                    pipes.splice(i, 1);
-                }
+                if (p.x + pipeWidth < 0) pipes.splice(i, 1);
             }
+
+            birds.forEach((bird, index) => {
+                if (bird.state === 'flying') {
+                    bird.x += bird.speed;
+                    if (bird.x > canvas.width + 20) birds.splice(index, 1);
+                } else if (bird.state === 'falling') {
+                    bird.y += 5;
+                    if (bird.y > canvas.height) bird.state = 'dead';
+                }
+                if (bird.ghost) {
+                    bird.ghost.y -= 1;
+                    bird.ghost.alpha -= 0.02;
+                    if (bird.ghost.alpha <= 0) bird.ghost = null;
+                }
+            });
         }
 
         function updateHighScore() {
@@ -225,83 +587,1317 @@
             }
         }
 
-        function draw() {
-            // Clear canvas with a subtle pink tint
-            ctx.fillStyle = 'rgb(255, 240, 245)'; // Opaque color to prevent "echo" effect
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // --- POWER-UP FUNCTIONS ---
 
-            // Draw pipes (visible in playing and game over states)
-            if (gameState === 'playing' || gameState === 'over') {
-                ctx.fillStyle = pipeColor;
-                ctx.strokeStyle = pipeBorderColor;
-                ctx.lineWidth = 4;
-                for (let p of pipes) {
-                    ctx.fillRect(p.x, 0, pipeWidth, p.y);
-                    ctx.strokeRect(p.x, 0, pipeWidth, p.y);
-                    ctx.fillRect(p.x, p.y + pipeGap, pipeWidth, canvas.height - p.y - pipeGap);
-                    ctx.strokeRect(p.x, p.y + pipeGap, pipeWidth, canvas.height - p.y - pipeGap);
-                }
+        function triggerPowerUp() {
+            if (activePowerUp.type !== 'none') return;
+
+            const allPowerUps = ['light_rain', 'heavy_rain', 'snow', 'wind', 'rainbow', 'break_pipe', 'fire', 'cloud_text', 'fog', 'shake', 'image_blink'];
+            let chosenEffect = allPowerUps[Math.floor(Math.random() * allPowerUps.length)];
+
+            // If 'shake' is chosen, there's a 10% chance it gets rerolled to something else.
+            // This effectively reduces its probability.
+            if (chosenEffect === 'shake' && Math.random() < 0.10) {
+                const otherPowerUps = allPowerUps.filter(p => p !== 'shake');
+                chosenEffect = otherPowerUps[Math.floor(Math.random() * otherPowerUps.length)];
             }
 
-            // Draw cat
+            activePowerUp.type = chosenEffect;
+            activePowerUp.data = {};
+            backgroundPowerUpLayer.draw = () => {};
+
+            switch (chosenEffect) {
+                case 'shake': activePowerUp.duration = 120; break; // 2s
+                case 'image_blink':
+                    activePowerUp.duration = 180 + 180; // 3s + 3s
+                    activePowerUp.data.img = Math.random() < 0.5 ? fb1Img : fb2Img;
+                    break;
+                case 'light_rain':
+                case 'wind':
+                case 'fog':
+                case 'break_pipe':
+                    activePowerUp.duration = 420 + 180 + 180; // 10s + 3s
+                    activePowerUp.data.particles = [];
+                    if (chosenEffect === 'wind') { activePowerUp.data.papers = []; activePowerUp.data.leaves = []; }
+                    if (chosenEffect === 'fog') { activePowerUp.data.blobs = []; for(let i=0; i<15; i++) activePowerUp.data.blobs.push({x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 80 + 40, vx: (Math.random() - 0.5) * 0.3, alpha: 0}); }
+                    if (chosenEffect === 'break_pipe') {
+                        const targetFrame = Math.ceil(frame / pipeInterval) * pipeInterval;
+                        activePowerUp.data.targetFrame = (targetFrame <= frame) ? frame + pipeInterval : targetFrame;
+                        activePowerUp.data.state = 'waiting';
+                        activePowerUp.data.crackProgress = 0;
+                    }
+                    break;
+                case 'snow':
+                    activePowerUp.duration = 420 + 180 + 180 + 120; // 12s + 3s
+                    activePowerUp.data.particles = [];
+                    break;
+                case 'heavy_rain':
+                    activePowerUp.duration = 420 + 180 + 180; // 10s + 3s
+                    activePowerUp.data.particles = [];
+                    activePowerUp.data.skyDarkness = 0;
+                    activePowerUp.data.lightningTimer = Math.random() * 60 + 30;
+                    activePowerUp.data.strikeCount = 0; // Initialize
+                    break;
+                case 'rainbow':
+                    activePowerUp.duration = 420 + 180 + 180 - 30; // 9.5s + 3s
+                    activePowerUp.data.alpha = 0;
+                    setupBackgroundPowerUpDraw();
+                    break;
+                case 'cloud_text':
+                    activePowerUp.duration = 420 + 180 + 180; // 10s + 3s
+                    activePowerUp.data.alpha = 0;
+                    setupBackgroundPowerUpDraw();
+                    break;
+                case 'fire':
+                    activePowerUp.duration = 660 + 300 + 180; // 16s + 3s
+                    activePowerUp.data.buildingIndices = [];
+                    activePowerUp.data.fireParticles = [];
+                    activePowerUp.data.fireWindows = [];
+                    activePowerUp.data.people = [];
+
+                    const fireBuildingCount = Math.floor(Math.random() * 3) + 1;
+                    let availableIndices = [...Array(buildingData.length).keys()];
+
+                    for (let i = 0; i < fireBuildingCount && availableIndices.length > 0; i++) {
+                        const randIndex = Math.floor(Math.random() * availableIndices.length);
+                        const chosenIndex = availableIndices.splice(randIndex, 1)[0];
+                        activePowerUp.data.buildingIndices.push(chosenIndex);
+
+                        const b = buildingData[chosenIndex];
+                        
+                        b.windows.forEach((row, rIdx) => {
+                            row.forEach((isOn, cIdx) => {
+                                if (Math.random() < 0.15) {
+                                    activePowerUp.data.fireWindows.push({ buildingIndex: chosenIndex, r: rIdx, c: cIdx });
+                                }
+                            });
+                        });
+
+                        for (let j = 0; j < 5; j++) {
+                            activePowerUp.data.people.push({ type: 'runner', x: b.x + b.width / 2 + (Math.random() - 0.5) * 20, y: canvas.height - 5, state: 'running', speed: Math.random() * 0.5 + 0.75 });
+                        }
+                        const jumperCount = Math.floor(Math.random() * 3) + 1;
+                        const jumpSpotX = b.x + b.width - 10;
+                        const queueSpacing = 15;
+                        for (let j = 0; j < jumperCount; j++) {
+                            activePowerUp.data.people.push({
+                                type: 'jumper', buildingIndex: chosenIndex, queuePosition: j,
+                                x: b.x + 10 + Math.random() * 20, y: canvas.height - b.height,
+                                state: 'queuing', targetX: jumpSpotX - j * queueSpacing,
+                                timer: 0, vy: 0
+                            });
+                        }
+                    }
+                    
+                    // Set 3-4 runners to be immune to fire
+                    const runners = activePowerUp.data.people.filter(p => p.type === 'runner');
+                    const immuneCount = Math.floor(Math.random() * 2) + 3; // 3 or 4
+                    // Shuffle runners to randomize who is immune
+                    for (let i = runners.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [runners[i], runners[j]] = [runners[j], runners[i]];
+                    }
+                    for (let i = 0; i < immuneCount && i < runners.length; i++) {
+                        runners[i].isImmune = true;
+                    }
+
+                    setupBackgroundPowerUpDraw();
+                    break;
+            }
+            activePowerUp.data.totalDuration = activePowerUp.duration;
+        }
+
+        function updatePowerUp() {
+            if (activePowerUp.type === 'none') return;
+
+            activePowerUp.duration--;
+            if (activePowerUp.duration <= 0) {
+                const wasFire = activePowerUp.type === 'fire';
+                activePowerUp.type = 'none';
+                if (wasFire) {
+                    animals.forEach(animal => {
+                        if (animal.state === 'ash' || animal.on_fire) {
+                            animal.state = 'running'; // Reset to a default state
+                            animal.on_fire = false;
+                            animal.on_fire_timer = 0;
+                            animal.fire_particles = [];
+                            animal.burn_progress = 0;
+                            animal.ash_particles = [];
+                            if (animal.type === 'rabbit') {
+                                animal.state_timer = Math.random() * 120 + 60;
+                                animal.carrot = null;
+                            }
+                        }
+                    });
+                }
+                powerUpCooldown = 180; // 3 second cooldown
+                backgroundPowerUpLayer.draw = () => {};
+                return;
+            }
+
+            const data = activePowerUp.data;
+            const duration = activePowerUp.duration;
+            const totalDuration = data.totalDuration;
+
+            switch (activePowerUp.type) {
+                case 'shake': screenShake.duration = 1; break;
+                case 'light_rain':
+                case 'heavy_rain':
+                    const speed = activePowerUp.type === 'heavy_rain' ? Math.random() * 4 + 8 : Math.random() * 2 + 4;
+                    if (Math.random() < 0.9) data.particles.push({ x: Math.random() * canvas.width, y: -10, vx: 0, vy: speed, l: speed * 2 });
+                    data.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if (p.y > canvas.height) data.particles.splice(i, 1); });
+                    if (activePowerUp.type === 'heavy_rain') {
+                        data.skyDarkness = Math.min(0.6, data.skyDarkness + 0.01);
+                        data.lightningTimer--;
+
+                        if (data.lightningTimer <= 0 && data.strikeCount <= 0) { // Only trigger new storm if old one is finished
+                            data.lightningBolts = [];
+                            const boltCount = Math.floor(Math.random() * 2) + 2;
+                            const mainX = Math.random() * canvas.width * 0.6 + canvas.width * 0.2;
+                            for (let i = 0; i < boltCount; i++) {
+                                const isFront = Math.random() > 0.5;
+                                const startX = mainX + (Math.random() - 0.5) * 150;
+                                data.lightningBolts.push({
+                                    path: createLightning(isFront, startX),
+                                    layer: isFront ? 'front' : 'back'
+                                });
+                            }
+                            data.strikeCount = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3 strikes
+                            data.strikeTimer = 0;
+                            data.lightningTimer = Math.random() * 120 + 120; // Reset for next storm
+                        }
+
+                        if (data.strikeCount > 0) {
+                            data.strikeTimer--;
+                            if (data.strikeTimer <= 0) {
+                                data.lightningDuration = 8; // Short flash
+                                data.strikeCount--;
+                                if (data.strikeCount > 0) {
+                                    data.strikeTimer = Math.random() * 10 + 5; // 5-15 frames between flashes
+                                }
+                            }
+                        }
+
+                        if (data.lightningDuration > 0) data.lightningDuration--;
+                    }
+                    break;
+                case 'snow':
+                    const shapeType = Math.random();
+                    let shape = 'dot';
+                    if (shapeType > 0.95) shape = 'dendrite';
+                    else if (shapeType > 0.85) shape = 'hexagon';
+                    else if (shapeType > 0.7) shape = 'asterisk';
+                    if (Math.random() < 0.5) data.particles.push({ x: Math.random() * canvas.width, y: -10, vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 1 + 0.5, r: Math.random() * 3 + 2, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.05, shape: shape });
+                    data.particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; p.rot += p.rotSpeed; if (p.y > canvas.height) data.particles.splice(i, 1); });
+                    break;
+                case 'wind':
+                    const angle = 70 * Math.PI / 180;
+                    const tanAngle = Math.tan(angle);
+                    // Spawn on top edge
+                    if (Math.random() < 0.7) data.particles.push({ x: Math.random() * canvas.width, y: -10, l: Math.random() * 50 + 20, s: Math.random() * 1.5 + 1 });
+                    if (Math.random() < 0.1) data.papers.push({ x: Math.random() * canvas.width, y: -20, s: Math.random() * 2 + 2, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.2 });
+                    if (Math.random() < 0.2) data.leaves.push({ x: Math.random() * canvas.width, y: -20, s: Math.random() * 1 + 1, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.3 });
+                    // Spawn on right edge
+                    if (Math.random() < 0.7) data.particles.push({ x: canvas.width + 10, y: Math.random() * canvas.height, l: Math.random() * 50 + 20, s: Math.random() * 1.5 + 1 });
+                    if (Math.random() < 0.1) data.papers.push({ x: canvas.width + 20, y: Math.random() * canvas.height, s: Math.random() * 2 + 2, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.2 });
+                    if (Math.random() < 0.2) data.leaves.push({ x: canvas.width + 20, y: Math.random() * canvas.height, s: Math.random() * 1 + 1, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.3 });
+                    
+                    data.particles.forEach((p, i) => { p.x -= p.s; p.y += p.s * tanAngle; if (p.x < -p.l || p.y > canvas.height + 20) data.particles.splice(i, 1); });
+                    data.papers.forEach((p, i) => { p.x -= p.s; p.y += p.s * tanAngle; p.rot += p.rotSpeed; if (p.x < -20 || p.y > canvas.height + 20) data.papers.splice(i, 1); });
+                    data.leaves.forEach((p, i) => { p.x -= p.s; p.y += p.s * tanAngle; p.rot += p.rotSpeed; if (p.x < -20 || p.y > canvas.height + 20) data.leaves.splice(i, 1); });
+                    break;
+                case 'rainbow':
+                case 'fog':
+                case 'cloud_text':
+                    if (duration > totalDuration - 60) data.alpha = (totalDuration - duration) / 60;
+                    else if (duration < 60) data.alpha = duration / 60;
+                    else data.alpha = 1;
+                    if (activePowerUp.type === 'fog') data.blobs.forEach(b => { b.x += b.vx; if (b.x > canvas.width + b.r) b.x = -b.r; if (b.x < -b.r) b.x = canvas.width + b.r; b.alpha = data.alpha; });
+                    break;
+                case 'break_pipe':
+                    if (data.state === 'waiting') {
+                        let breakablePipe = pipes.find(p => p.isBreakable && !p.isFalling);
+                        if (breakablePipe && breakablePipe.x < catX + 150) {
+                            data.state = 'cracking';
+                            data.pipe = breakablePipe;
+                            data.cracks = { top: [], bottom: [] };
+                            const generateCrack = (startY, endY, pipeW) => {
+                                let path = [{ x: pipeW / 2, y: startY }];
+                                let currentY = startY;
+                                const step = (endY - startY) / 10;
+                                while ((step > 0 && currentY < endY) || (step < 0 && currentY > endY)) {
+                                    currentY += step;
+                                    let currentX = path[path.length - 1].x + (Math.random() - 0.5) * 20;
+                                    currentX = Math.max(0, Math.min(pipeW, currentX));
+                                    path.push({ x: currentX, y: currentY });
+                                }
+                                return path;
+                            };
+                            data.cracks.top = generateCrack(breakablePipe.y, 0, pipeWidth);
+                            data.cracks.bottom = generateCrack(breakablePipe.y + pipeGap, canvas.height, pipeWidth);
+                        }
+                    }
+                    if (data.state === 'cracking') {
+                        data.crackProgress += 0.02;
+                        if (data.crackProgress >= 1) {
+                            data.state = 'shattering';
+                            data.pipe.isFalling = true; // Hides the original pipe
+                            data.debris = [];
+                            for (let i = 0; i < 50; i++) {
+                                const shape = [];
+                                const sides = Math.floor(Math.random() * 5) + 3; // 3 to 7 sides
+                                const baseSizeX = (Math.random() * 12 + 4);
+                                const baseSizeY = (Math.random() * 12 + 4);
+                                for (let j = 0; j < sides; j++) {
+                                    const angle = (j / sides) * Math.PI * 2;
+                                    const radius = Math.random() * 0.5 + 0.5; // Irregular radius
+                                    shape.push({
+                                        x: Math.cos(angle) * baseSizeX * radius,
+                                        y: Math.sin(angle) * baseSizeY * radius
+                                    });
+                                }
+                                const yPos = Math.random() < 0.5 ? Math.random() * data.pipe.y : (data.pipe.y + pipeGap) + Math.random() * (canvas.height - (data.pipe.y + pipeGap));
+                                data.debris.push({
+                                    x: data.pipe.x + Math.random() * pipeWidth, y: yPos, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.7) * 8, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.1, alpha: 1, shape: shape
+                                });
+                            }
+                            data.hitBird = false; // Flag to ensure we only hit one bird and rewind score once.
+                        }
+                    }
+                    if (data.state === 'shattering') {
+                        data.debris.forEach(d => {
+                            d.vy += 0.2; d.x += d.vx; d.y += d.vy; d.rot += d.rotSpeed; d.alpha -= 0.01;
+
+                            // Check for collision with birds if we haven't hit one yet
+                            if (!data.hitBird) {
+                                birds.forEach(bird => {
+                                    if (bird.state === 'flying' && Math.hypot(d.x - bird.x, d.y - bird.y) < 15) {
+                                        bird.state = 'falling';
+                                        bird.ghost = { x: bird.x, y: bird.y, alpha: 1 };
+                                        score = Math.max(0, score - 20);
+                                        skyProgress = Math.max(0, skyProgress - 20);
+                                        data.hitBird = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    break;
+                case 'fire':
+                    // New animal fire collision logic (window-based)
+                    animals.forEach(animal => {
+                        if (!animal.on_fire && animal.state !== 'ash') {
+                            const animalY = animal.y || getHillY(animal.x);
+                            const animalHitbox = { x: animal.x, y: animalY, r: 20 };
+
+                            for (const fw of data.fireWindows) {
+                                const b = buildingData[fw.buildingIndex];
+                                const winX = b.x + windowSpacing + fw.c * (windowSize + windowSpacing);
+                                const winY = canvas.height - b.height + windowSpacing + fw.r * (windowSize + windowSpacing);
+                                const winRect = { x: winX, y: winY, w: windowSize, h: windowSize };
+
+                                const closestX = Math.max(winRect.x, Math.min(animalHitbox.x, winRect.x + winRect.w));
+                                const closestY = Math.max(winRect.y, Math.min(animalHitbox.y, winRect.y + winRect.h));
+                                const distance = Math.hypot(animalHitbox.x - closestX, animalHitbox.y - closestY);
+
+                                if (distance < animalHitbox.r) {
+                                    animal.on_fire = true;
+                                    animal.on_fire_timer = 420; // 4 seconds + 3s bonus = 7s
+                                    animal.fire_particles = [];
+                                    animal.burn_progress = 0;
+                                    break;
+                                }
+                            }
+                        }
+                    });
+
+                    data.buildingIndices.forEach(buildingIndex => {
+                        const b = buildingData[buildingIndex];
+                        if (Math.random() < 0.8) {
+                            data.fireParticles.push({ x: b.x + Math.random() * b.width, y: canvas.height - b.height, vx: (Math.random() - 0.5) * 1, vy: -Math.random() * 2 - 1, life: 1, size: Math.random() * 15 + 5, color: 'yellow' });
+                        }
+                    });
+                    data.fireWindows.forEach(fw => {
+                        const b = buildingData[fw.buildingIndex];
+                        const winX = b.x + windowSpacing + fw.c * (windowSize + windowSpacing) + windowSize / 2;
+                        const winY = canvas.height - b.height + windowSpacing + fw.r * (windowSize + windowSpacing) + windowSize / 2;
+                        if (Math.random() < 0.6) {
+                            data.fireParticles.push({
+                                x: winX, y: winY,
+                                vx: (Math.random() - 0.5) * 0.5, vy: -Math.random() * 0.8,
+                                life: 1, size: Math.random() * 3 + 2, // Range 2-5
+                                color: 'yellow'
+                            });
+                        }
+                        if (Math.random() < 0.3) {
+                            data.fireParticles.push({
+                                x: winX, y: winY - 2,
+                                vx: (Math.random() - 0.5) * 0.4, vy: -Math.random() * 0.6,
+                                life: 1, size: Math.random() * 4 + 3,
+                                color: 'smoke'
+                            });
+                        }
+                    });
+                    for (let i = data.fireParticles.length - 1; i >= 0; i--) {
+                        let p = data.fireParticles[i];
+                        p.x += p.vx; p.y += p.vy; p.life -= 0.02; p.size *= 0.98;
+                        if (p.color !== 'smoke') {
+                            if (p.life < 0.7) p.color = 'orange';
+                            if (p.life < 0.3) p.color = 'red';
+                        }
+                        if (p.life <= 0 || p.size < 0.5) data.fireParticles.splice(i, 1);
+                    }
+                    data.people.forEach(person => {
+                        if (person.type === 'runner') {
+                            if (person.state === 'ash' && person.ash_particles) {
+                                for (let i = person.ash_particles.length - 1; i >= 0; i--) {
+                                    let p = person.ash_particles[i];
+                                    p.x += p.vx; p.y += p.vy; p.alpha -= 0.01;
+                                    if (p.alpha <= 0) person.ash_particles.splice(i, 1);
+                                }
+                                return;
+                            }
+
+                            if (person.on_fire) {
+                                if (person.on_fire_timer > 0) { // 6 seconds total burn time
+                                    person.on_fire_timer--;
+                                    person.burn_progress = 1 - (person.on_fire_timer / 360);
+                                    if (Math.random() < 0.5) {
+                                        if (!person.fire_particles) person.fire_particles = [];
+                                        person.fire_particles.push({
+                                            x: (Math.random() - 0.5) * 15, y: (Math.random() - 0.5) * 20,
+                                            vx: (Math.random() - 0.5) * 0.5, vy: -Math.random() * 1,
+                                            life: 1, size: Math.random() * 4 + 2
+                                        });
+                                    }
+                                    if (person.fire_particles) {
+                                        for (let i = person.fire_particles.length - 1; i >= 0; i--) {
+                                            let p = person.fire_particles[i];
+                                            p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+                                            if (p.life <= 0) person.fire_particles.splice(i, 1);
+                                        }
+                                    }
+                                } else {
+                                    person.state = 'ash';
+                                    person.on_fire = false;
+                                    person.ash_particles = [];
+                                    for (let i = 0; i < 30; i++) {
+                                        person.ash_particles.push({
+                                            x: person.x + (Math.random() - 0.5) * 10, y: person.y - Math.random() * 20,
+                                            vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.5,
+                                            alpha: 1, size: Math.random() * 2 + 1
+                                        });
+                                    }
+                                }
+                            } else if (person.state === 'running') {
+                                if (duration <= 60) { person.state = 'idle'; return; }
+                                if (!person.targetX || Math.abs(person.x - person.targetX) < 5) {
+                                    person.targetX = Math.random() * canvas.width;
+                                }
+                                person.x += Math.sign(person.targetX - person.x) * person.speed;
+
+                                const personHitbox = { x: person.x, y: person.y - 10, r: 10 };
+                                if (!person.isImmune) { // Check for immunity
+                                    for (const p of data.fireParticles) {
+                                        if (p.y > canvas.height - 50 && Math.hypot(personHitbox.x - p.x, personHitbox.y - p.y) < personHitbox.r + p.size) {
+                                            person.on_fire = true;
+                                            person.on_fire_timer = 360; // 3 seconds + 3s bonus = 6s
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (person.type === 'jumper') {
+                            const b = buildingData[person.buildingIndex];
+                            const jumpSpotX = b.x + b.width - 10;
+                            const queueSpacing = 15;
+                            person.targetX = jumpSpotX - person.queuePosition * queueSpacing;
+
+                            switch(person.state) {
+                                case 'queuing':
+                                    if (Math.abs(person.x - person.targetX) > 1) {
+                                        person.x += Math.sign(person.targetX - person.x) * 0.2; // Slower speed to get in line
+                                    } else {
+                                        person.x = person.targetX;
+                                        if (person.queuePosition === 0) {
+                                            person.state = 'preparing_to_jump';
+                                            person.timer = Math.random() * 180 + 120; // Longer wait before jumping
+                                        }
+                                    }
+                                    break;
+                                case 'preparing_to_jump':
+                                    person.timer--;
+                                    if (person.timer <= 0) {
+                                        person.state = 'falling';
+                                        person.vy = 0;
+                                        // Signal others in the queue to move up
+                                        data.people.forEach(otherPerson => {
+                                            if (otherPerson.type === 'jumper' && otherPerson.buildingIndex === person.buildingIndex && otherPerson.queuePosition > person.queuePosition) {
+                                                otherPerson.queuePosition--;
+                                            }
+                                        });
+                                    }
+                                    break;
+                                case 'falling':
+                                    person.vy += 0.3; // Original fall speed
+                                    person.y += person.vy;
+                                    break;
+                            }
+                        }
+                    });
+                    break;
+            }
+        }
+
+        // --- DRAWING HELPERS ---
+
+        function drawSun(x, y, opacity) {
+            if (opacity <= 0) return;
             ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = `rgba(255, 255, 0, ${0.8 * opacity})`;
+            ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(255, 200, 0, ${0.4 * opacity})`;
+            ctx.beginPath(); ctx.arc(x, y, 45, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
 
-            // Define rotation limits in radians for the cat's tilt
-            const maxUpwardRotation = -25 * Math.PI / 180; // -25 degrees
-            const maxDownwardRotation = 90 * Math.PI / 180;  // 90 degrees
+        function drawMoon(x, y, opacity) {
+            if (opacity <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            const gradient = ctx.createRadialGradient(x + 5, y - 5, 5, x, y, 30);
+            gradient.addColorStop(0, '#fefefe');
+            gradient.addColorStop(1, '#e0e0e0');
+            ctx.fillStyle = gradient;
+            ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = `rgba(0, 0, 0, ${0.15 * opacity})`;
+            ctx.beginPath(); ctx.arc(x + 12, y + 12, 6, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x - 15, y + 5, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x - 5, y - 18, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
 
-            // Calculate rotation based on vertical velocity to create a dynamic tilt effect.
-            // A multiplier of 0.08 provides a responsive feel to the cat's movement.
+        function drawStars(opacity) {
+            if (opacity <= 0) return;
+            ctx.save();
+            stars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha * opacity})`;
+                const flicker = Math.sin(frame * 0.1 + star.x) * 0.4 + 0.6;
+                const r = star.radius * flicker;
+                ctx.beginPath();
+                if (star.shape === 'diamond') {
+                    ctx.moveTo(star.x, star.y - r);
+                    ctx.lineTo(star.x + r * 0.7, star.y);
+                    ctx.lineTo(star.x, star.y + r);
+                    ctx.lineTo(star.x - r * 0.7, star.y);
+                    ctx.closePath();
+                } else if (star.shape === 'plus') {
+                    const arm = r * 1.5;
+                    ctx.rect(star.x - arm / 2, star.y - arm / 6, arm, arm / 3);
+                    ctx.rect(star.x - arm / 6, star.y - arm / 2, arm / 3, arm);
+                } else { // circle
+                    ctx.arc(star.x, star.y, r, 0, Math.PI * 2);
+                }
+                ctx.fill();
+            });
+            ctx.restore();
+        }
+
+        function drawCloud(x, y, scale) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.beginPath();
+            ctx.arc(x, y, 20 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 25 * scale, y - 10 * scale, 25 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 55 * scale, y, 20 * scale, 0, Math.PI * 2);
+            ctx.arc(x + 30 * scale, y + 10 * scale, 25 * scale, 0, Math.PI * 2);
+            ctx.closePath(); ctx.fill();
+        }
+
+        function drawBuildings() {
+            const buildingColor = '#f5d5de';
+            const buildingOutlineColor = '#d1b3ba';
+            const windowColor = 'rgba(255, 255, 255, 0.8)';
+            buildingData.forEach(b => {
+                const buildingY = canvas.height - b.height;
+                ctx.fillStyle = buildingColor; ctx.fillRect(b.x, buildingY, b.width, b.height);
+                ctx.strokeStyle = buildingOutlineColor; ctx.lineWidth = 2; ctx.strokeRect(b.x, buildingY, b.width, b.height);
+                ctx.fillStyle = windowColor;
+                b.windows.forEach((row, rowIndex) => {
+                    row.forEach((isOn, colIndex) => {
+                        if (isOn) {
+                            const x = b.x + windowSpacing + colIndex * (windowSize + windowSpacing);
+                            const y = buildingY + windowSpacing + rowIndex * (windowSize + windowSpacing);
+                            ctx.fillRect(x, y, windowSize, windowSize);
+                        }
+                    });
+                });
+            });
+        }
+
+        function drawBush(x, y, radius) {
+            ctx.fillStyle = '#81c784'; ctx.strokeStyle = '#558b2f'; ctx.lineWidth = 1.5; y += 5;
+            ctx.beginPath();
+            ctx.moveTo(x - radius, y);
+            ctx.quadraticCurveTo(x - radius * 1.1, y - radius * 0.8, x - radius * 0.5, y - radius * 0.5);
+            ctx.quadraticCurveTo(x, y - radius * 1.2, x + radius * 0.5, y - radius * 0.5);
+            ctx.quadraticCurveTo(x + radius * 1.1, y - radius * 0.8, x + radius, y);
+            ctx.closePath(); ctx.fill(); ctx.stroke();
+        }
+
+        function drawFlower(x, y, type = 'daisy') {
+            const groundY = y + 2;
+            ctx.strokeStyle = '#a5d6a7'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(x, groundY); ctx.quadraticCurveTo(x + 2, groundY - 10, x, groundY - 20); ctx.stroke();
+            if (type === 'daisy') {
+                ctx.fillStyle = 'white';
+                for (let i = 0; i < 6; i++) {
+                    ctx.beginPath(); ctx.ellipse(x, groundY - 25, 3, 8, (i * Math.PI * 2) / 6, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.fillStyle = '#ffdd00'; ctx.beginPath(); ctx.arc(x, groundY - 25, 4, 0, Math.PI * 2); ctx.fill();
+            } else if (type === 'tulip') {
+                ctx.fillStyle = '#f06292';
+                ctx.beginPath(); ctx.moveTo(x - 5, groundY - 18); ctx.quadraticCurveTo(x - 6, groundY - 30, x, groundY - 25); ctx.quadraticCurveTo(x + 6, groundY - 30, x + 5, groundY - 18); ctx.closePath(); ctx.fill();
+            } else {
+                ctx.fillStyle = '#ff85a2'; ctx.beginPath(); ctx.arc(x, groundY - 25, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fff799'; ctx.beginPath(); ctx.arc(x, groundY - 25, 2, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        function drawTree(x, y, type) {
+            const groundY = y + 2;
+            ctx.fillStyle = '#8d6e63';
+            ctx.beginPath(); ctx.moveTo(x - 4, groundY); ctx.lineTo(x - 6, groundY - 40); ctx.lineTo(x + 6, groundY - 40); ctx.lineTo(x + 4, groundY); ctx.closePath(); ctx.fill();
+            
+            ctx.fillStyle = '#66bb6a'; ctx.strokeStyle = '#43a047'; ctx.lineWidth = 2;
+            const topY = groundY - 35;
+            if (type === 1) { // Layered Pine tree
+                const pineTopY = groundY - 40;
+                const layerHeight = 15;
+                const baseWidth = 20;
+
+                // Layer 1 (top)
+                ctx.beginPath();
+                ctx.moveTo(x, pineTopY - layerHeight);
+                ctx.lineTo(x - baseWidth * 0.7, pineTopY);
+                ctx.lineTo(x + baseWidth * 0.7, pineTopY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Layer 2 (middle)
+                ctx.beginPath();
+                ctx.moveTo(x, pineTopY);
+                ctx.lineTo(x - baseWidth * 0.9, pineTopY + layerHeight);
+                ctx.lineTo(x + baseWidth * 0.9, pineTopY + layerHeight);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Layer 3 (bottom)
+                ctx.beginPath();
+                ctx.moveTo(x, pineTopY + layerHeight);
+                ctx.lineTo(x - baseWidth, pineTopY + layerHeight * 2);
+                ctx.lineTo(x + baseWidth, pineTopY + layerHeight * 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (type === 3) { // Branchy tree
+                // Trunk is already drawn above
+                ctx.strokeStyle = '#8d6e63'; // Branch color
+                ctx.lineWidth = 4;
+                // Main branches
+                ctx.beginPath();
+                ctx.moveTo(x, topY + 5); ctx.lineTo(x - 15, topY - 15);
+                ctx.moveTo(x, topY); ctx.lineTo(x + 15, topY - 20);
+                ctx.moveTo(x, topY - 5); ctx.lineTo(x - 5, topY - 25);
+                ctx.stroke();
+
+                // Leaves
+                ctx.fillStyle = '#66bb6a';
+                ctx.strokeStyle = '#43a047';
+                ctx.lineWidth = 2;
+                // Leaf clusters
+                const drawLeafCluster = (cx, cy) => {
+                    ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(cx - 8, cy + 5, 8, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(cx + 8, cy + 3, 9, 0, Math.PI * 2); ctx.fill();
+                };
+                drawLeafCluster(x - 15, topY - 20);
+                drawLeafCluster(x + 18, topY - 28);
+                drawLeafCluster(x - 5, topY - 33);
+            } else { // Original round tree (type 2)
+                ctx.beginPath(); ctx.arc(x, topY - 25, 25, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x - 15, topY - 15, 15, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 10, topY - 20, 20, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        function drawBear(x, y, animal) {
+            let bearColor = '#a98c78';
+            if (animal.on_fire) {
+                bearColor = lerpColor('#a98c78', '#000000', animal.burn_progress);
+            }
+            ctx.fillStyle = bearColor;
+
+            const groundY = y - 12;
+            const legPhase = frame * 0.08;
+            const shoulderBob = Math.sin(legPhase) * 2;
+            
+            ctx.save();
+            ctx.translate(x - 12, groundY + 4 + shoulderBob);
+            ctx.rotate(Math.sin(legPhase) * 0.2);
+            ctx.beginPath(); ctx.ellipse(0, 0, 6, 10, 0.3, 0, Math.PI * 2); ctx.ellipse(0, 8, 5, 4, 0.3, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+            ctx.save();
+            ctx.translate(x + 12, groundY + 4 - shoulderBob);
+            ctx.rotate(Math.sin(legPhase + Math.PI) * 0.2);
+            ctx.beginPath(); ctx.ellipse(0, 0, 6, 10, -0.3, 0, Math.PI * 2); ctx.ellipse(0, 8, 5, 4, -0.3, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+            ctx.beginPath(); ctx.ellipse(x, groundY, 22, 14, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(x + 10, groundY - 2, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + 18, groundY - 12, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(x + 26, groundY - 11, 5, 4, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(x + 15, groundY - 20, 4, 0, Math.PI * 2); ctx.arc(x + 21, groundY - 20, 4, 0, Math.PI * 2); ctx.fill();
+
+            if (animal.on_fire && animal.fire_particles) {
+                ctx.save();
+                ctx.translate(x, y - 15); // Center of bear
+                animal.fire_particles.forEach(p => {
+                    ctx.fillStyle = `rgba(255, ${Math.random() * 150}, 0, ${p.life})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.restore();
+            }
+        }
+
+        function drawCarrot(x, y, progress) {
+            if (progress >= 1) return;
+            ctx.save();
+            ctx.translate(x, y);
+            const initialHeight = 20;
+            let carrotHeight = initialHeight * (1 - progress);
+            if (carrotHeight > 0) {
+                ctx.fillStyle = '#f57c00';
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                if (progress < 0.33) {
+                    ctx.lineTo(-4, -carrotHeight); ctx.lineTo(4, -carrotHeight);
+                } else if (progress < 0.66) {
+                    ctx.lineTo(-4, -carrotHeight); ctx.quadraticCurveTo(0, -carrotHeight - 3, 4, -carrotHeight);
+                } else {
+                    ctx.arc(0, -carrotHeight / 2, carrotHeight, 0, Math.PI * 2);
+                }
+                ctx.closePath(); ctx.fill();
+                if (progress < 0.8) {
+                    ctx.fillStyle = '#4caf50';
+                    ctx.fillRect(-2, -carrotHeight - 5, 4, 5 * (1 - progress / 0.8));
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawRabbit(x, y, animal) {
+            const currentY = y - 10;
+            let rabbitColor = '#a98c78';
+            if (animal.on_fire) {
+                rabbitColor = lerpColor('#a98c78', '#000000', animal.burn_progress);
+            }
+            ctx.fillStyle = rabbitColor;
+
+            if (animal.state === 'eating' && animal.carrot) {
+                ctx.beginPath(); ctx.ellipse(x, currentY, 12, 9, -0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x + 8, currentY - 15, 3, 8, -0.5, 0, Math.PI * 2); ctx.ellipse(x + 13, currentY - 15, 3, 8, -0.3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 10, currentY - 8, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x + 8, currentY + 8, 3, 2, -0.5, 0, Math.PI * 2); ctx.fill();
+                drawCarrot(x + 15, currentY - 2, animal.carrot.progress);
+                if (animal.carrot.crumbs && animal.carrot.crumbs.length > 0) {
+                    ctx.fillStyle = '#d35400';
+                    animal.carrot.crumbs.forEach(crumb => {
+                        ctx.globalAlpha = crumb.alpha;
+                        ctx.fillRect(crumb.x, crumb.y, crumb.size, crumb.size);
+                    });
+                    ctx.globalAlpha = 1.0;
+                }
+            } else {
+                const legPhase = frame * 0.25 + x;
+                const backLegAngle = Math.sin(legPhase) * 0.4;
+                const frontLegT = Math.sin(legPhase + Math.PI);
+                const frontLegAngle = frontLegT * 0.2 - 0.3;
+                const frontLegY = Math.max(0, frontLegT * 4);
+                const bodyAngle = animal.state === 'jumping' ? Math.sin((60 - animal.jump_timer) / 60 * Math.PI) * -0.2 - 0.2 : -0.2;
+                const earAngle = animal.state === 'jumping' ? -0.8 : -0.5;
+
+                const footY = currentY + 9;
+                
+                ctx.beginPath(); ctx.ellipse(x - 4, footY, 6, 4, -1.8 + backLegAngle, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x, currentY, 12, 9, bodyAngle, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x + 8, currentY - 15, 3, 8, earAngle, 0, Math.PI * 2); ctx.ellipse(x + 13, currentY - 15, 3, 8, earAngle + 0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x + 10, currentY - 8, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(x - 12, currentY + 2, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(x + 8, footY - frontLegY, 5, 3, frontLegAngle, 0, Math.PI * 2); ctx.fill();
+            }
+
+            if (animal.on_fire && animal.fire_particles) {
+                ctx.save();
+                ctx.translate(x, y - 10); // Center of rabbit
+                animal.fire_particles.forEach(p => {
+                    ctx.fillStyle = `rgba(255, ${Math.random() * 150}, 0, ${p.life})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.restore();
+            }
+        }
+
+        function drawAnimals() {
+            animals.forEach(animal => {
+                if (animal.state === 'ash') {
+                    if (animal.ash_particles) {
+                        animal.ash_particles.forEach(p => {
+                            ctx.fillStyle = `rgba(80, 80, 80, ${p.alpha})`;
+                            ctx.fillRect(p.x, p.y, p.size, p.size);
+                        });
+                    }
+                    return;
+                }
+
+                let groundY = animal.y || getHillY(animal.x);
+                if (animal.type === 'bear') drawBear(animal.x, groundY, animal);
+                else if (animal.type === 'rabbit') {
+                    let verticalOffset = 0;
+                    if (animal.state === 'jumping') {
+                        const jumpDuration = 60;
+                        if (animal.jump_timer > 0) {
+                            const jumpProgress = (jumpDuration - animal.jump_timer) / jumpDuration;
+                            verticalOffset = Math.sin(jumpProgress * Math.PI) * 40;
+                        }
+                    }
+                    drawRabbit(animal.x, groundY - verticalOffset, animal);
+                }
+            });
+        }
+
+        function drawSceneryLayer(layer) {
+            layer.forEach(item => {
+                const groundY = getHillY(item.x);
+                if (item.draw === 'tree') drawTree(item.x, groundY, item.type);
+                else if (item.draw === 'bush') drawBush(item.x, groundY, item.r);
+                else if (item.draw === 'flower') drawFlower(item.x, groundY, item.type);
+            });
+        }
+
+        function drawBackground() {
+            const cycleLength = 66;
+            const cycleScore = skyProgress % cycleLength;
+            const daySky1 = '#ffeaf0', daySky2 = '#ffd3db';
+            const blackSky = '#000000';
+            let skyColor1, skyColor2, sunY, moonY, sunOpacity = 0, moonOpacity = 0, starOpacity = 0;
+            isDay = true;
+            let t = 0, easedT = 0;
+
+            if (cycleScore < 15) {
+                skyColor1 = daySky1; skyColor2 = daySky2; sunOpacity = 1; sunY = 80;
+            } else if (cycleScore < 37) {
+                t = (cycleScore - 15) / 22; easedT = easeInOutCubic(t);
+                skyColor1 = lerpColor(daySky1, blackSky, easedT);
+                skyColor2 = lerpColor(daySky2, blackSky, easedT);
+                sunOpacity = 1 - easedT; moonOpacity = easedT; sunY = lerp(80, 350, t); moonY = lerp(350, 80, t);
+            } else if (cycleScore < 44) {
+                skyColor1 = blackSky; skyColor2 = blackSky; moonOpacity = 1; moonY = 80;
+                isDay = false;
+                t = (cycleScore - 37) / 7;
+                starOpacity = easeInOutCubic(t);
+            } else {
+                t = (cycleScore - 44) / 22; easedT = easeInOutCubic(t);
+                skyColor1 = lerpColor(blackSky, daySky1, easedT);
+                isDay = easedT > 0.5;
+                skyColor2 = lerpColor(blackSky, daySky2, easedT);
+                sunOpacity = easedT; moonOpacity = 1 - easedT;
+                starOpacity = 1 - easedT;
+                sunY = lerp(350, 80, t); moonY = lerp(80, 350, t);
+            }
+
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGradient.addColorStop(0, skyColor1); skyGradient.addColorStop(1, skyColor2);
+            ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (activePowerUp.type === 'heavy_rain' && activePowerUp.data.lightningDuration > 0) {
+                const data = activePowerUp.data;
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 4;
+                ctx.globalAlpha = Math.min(1, data.lightningDuration / 10) * 0.9;
+                if (data.lightningBolts) {
+                    data.lightningBolts.forEach(bolt => {
+                        if (bolt.layer === 'back') {
+                            ctx.beginPath();
+                            bolt.path.forEach(point => ctx.lineTo(point.x, point.y));
+                            ctx.stroke();
+                        }
+                    });
+                }
+                ctx.restore();
+            }
+            drawSun(70, sunY, sunOpacity);
+            drawMoon(330, moonY, moonOpacity);
+            drawStars(starOpacity);
+
+            if (activePowerUp.type !== 'cloud_text') {
+                buildingData.forEach(b => drawCloud(b.clouds.x, b.clouds.y, b.clouds.scale));
+            }
+            drawBuildings();
+
+            ctx.fillStyle = '#f2c2ce';
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height); ctx.lineTo(0, canvas.height - 80);
+            ctx.quadraticCurveTo(100, canvas.height - 120, 200, canvas.height - 70);
+            ctx.quadraticCurveTo(300, canvas.height - 40, 400, canvas.height - 90);
+            ctx.lineTo(400, canvas.height); ctx.closePath(); ctx.fill();
+
+            drawSceneryLayer(sceneryBehind);
+            drawAnimals();
+            drawSceneryLayer(sceneryFront);
+        }
+
+        function fillRoundedRect(x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
+            ctx.arcTo(x + width, y, x + width, y + radius, radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+            ctx.lineTo(x + radius, y + height);
+            ctx.arcTo(x, y + height, x, y + height - radius, radius);
+            ctx.lineTo(x, y + radius);
+            ctx.arcTo(x, y, x + radius, y, radius);
+            ctx.closePath(); ctx.fill();
+        }
+
+        function strokeRoundedRect(x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
+            ctx.arcTo(x + width, y, x + width, y + radius, radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+            ctx.lineTo(x + radius, y + height);
+            ctx.arcTo(x, y + height, x, y + height - radius, radius);
+            ctx.lineTo(x, y + radius);
+            ctx.arcTo(x, y, x + radius, y, radius);
+            ctx.closePath(); ctx.stroke();
+        }
+
+        function drawBirds() {
+            birds.forEach(bird => {
+                ctx.save();
+                ctx.translate(bird.x, bird.y);
+                if (bird.state === 'falling') {
+                    ctx.rotate(Math.PI / 2);
+                    ctx.fillStyle = '#212121';
+                    ctx.beginPath(); ctx.ellipse(0, 0, 10, 5, 0, 0, Math.PI * 2); ctx.fill();
+                } else {
+                    ctx.fillStyle = '#424242';
+                    const wingY = Math.sin(frame * 0.15 + bird.x * 0.1) * 5;
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-10, wingY); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(10, wingY); ctx.lineTo(5, 0); ctx.closePath(); ctx.fill();
+                }
+                ctx.restore();
+                if (bird.ghost) {
+                    ctx.globalAlpha = bird.ghost.alpha;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    const wingY = Math.sin(frame * 0.15 + bird.ghost.x * 0.1) * 5;
+                    ctx.beginPath(); ctx.moveTo(bird.ghost.x, bird.ghost.y); ctx.lineTo(bird.ghost.x - 10, bird.ghost.y + wingY); ctx.lineTo(bird.ghost.x - 5, bird.ghost.y); ctx.closePath(); ctx.fill();
+                    ctx.beginPath(); ctx.moveTo(bird.ghost.x, bird.ghost.y); ctx.lineTo(bird.ghost.x + 10, bird.ghost.y + wingY); ctx.lineTo(bird.ghost.x + 5, bird.ghost.y); ctx.closePath(); ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+            });
+        }
+
+        function drawQuestionMark(x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(Math.cos(frame * 0.1), 1);
+            ctx.font = 'bold 50px "Comic Sans MS", cursive, sans-serif';
+            ctx.fillStyle = '#fbc02d';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 5;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.strokeText('?', 0, 2);
+            ctx.fillText('?', 0, 2);
+            ctx.restore();
+        }
+
+        function drawGift() {
+            if (!gift) return;
+            ctx.save();
+            ctx.translate(gift.x, gift.y);
+            ctx.scale(Math.cos(frame * 0.05), 1);
+            if (giftImg.complete) {
+                ctx.drawImage(giftImg, -gift.width / 2, -gift.height / 2, gift.width, gift.height);
+            }
+            ctx.restore();
+        }
+
+        function drawStickPerson(x, y, phase, state, burnProgress = 0) {
+            if (state === 'ash') return;
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y - 18, 4, 0, Math.PI * 2);
+            ctx.moveTo(x, y - 14); ctx.lineTo(x, y - 6);
+            let armAngle = 0.5, legAngle = 1;
+            if (state === 'running' || state === 'queuing' || state === 'preparing_to_jump') { armAngle = Math.sin(phase) * 0.8; legAngle = Math.cos(phase) * 1.2; }
+            else if (state === 'falling') { armAngle = Math.PI / 2 + Math.sin(phase) * 0.5; legAngle = 0.2 + Math.cos(phase) * 0.2; }
+            ctx.moveTo(x, y - 12); ctx.lineTo(x - 5, y - 12 + armAngle * 3);
+            ctx.moveTo(x, y - 12); ctx.lineTo(x + 5, y - 12 - armAngle * 3);
+            ctx.moveTo(x, y - 6); ctx.lineTo(x - legAngle * 3, y);
+            ctx.moveTo(x, y - 6); ctx.lineTo(x + legAngle * 3, y);
+            ctx.stroke();
+            if (burnProgress > 0) {
+                ctx.fillStyle = `rgba(0,0,0,${burnProgress * 0.8})`;
+                ctx.fill();
+            }
+        }
+
+        function createLightning(isFront, startX = null) {
+            let bolt = [];
+            let x = (startX !== null) ? startX : Math.random() * canvas.width;
+            let y = 0;
+            bolt.push({x, y});
+            const endY = isFront ? canvas.height : (Math.random() * 200 + 350);
+            while (y < endY) {
+                x += (Math.random() - 0.5) * 40;
+                y += Math.random() * 20 + 10;
+                bolt.push({x, y});
+            }
+            return bolt;
+        }
+
+        function drawSnowflake(x, y, r, rot, type) {
+            if (type === 'dot') { ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); return; }
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (type === 'hexagon') {
+                for (let i = 0; i < 6; i++) {
+                    ctx.lineTo(r * Math.cos(i * Math.PI / 3), r * Math.sin(i * Math.PI / 3));
+                }
+                ctx.closePath();
+            } else if (type === 'dendrite') {
+                for (let i = 0; i < 6; i++) {
+                    ctx.save();
+                    ctx.rotate(i * Math.PI / 3);
+                    ctx.moveTo(0, 0); ctx.lineTo(0, r);
+                    ctx.moveTo(0, r * 0.3); ctx.lineTo(-r * 0.15, r * 0.45);
+                    ctx.moveTo(0, r * 0.3); ctx.lineTo(r * 0.15, r * 0.45);
+                    ctx.moveTo(0, r * 0.6); ctx.lineTo(-r * 0.2, r * 0.75);
+                    ctx.moveTo(0, r * 0.6); ctx.lineTo(r * 0.2, r * 0.75);
+                    ctx.moveTo(0, r); ctx.lineTo(-r * 0.1, r * 0.9);
+                    ctx.moveTo(0, r); ctx.lineTo(r * 0.1, r * 0.9);
+                    ctx.restore();
+                }
+            } else if (type === 'asterisk') {
+                for (let i = 0; i < 6; i++) {
+                    ctx.save();
+                    ctx.rotate(i * Math.PI / 3);
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, r);
+                    ctx.restore();
+                }
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function setupBackgroundPowerUpDraw() {
+            const type = activePowerUp.type;
+            const data = activePowerUp.data;
+            
+            backgroundPowerUpLayer.draw = () => {
+                ctx.save();
+                switch (type) {
+                    case 'rainbow':
+                        const colors = ['#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff'];
+                        ctx.globalAlpha = data.alpha; ctx.lineWidth = 6;
+                        for (let i = 0; i < colors.length; i++) {
+                            ctx.strokeStyle = colors[i];
+                            ctx.beginPath(); ctx.arc(canvas.width / 2, canvas.height, 250 - i * 5, Math.PI, Math.PI * 2); ctx.stroke();
+                        }
+                        break;
+                    case 'cloud_text':                        
+                        if (data.alpha > 0) {
+                            ctx.font = 'bold 30px "Comic Sans MS", cursive, sans-serif'; ctx.textAlign = 'center';
+                            const text = "Can I Finger You?"; const x = canvas.width / 2; const y = 150;
+                            const bobble = Math.sin(frame * 0.05) * 2;
+                            ctx.save();
+                            ctx.globalAlpha = (data.alpha - 0.5) * 2;
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.filter = 'blur(8px)'; ctx.fillText(text, x, y + bobble);
+                            ctx.filter = 'blur(4px)'; ctx.fillText(text, x, y + bobble);
+                            ctx.filter = 'none'; ctx.fillStyle = `rgba(255, 255, 255, 1)`; ctx.fillText(text, x, y + bobble);
+                            ctx.restore();
+                        }
+                        break;
+                    case 'fire':
+                        data.fireParticles.forEach(p => {
+                            if (p.color === 'smoke') {
+                                ctx.fillStyle = `rgba(100, 100, 100, ${p.life * 0.4})`;
+                            } else {
+                                ctx.fillStyle = p.color;
+                            }
+                            ctx.globalAlpha = p.life;
+                            ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                        });
+                        ctx.globalAlpha = 1;
+                        data.people.forEach(p => {
+                            if (p.on_fire && p.fire_particles) {
+                                ctx.save();
+                                ctx.translate(p.x, p.y - 10); // Approx center
+                                p.fire_particles.forEach(fp => {
+                                    ctx.fillStyle = `rgba(255, ${Math.random() * 150}, 0, ${fp.life})`;
+                                    ctx.beginPath(); ctx.arc(fp.x, fp.y, fp.size, 0, Math.PI * 2); ctx.fill();
+                                });
+                                ctx.restore();
+                            }
+                            drawStickPerson(p.x, p.y, frame, p.state, p.burn_progress || 0);
+                            if (p.state === 'ash' && p.ash_particles) {
+                                p.ash_particles.forEach(ap => {
+                                    ctx.fillStyle = `rgba(80, 80, 80, ${ap.alpha})`;
+                                    ctx.fillRect(ap.x, ap.y, ap.size, ap.size);
+                                });
+                            }
+                        });
+                        break;
+                }
+                ctx.restore();
+            };
+        }
+
+        function drawForegroundPowerUp() {
+            if (activePowerUp.type === 'none') return;
+            const data = activePowerUp.data;
+            ctx.save();
+            switch (activePowerUp.type) {
+                case 'light_rain':
+                case 'heavy_rain':
+                    ctx.strokeStyle = 'rgba(200, 220, 255, 0.8)'; ctx.lineWidth = 2.5;
+                    data.particles.forEach(p => { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, p.y - p.l); ctx.stroke(); });
+                    if (activePowerUp.type === 'heavy_rain') {
+                        ctx.fillStyle = `rgba(0, 0, 0, ${data.skyDarkness})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        if (data.lightningDuration > 0) {
+                            const flashAlpha = Math.min(1, data.lightningDuration / 10);
+                            ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 3;
+                            if (data.lightningBolts) {
+                                data.lightningBolts.forEach(bolt => {
+                                    if (bolt.layer === 'front') { ctx.beginPath(); bolt.path.forEach(p => ctx.lineTo(p.x, p.y)); ctx.stroke(); }
+                                });
+                            }
+                        }
+                    }
+                    break;
+                case 'snow':
+                    data.particles.forEach(p => drawSnowflake(p.x, p.y, p.r, p.rot, p.shape));
+                    break;
+                case 'wind':
+                    const angle = 70 * Math.PI / 180;
+                    const cosAngle = Math.cos(angle);
+                    const sinAngle = Math.sin(angle);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; ctx.lineWidth = 1;
+                    data.particles.forEach(p => {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p.x - p.l * cosAngle * 0.5, p.y + p.l * sinAngle * 0.5); // Make wind lines gentler
+                        ctx.stroke();
+                    });
+                    
+                    data.papers.forEach(p => {
+                        ctx.fillStyle = '#d7ccc8';
+                        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+                        ctx.fillRect(-10, -5, 20, 10);
+                        ctx.restore();
+                    });
+                    data.leaves.forEach(p => {
+                        ctx.fillStyle = '#8d6e63';
+                        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -5); ctx.quadraticCurveTo(5, 0, 0, 5); ctx.quadraticCurveTo(-5, 0, 0, -5);
+                        ctx.fill();
+                        ctx.restore();
+                    });
+                    break;
+                case 'fog':
+                    const fogDensity = isDay ? 0.4 : 0.2;
+                    data.blobs.forEach(b => {
+                        ctx.fillStyle = `rgba(255, 255, 255, ${b.alpha * fogDensity})`;
+                        ctx.filter = 'blur(15px)';
+                        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+                    });
+                    ctx.filter = 'none';
+                    break;
+                case 'break_pipe':
+                    if (data.state === 'cracking' && data.pipe) {
+                        ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.lineWidth = 1.5;
+                        const drawCrackPath = (path) => {
+                            const progressIndex = Math.floor(path.length * data.crackProgress);
+                            if (progressIndex < 2) return;
+                            ctx.save();
+                            ctx.translate(data.pipe.x, 0);
+                            ctx.beginPath();
+                            ctx.moveTo(path[0].x, path[0].y);
+                            for (let i = 1; i < progressIndex; i++) {
+                                ctx.lineTo(path[i].x, path[i].y);
+                            }
+                            ctx.stroke();
+                            ctx.restore();
+                        };
+                        drawCrackPath(data.cracks.top);
+                        drawCrackPath(data.cracks.bottom);
+                    }
+                    if (data.state === 'shattering') {
+                        data.debris.forEach(d => {
+                            if (d.alpha > 0) {
+                                ctx.fillStyle = `rgba(224, 116, 143, ${d.alpha})`;
+                                ctx.save();
+                                ctx.translate(d.x, d.y); ctx.rotate(d.rot);
+                                ctx.beginPath(); ctx.moveTo(d.shape[0].x, d.shape[0].y);
+                                for (let j = 1; j < d.shape.length; j++) ctx.lineTo(d.shape[j].x, d.shape[j].y);
+                                ctx.closePath(); ctx.fill();
+                                ctx.restore();
+                            }
+                        });
+                    }
+                    break;
+                case 'image_blink':
+                    if (data.img.complete) {
+                        const pulse = (Math.sin(activePowerUp.duration * 0.04) + 1) / 2;
+                        ctx.globalAlpha = pulse * 0.85;
+                        ctx.drawImage(data.img, 0, 0, canvas.width, canvas.height);
+                    }
+                    break;
+            }
+            ctx.restore();
+        }
+
+        // --- MAIN DRAW FUNCTION ---
+
+        function draw() {
+            ctx.save();
+            if (screenShake.duration > 0) {
+                screenShake.duration--;
+                const dx = (Math.random() - 0.5) * screenShake.intensity;
+                const dy = (Math.random() - 0.5) * screenShake.intensity;
+                ctx.translate(dx, dy);
+            }
+
+            drawBackground();
+            backgroundPowerUpLayer.draw();
+            drawBirds();
+
+            if (gameState === 'playing' || gameState === 'over') {
+                const pipeCapHeight = 25;
+                const pipeCapWidth = pipeWidth + 8;
+                const pipeBorderWidth = 2;
+                const pipeBorderColor3D = "#8c4a5c";
+                const capRadius = 8;
+
+                for (let p of pipes) {
+                    if (p.isFalling) continue;
+                    const pipeCapX = p.x - (pipeCapWidth - pipeWidth) / 2;
+                    const gradient = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+                    gradient.addColorStop(0, '#ffc1d1'); gradient.addColorStop(0.5, '#ff85a2'); gradient.addColorStop(1, '#e0748f');
+
+                    const topPipeCapY = p.y - pipeCapHeight;
+                    const bottomPipeY = p.y + pipeGap;
+                    const bottomPipeBodyY = bottomPipeY + pipeCapHeight;
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(p.x, 0, pipeWidth, topPipeCapY);
+                    fillRoundedRect(pipeCapX, topPipeCapY, pipeCapWidth, pipeCapHeight, capRadius);
+                    ctx.fillRect(p.x, bottomPipeBodyY, pipeWidth, canvas.height - bottomPipeBodyY);
+                    fillRoundedRect(pipeCapX, bottomPipeY, pipeCapWidth, pipeCapHeight, capRadius);
+
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                    ctx.fillRect(p.x + 5, 0, 10, topPipeCapY);
+                    ctx.fillRect(p.x + 5, bottomPipeBodyY, 10, canvas.height - bottomPipeBodyY);
+                    ctx.fillRect(pipeCapX + 5, topPipeCapY, 10, pipeCapHeight);
+                    ctx.fillRect(pipeCapX + 5, bottomPipeY, 10, pipeCapHeight);
+
+                    ctx.strokeStyle = pipeBorderColor3D; ctx.lineWidth = pipeBorderWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x + pipeBorderWidth / 2, 0); ctx.lineTo(p.x + pipeBorderWidth / 2, topPipeCapY);
+                    ctx.moveTo(p.x + pipeWidth - pipeBorderWidth / 2, 0); ctx.lineTo(p.x + pipeWidth - pipeBorderWidth / 2, topPipeCapY);
+                    ctx.moveTo(p.x + pipeBorderWidth / 2, bottomPipeBodyY); ctx.lineTo(p.x + pipeBorderWidth / 2, canvas.height);
+                    ctx.moveTo(p.x + pipeWidth - pipeBorderWidth / 2, bottomPipeBodyY); ctx.lineTo(p.x + pipeWidth - pipeBorderWidth / 2, canvas.height);
+                    ctx.stroke();
+
+                    strokeRoundedRect(pipeCapX, topPipeCapY, pipeCapWidth, pipeCapHeight, capRadius);
+                    strokeRoundedRect(pipeCapX, bottomPipeY, pipeCapWidth, pipeCapHeight, capRadius);
+
+                    if (p.hasQuestionMark) {
+                        drawQuestionMark(p.x + pipeWidth / 2, p.y + pipeGap / 2);
+                    }
+                }
+            }
+            
+            drawGift();
+
+            activeParticles.forEach(effect => {
+                effect.particles.forEach(p => {
+                    if (p.alpha > 0) {
+                        ctx.fillStyle = effect.color + p.alpha + ')';
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+                    }
+                });
+            });
+
+            drawForegroundPowerUp();
+
+            ctx.save();
+            const maxUpwardRotation = -25 * Math.PI / 180;
+            const maxDownwardRotation = 90 * Math.PI / 180;
             let rotation = catVelocity * 0.08;
-
-            // Clamp the rotation to prevent the cat from over-rotating.
             rotation = Math.max(maxUpwardRotation, Math.min(maxDownwardRotation, rotation));
-
-            // Move the canvas origin to the center of the cat for a natural rotation axis.
             ctx.translate(catX + catWidth / 2, catY + catHeight / 2);
-            // Apply the calculated rotation.
-            ctx.rotate(rotation);
-            // Flip the cat horizontally to make it face left.
-            ctx.scale(-1, 1);
-            // Draw the image, offsetting by half its width and height to center it on the new origin.
+            ctx.rotate(rotation); ctx.scale(-1, 1);
             ctx.drawImage(catImg, -catWidth / 2, -catHeight / 2, catWidth, catHeight);
-
             ctx.restore();
 
-            // Draw text based on the current game state
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
+            if (hint.alpha > 0) {
+                ctx.fillStyle = `rgba(100, 100, 100, ${hint.alpha * 0.7})`;
+                fillRoundedRect(20, canvas.height * 2/5 - 25, canvas.width - 40, 50, 10);
+                ctx.fillStyle = `rgba(255, 255, 255, ${hint.alpha})`;
+                ctx.font = '18px "Comic Sans MS", cursive, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(hint.text, canvas.width / 2, canvas.height * 2/5 + 6);
+            }
 
+            ctx.fillStyle = 'white'; ctx.textAlign = 'center';
             if (gameState === 'start') {
-                ctx.fillStyle = '#ff85a2'; // Pink color for instruction text
+                ctx.fillStyle = '#ff85a2';
                 ctx.font = '22px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText('Click or press Space to play', canvas.width / 2, canvas.height / 2 + 70);
             } else if (gameState === 'playing') {
                 ctx.font = '48px "Comic Sans MS", cursive, sans-serif';
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-                ctx.lineWidth = 5;
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 5;
                 ctx.strokeText(score, canvas.width / 2, 70);
                 ctx.fillText(score, canvas.width / 2, 70);
             } else if (gameState === 'over') {
-                // Draw the game over screen on top
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = 'white';
                 ctx.font = '48px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2 - 90);
-
                 ctx.font = '30px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 - 35);
                 ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 15);
-
-                ctx.fillStyle = '#ff85a2'; // Pink color for instruction text
+                ctx.fillStyle = '#ff85a2';
                 ctx.font = '22px "Comic Sans MS", cursive, sans-serif';
                 ctx.fillText('Click or press Space to play', canvas.width / 2, canvas.height / 2 + 70);
             }
+
+            ctx.restore(); // for screen shake
         }
 
-        // Start the game
         catImg.onload = initialize;
 
     </script>
